@@ -104,3 +104,68 @@ export async function getFormandosEmRisco(): Promise<FormandoRiscoResult[]> {
 // ─── Tipos exportados para usar nos componentes ───────────────────────────────
 export type ProximaSessao = Awaited<ReturnType<typeof getProximasSessoes>>[number]
 export type FormandoEmRisco = Awaited<ReturnType<typeof getFormandosEmRisco>>[number]
+
+export type ModuloComDetalhes = {
+  id: string
+  nome: string
+  descricao: string | null
+  ordem: number
+  cargaHoraria: number
+  cursoId: string
+  curso?: {
+    id: string
+    nome: string
+  }
+  formadores?: Array<{
+    id: string
+    especialidade: string | null
+    user: {
+      id: string
+      nome: string
+    }
+  }>
+}
+
+export async function getModulos(): Promise<ModuloComDetalhes[]> {
+  return await prisma.modulo.findMany({
+    include: {
+      curso: {
+        select: { id: true, nome: true },
+      },
+      formadores: {
+        include: {
+          formador: {
+            include: { user: true },
+          },
+        },
+      },
+    },
+    orderBy: { ordem: 'asc' },
+  }).then(modulos =>
+    modulos.map(mod => ({
+      ...mod,
+      formadores: mod.formadores.map(fm => fm.formador),
+    }))
+  )
+}
+
+export type FormadorComDetalhes = {
+  id: string
+  especialidade: string | null
+  user: {
+    id: string
+    nome: string
+    email: string
+  }
+}
+
+export async function getFormadores(): Promise<FormadorComDetalhes[]> {
+  return await prisma.formador.findMany({
+    include: {
+      user: {
+        select: { id: true, nome: true, email: true },
+      },
+    },
+    orderBy: { user: { nome: 'asc' } },
+  })
+}
