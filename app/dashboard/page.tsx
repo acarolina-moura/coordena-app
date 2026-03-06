@@ -11,8 +11,8 @@ export default async function DashboardPage() {
   const { name, role } = session.user
 
   if (role === 'COORDENADOR') return <CoordenadorDashboard userName={name ?? ''} />
-  if (role === 'FORMADOR') return <FormadorDashboard userName={name ?? ''} />
-  if (role === 'FORMANDO') return <FormandoDashboard userName={name ?? ''} />
+  if (role === 'FORMADOR') return <FormadorDashboard userName={name ?? ''} userId={session.user.id} />
+  if (role === 'FORMANDO') return <FormandoDashboard userName={name ?? ''} userId={session.user.id} />
 
   redirect('/login')
 }

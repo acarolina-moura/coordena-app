@@ -1,18 +1,24 @@
-import { redirect } from "next/navigation";
-import { UserRole } from "@/components/app-sidebar";
-import { FormadorDocumentos } from "./_components/formador-documentos";
-import { CoordenadorDocumentos } from "./_components/coordenador-documentos";
-
-async function getAuthUser(): Promise<{ name: string; role: UserRole } | null> {
-  return { name: "Ana Rodrigues", role: "coordenador" };
-}
+import { redirect } from 'next/navigation'
+import { auth } from '@/auth'
+import { CoordenadorDocumentos } from './_components/coordenador-documentos'
+import { FormadorDocumentos } from './_components/formador-documentos'
+import { getFormadoresComDocumentos, getDocumentosFormador } from '@/app/dashboard/_data/documentos'
 
 export default async function DocumentosPage() {
-  const user = await getAuthUser();
-  if (!user) redirect("/login");
+  const session = await auth()
+  if (!session?.user) redirect('/login')
 
-  if (user.role === "coordenador") return <CoordenadorDocumentos />;
-  if (user.role === "formador")    return <FormadorDocumentos />;
+  const { role, id } = session.user
 
-  redirect("/dashboard");
+  if (role === 'COORDENADOR') {
+    const formadores = await getFormadoresComDocumentos()
+    return <CoordenadorDocumentos formadores={formadores} />
+  }
+
+  if (role === 'FORMADOR') {
+    const documentos = await getDocumentosFormador(id)
+    return <FormadorDocumentos documentos={documentos} userId={id} />
+  }
+
+  redirect('/dashboard')
 }

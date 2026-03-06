@@ -1,49 +1,49 @@
-"use client";
+import { BookOpen, Clock, Mail, AlertTriangle, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
+import { cn } from '@/lib/utils'
+import { getFormadorStats, getProximasSessoesFormador, SessaoFormador } from '@/app/dashboard/_data/formador'
 
-import { BookOpen, Clock, Mail, AlertTriangle, ArrowRight } from "lucide-react";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
+export async function FormadorDashboard({ userName, userId }: { userName: string; userId: string }) {
+  const [stats, sessoes] = await Promise.all([
+    getFormadorStats(userId),
+    getProximasSessoesFormador(userId),
+  ])
 
-const kpis = [
-  { label: "MÓDULOS ATIVOS",      value: 2, icon: BookOpen,      bg: "bg-purple-50",  iconBg: "bg-purple-100", iconColor: "text-purple-500" },
-  { label: "PRÓXIMAS SESSÕES",    value: 2, icon: Clock,         bg: "bg-blue-50",    iconBg: "bg-blue-100",   iconColor: "text-blue-500" },
-  { label: "CONVITES PENDENTES",  value: 0, icon: Mail,          bg: "bg-amber-50",   iconBg: "bg-amber-100",  iconColor: "text-amber-500" },
-  { label: "DOCS EM FALTA",       value: 3, icon: AlertTriangle, bg: "bg-red-50",     iconBg: "bg-red-100",    iconColor: "text-red-400" },
-];
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? 'Bom dia' : hour < 19 ? 'Olá' : 'Boa noite'
 
-const proximasSessoes = [
-  { id: 1, dia: "25", mes: "FEV", titulo: "Redes de Computadores - Sessão 10", horario: "14:00 · 3h" },
-  { id: 2, dia: "27", mes: "FEV", titulo: "Design Gráfico - Sessão 13",        horario: "09:00 · 3h" },
-];
-
-export function FormadorDashboard({ userName }: { userName: string }) {
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Bom dia" : hour < 19 ? "Olá" : "Boa noite";
-  const firstName = userName.split(" ")[0];
+  const kpis = [
+    { label: 'MÓDULOS ATIVOS', value: stats.modulosAtivos, icon: BookOpen, bg: 'bg-purple-50', iconBg: 'bg-purple-100', iconColor: 'text-purple-500' },
+    { label: 'PRÓXIMAS SESSÕES', value: stats.proximasSessoes, icon: Clock, bg: 'bg-blue-50', iconBg: 'bg-blue-100', iconColor: 'text-blue-500' },
+    { label: 'CONVITES PENDENTES', value: stats.convitesPendentes, icon: Mail, bg: 'bg-amber-50', iconBg: 'bg-amber-100', iconColor: 'text-amber-500' },
+    { label: 'DOCS EM FALTA', value: 0, icon: AlertTriangle, bg: 'bg-red-50', iconBg: 'bg-red-100', iconColor: 'text-red-400' },
+  ]
 
   return (
     <div className="flex flex-col gap-8">
       {/* Header */}
       <div>
-        <h1 className="text-[26px] font-bold text-gray-900">{greeting}, {firstName} 👋</h1>
+        <h1 className="text-[26px] font-bold text-gray-900">
+          {greeting}, {userName.split(' ')[0]} 👋
+        </h1>
         <p className="mt-1 text-sm text-gray-400">Painel do formador</p>
       </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         {kpis.map((kpi) => {
-          const Icon = kpi.icon;
+          const Icon = kpi.icon
           return (
-            <div key={kpi.label} className={cn("flex items-center justify-between rounded-2xl p-5", kpi.bg)}>
+            <div key={kpi.label} className={cn('flex items-center justify-between rounded-2xl p-5', kpi.bg)}>
               <div className="flex flex-col gap-1">
                 <span className="text-[11px] font-semibold tracking-widest text-gray-500">{kpi.label}</span>
                 <span className="text-4xl font-bold text-gray-900">{kpi.value}</span>
               </div>
-              <div className={cn("flex h-12 w-12 items-center justify-center rounded-xl", kpi.iconBg)}>
-                <Icon className={cn("h-6 w-6", kpi.iconColor)} />
+              <div className={cn('flex h-12 w-12 items-center justify-center rounded-xl', kpi.iconBg)}>
+                <Icon className={cn('h-6 w-6', kpi.iconColor)} />
               </div>
             </div>
-          );
+          )
         })}
       </div>
 
@@ -56,18 +56,30 @@ export function FormadorDashboard({ userName }: { userName: string }) {
             Próximas Sessões
           </h2>
           <div className="flex flex-col gap-3">
-            {proximasSessoes.map((s) => (
-              <div key={s.id} className="flex items-center gap-4 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-                <div className="flex w-12 shrink-0 flex-col items-center rounded-lg bg-purple-100 py-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-purple-500">{s.mes}</span>
-                  <span className="text-lg font-bold leading-tight text-purple-700">{s.dia}</span>
+            {sessoes.length === 0 && (
+              <p className="text-sm text-gray-400 text-center py-4">Sem sessões agendadas</p>
+            )}
+            {sessoes.map((s: SessaoFormador) => {
+              const data = new Date(s.dataHora)
+              return (
+                <div key={s.id} className="flex items-center gap-4 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+                  <div className="flex w-12 shrink-0 flex-col items-center rounded-lg bg-purple-100 py-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-purple-500">
+                      {data.toLocaleString('pt-PT', { month: 'short' })}
+                    </span>
+                    <span className="text-lg font-bold leading-tight text-purple-700">
+                      {data.getDate()}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-sm font-semibold text-gray-800">{s.titulo}</span>
+                    <span className="text-xs text-gray-400">
+                      {data.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })} · {s.duracao}min
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-sm font-semibold text-gray-800">{s.titulo}</span>
-                  <span className="text-xs text-gray-400">{s.horario}</span>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 
@@ -88,5 +100,5 @@ export function FormadorDashboard({ userName }: { userName: string }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

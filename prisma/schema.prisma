@@ -26,6 +26,13 @@ enum StatusPresenca {
   JUSTIFICADO
 }
 
+enum StatusDocumento {
+  VALIDO
+  EXPIRADO
+  A_EXPIRAR
+  EM_FALTA
+}
+
 // ─── UTILIZADOR ──────────────────────────────────
 model User {
   id        String   @id @default(uuid())
@@ -88,6 +95,7 @@ model Formador {
   aulas             Aula[]
   avaliacoes        Avaliacao[]
   presencas         Presenca[]
+  documentos        Documento[]
 }
 
 // ─── FORMANDO ────────────────────────────────────
@@ -106,6 +114,8 @@ model Curso {
   id        String      @id @default(uuid())
   nome      String
   descricao String?
+  dataInicio DateTime?  // ← quando começa
+  dataFim    DateTime?  // ← quando termina
   status    StatusCurso @default(ATIVO)
   createdAt DateTime    @default(now())
 
@@ -119,6 +129,7 @@ model Modulo {
   nome      String
   descricao String?
   ordem     Int
+  cargaHoraria Int     @default(0)
   cursoId   String
   curso     Curso   @relation(fields: [cursoId], references: [id])
 
@@ -190,4 +201,16 @@ model Avaliacao {
   modulo     Modulo   @relation(fields: [moduloId], references: [id])
   formando   Formando @relation(fields: [formandoId], references: [id])
   formador   Formador @relation(fields: [formadorId], references: [id])
+}
+
+// ─── DOCUMENTO ───────────────────────────────────
+model Documento {
+  id          String         @id @default(uuid())
+  tipo        String
+  numero      String
+  dataEmissao DateTime
+  dataExpiracao DateTime?
+  status      StatusDocumento @default(VALIDO)
+  formandoId  String
+  formando    Formando       @relation(fields: [formandoId], references: [id])
 }
