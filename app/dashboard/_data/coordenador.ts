@@ -169,3 +169,156 @@ export async function getFormadores(): Promise<FormadorComDetalhes[]> {
     orderBy: { user: { nome: 'asc' } },
   })
 }
+
+// ─── FORMANDOS ────────────────────────────────────────────────────────────
+export type FormandoComDetalhes = {
+  id: string
+  nome: string
+  email: string
+  telefone?: string
+  avatar?: string
+  curso: string
+  progresso: number
+  status: 'ATIVO' | 'INATIVO' | 'CONCLUÍDO'
+  negativos: number
+  favorito: boolean
+}
+
+export async function getFormandos(): Promise<FormandoComDetalhes[]> {
+  const formandos = await prisma.formando.findMany({
+    include: {
+      user: {
+        select: { id: true, nome: true, email: true },
+      },
+      inscricoes: {
+        include: { curso: true },
+      },
+      avaliacoes: true,
+    },
+    orderBy: { user: { nome: 'asc' } },
+  })
+
+  return formandos.map((f) => {
+    // Calcular negativos (avaliações < 10)
+    const negativos = f.avaliacoes.filter((a) => a.nota < 10).length
+
+    // Calcular progresso (média de avaliações)
+    const progresso = f.avaliacoes.length > 0
+      ? Math.round((f.avaliacoes.reduce((sum, a) => sum + a.nota, 0) / f.avaliacoes.length / 20) * 100)
+      : 0
+
+    // Determinar status baseado no progresso
+    let status: 'ATIVO' | 'INATIVO' | 'CONCLUÍDO' = 'ATIVO'
+    if (progresso === 100) status = 'CONCLUÍDO'
+    if (f.inscricoes.length === 0) status = 'INATIVO'
+
+    return {
+      id: f.id,
+      nome: f.user.nome,
+      email: f.user.email,
+      telefone: '',
+      avatar: undefined,
+      curso: f.inscricoes[0]?.curso.nome ?? 'Sem curso',
+      progresso,
+      status,
+      negativos,
+      favorito: false,
+    }
+  })
+}
+
+// ─── DETALHES DO FORMANDO ────────────────────────────────────────────────────
+export type FormandoPerfil = {
+  id: string
+  nome: string
+  email: string
+  avatar?: string
+  cursos: Array<{
+    id: string
+    nome: string
+    dataInicio: Date | null
+    dataFim: Date | null
+    cargaHoraria: number
+    modulos: Array<{
+      id: string
+      nome: string
+      cargaHoraria: number
+      nota: number | null
+    }>
+  }>
+  avaliacoes: Array<{
+    id: string
+    nota: number
+    modulo: {
+      id: string
+      nome: string
+      curso: {
+        id: string
+        nome: string
+      }
+    }
+  }>
+}
+
+export async function getFormandoPerfil(formandoId: string): Promise<FormandoPerfil | null> {
+  const formando = await prisma.formando.findUnique({
+    where: { id: formandoId },
+    include: {
+      user: {
+        select: { id: true, nome: true, email: true },
+      },
+      inscricoes: {
+        include: {
+          curso: {
+            include: {
+              modulos: {
+                select: {
+                  id: true,
+                  nome: true,
+                  cargaHoraria: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      avaliacoes: {
+        include: {
+          modulo: {
+            include: {
+              curso: {
+                select: { id: true, nome: true },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+
+  if (!formando) return null
+
+  return {
+    id: formando.id,
+    nome: formando.user.nome,
+    email: formando.user.email,
+    avatar: undefined,
+    cursos: formando.inscricoes.map((insc) => ({
+      id: insc.curso.id,
+      nome: insc.curso.nome,
+      dataInicio: insc.curso.dataInicio,
+      dataFim: insc.curso.dataFim,
+      cargaHoraria: insc.curso.cargaHoraria,
+      modulos: insc.curso.modulos.map((mod) => {
+        const avaliacao = formando.avaliacoes.find((a) => a.moduloId === mod.id)
+        return {
+          id: mod.id,
+          nome: mod.nome,
+          cargaHoraria: mod.cargaHoraria,
+          nota: avaliacao?.nota ?? null,
+        }
+      }),
+    })),
+    avaliacoes: formando.avaliacoes,
+  }
+}
