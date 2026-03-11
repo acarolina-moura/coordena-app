@@ -107,6 +107,7 @@ model Formando {
   inscricoes Inscricao[]
   avaliacoes Avaliacao[]
   presencas  Presenca[]
+    documentos Documento[]
 }
 
 // ─── CURSO ───────────────────────────────────────
@@ -213,4 +214,6 @@ model Documento {
   status      StatusDocumento @default(VALIDO)
   formandoId  String
   formando    Formando       @relation(fields: [formandoId], references: [id])
+  formadorId  String?
+  formador    Formador?      @relation(fields: [formadorId], references: [id])
 }
