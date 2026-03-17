@@ -115,6 +115,104 @@ export async function getDocsEmFaltaFormador(userId: string) {
     }))
 }
 
+export async function getFormandosPorModulo(userId: string) {
+    // 1. Obter o formador
+    const formador = await prisma.formador.findUnique({
+        where: { userId },
+        include: { modulosLecionados: true },
+    })
+
+    if (!formador) return []
+
+    // 2. Extrair IDs dos módulos
+    const moduloIds = formador.modulosLecionados.map(fm => fm.moduloId)
+    
+    if (moduloIds.length === 0) return []
+
+    // 3. Obter cursos que contêm esses módulos
+    const cursos = await prisma.curso.findMany({
+        where: {
+            modulos: { some: { id: { in: moduloIds } } }
+        },
+        include: {
+            inscricoes: {
+                include: { formando: { include: { user: true } } }
+            }
+        }
+    })
+
+    // 4. Montar lista de formandos únicos
+    const formandosSet = new Map()
+    
+    cursos.forEach(curso => {
+        curso.inscricoes.forEach(inscricao => {
+            const key = inscricao.formando.id
+            if (!formandosSet.has(key)) {
+                formandosSet.set(key, {
+                    id: inscricao.formando.id,
+                    nome: inscricao.formando.user.nome,
+                    email: inscricao.formando.user.email,
+                    curso: curso.nome,
+                })
+            }
+        })
+    })
+
+    return Array.from(formandosSet.values())
+}
+
+export async function getModulosDoFormador(userId: string) {
+    // 1. Obter o formador
+    const formador = await prisma.formador.findUnique({
+        where: { userId },
+        include: { modulosLecionados: true },
+    })
+
+    if (!formador) return []
+
+    // 2. Extrair IDs dos módulos
+    const moduloIds = formador.modulosLecionados.map(fm => fm.moduloId)
+    
+    if (moduloIds.length === 0) return []
+
+    // 3. Obter detalhes dos módulos
+    const modulos = await prisma.modulo.findMany({
+        where: { id: { in: moduloIds } },
+        include: {
+            curso: true,
+            aulas: true,
+            _count: {
+                select: { aulas: true }
+            }
+        },
+        orderBy: { ordem: 'asc' }
+    })
+
+    // 4. Para cada módulo, contar formandos inscritos no curso
+    const modulosComDetalhes = await Promise.all(
+        modulos.map(async (modulo) => {
+            const formandosCount = await prisma.inscricao.count({
+                where: { cursoId: modulo.cursoId }
+            })
+
+            return {
+                id: modulo.id,
+                nome: modulo.nome,
+                descricao: modulo.descricao,
+                ordem: modulo.ordem,
+                cargaHoraria: modulo.cargaHoraria,
+                curso: modulo.curso.nome,
+                aulasAgendadas: modulo._count.aulas,
+                formandos: formandosCount,
+            }
+        })
+    )
+
+    return modulosComDetalhes
+}
+
 export type SessaoFormador = Awaited<ReturnType<typeof getProximasSessoesFormador>>[number]
 export type ConvitePendente = Awaited<ReturnType<typeof getConvitesPendentesFormador>>[number]
 export type DocumentoEmFalta = Awaited<ReturnType<typeof getDocsEmFaltaFormador>>[number]
+export type FormandoPorModulo = Awaited<ReturnType<typeof getFormandosPorModulo>>[number]
+export type ModuloDoFormador = Awaited<ReturnType<typeof getModulosDoFormador>>[number]
