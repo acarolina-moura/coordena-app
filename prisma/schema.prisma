@@ -65,6 +65,7 @@ model Formador {
   user              User                @relation(fields: [userId], references: [id])
   modulosLecionados FormadorModulo[]
   presencas         Presenca[]
+  documentos        Documento[]
 }
 
 model Formando {
