@@ -33,6 +33,7 @@ interface ResumoMes {
 // ---------------------------------------------------------------------------
 // Dados mockados — substituir por chamada à API quando estiver pronta
 // ---------------------------------------------------------------------------
+
 const REGISTOS: RegistoAula[] = [
     { id: 1, data: "03/03/2025", disciplina: "Matemática", estado: "presente" },
     { id: 2, data: "04/03/2025", disciplina: "Português", estado: "presente" },
