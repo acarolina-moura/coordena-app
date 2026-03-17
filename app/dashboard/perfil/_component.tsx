@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Camera, Plus, X, Save, Edit2 } from 'lucide-react'
+import { Camera, Plus, X, Save, Edit2, Linkedin, Github, Globe, Flag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
@@ -14,8 +14,38 @@ interface FormadorData {
   email: string
   especialidade: string
   competencias: string
+  linkedin: string
+  github: string
+  idioma: string
+  nacionalidade: string
   userId: string
 }
+
+const IDIOMAS = [
+  'Português',
+  'Inglês',
+  'Espanhol',
+  'Francês',
+  'Alemão',
+  'Italiano',
+  'Russo',
+  'Chinês',
+  'Japonês',
+  'Outro'
+]
+
+const NACIONALIDADES = [
+  'Portugal',
+  'Brasil',
+  'Espanha',
+  'França',
+  'Alemanha',
+  'Itália',
+  'Reino Unido',
+  'EUA',
+  'Canadá',
+  'Outro'
+]
 
 export function PerfilClient({ formador }: { formador: FormadorData }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -25,6 +55,10 @@ export function PerfilClient({ formador }: { formador: FormadorData }) {
   const [competencias, setCompetencias] = useState<string[]>(
     formador.competencias ? formador.competencias.split(',').map(t => t.trim()) : []
   )
+  const [linkedin, setLinkedin] = useState(formador.linkedin)
+  const [github, setGithub] = useState(formador.github)
+  const [idioma, setIdioma] = useState(formador.idioma)
+  const [nacionalidade, setNacionalidade] = useState(formador.nacionalidade)
   const [saved, setSaved] = useState(false)
   const [loading, setLoading] = useState(false)
 
@@ -44,13 +78,7 @@ export function PerfilClient({ formador }: { formador: FormadorData }) {
     const file = event.target.files?.[0]
     if (!file) return
 
-    // TODO: Futura implementação
-    // 1. Validar tipo de ficheiro (apenas imagens)
-    // 2. Validar tamanho (ex: max 5MB)
-    // 3. Fazer upload para servidor (criar endpoint POST /api/formador/avatar)
-    // 4. Guardar URL da imagem na base de dados (field: avatarUrl)
-    // 5. Atualizar estado local com nova imagem
-    
+    // TODO: Futura implementação de upload
     console.log('📸 Ficheiro selecionado:', file.name, file.type, file.size)
   }
 
@@ -59,7 +87,15 @@ export function PerfilClient({ formador }: { formador: FormadorData }) {
     try {
       const competenciasStr = competencias.join(', ')
       
-      const resultado = await updateFormadorPerfil(formador.userId, especialidade, competenciasStr)
+      const resultado = await updateFormadorPerfil(
+        formador.userId,
+        especialidade,
+        competenciasStr,
+        linkedin,
+        github,
+        idioma,
+        nacionalidade
+      )
       
       if (resultado.sucesso) {
         setSaved(true)
@@ -72,12 +108,15 @@ export function PerfilClient({ formador }: { formador: FormadorData }) {
   }
 
   function handleCancel() {
-    // Restaurar valores originais
     setEspecialidade(formador.especialidade)
     setCompetencias(
       formador.competencias ? formador.competencias.split(',').map(t => t.trim()) : []
     )
     setNewCompetencia('')
+    setLinkedin(formador.linkedin)
+    setGithub(formador.github)
+    setIdioma(formador.idioma)
+    setNacionalidade(formador.nacionalidade)
     setIsEditMode(false)
   }
 
@@ -157,7 +196,6 @@ export function PerfilClient({ formador }: { formador: FormadorData }) {
             <div className="flex flex-col gap-3">
               <Label className="text-sm font-semibold text-gray-700">Competências / Skills</Label>
 
-              {/* Existing competências */}
               <div className="flex flex-wrap gap-2">
                 {competencias.map((competencia) => (
                   <span
@@ -175,7 +213,6 @@ export function PerfilClient({ formador }: { formador: FormadorData }) {
                 ))}
               </div>
 
-              {/* Add new competência */}
               <div className="flex gap-2">
                 <Input
                   value={newCompetencia}
@@ -190,6 +227,79 @@ export function PerfilClient({ formador }: { formador: FormadorData }) {
                 >
                   <Plus className="h-4 w-4" />
                 </button>
+              </div>
+            </div>
+
+            {/* Idioma e Nacionalidade */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  Idioma Principal
+                </Label>
+                <select
+                  value={idioma}
+                  onChange={(e) => setIdioma(e.target.value)}
+                  className="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="">Selecione um idioma</option>
+                  {IDIOMAS.map((lang) => (
+                    <option key={lang} value={lang}>
+                      {lang}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                  <Flag className="h-4 w-4" />
+                  Nacionalidade
+                </Label>
+                <select
+                  value={nacionalidade}
+                  onChange={(e) => setNacionalidade(e.target.value)}
+                  className="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="">Selecione uma nacionalidade</option>
+                  {NACIONALIDADES.map((country) => (
+                    <option key={country} value={country}>
+                      {country}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Redes Sociais */}
+            <div className="border-t border-gray-200 pt-6">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4">Redes Sociais (Opcional)</h3>
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <Linkedin className="h-4 w-4 text-blue-600" />
+                    LinkedIn
+                  </Label>
+                  <Input
+                    value={linkedin}
+                    onChange={(e) => setLinkedin(e.target.value)}
+                    placeholder="https://linkedin.com/in/seu-perfil"
+                    className="rounded-xl border-gray-200 text-sm focus-visible:ring-blue-500"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <Github className="h-4 w-4" />
+                    GitHub
+                  </Label>
+                  <Input
+                    value={github}
+                    onChange={(e) => setGithub(e.target.value)}
+                    placeholder="https://github.com/seu-usuario"
+                    className="rounded-xl border-gray-200 text-sm focus-visible:ring-purple-500"
+                  />
+                </div>
               </div>
             </div>
 
@@ -241,6 +351,61 @@ export function PerfilClient({ formador }: { formador: FormadorData }) {
                 )}
               </div>
             </div>
+
+            {/* Idioma e Nacionalidade */}
+            {(idioma || nacionalidade) && (
+              <div className="grid grid-cols-2 gap-4 py-4 border-t border-b border-gray-200">
+                {idioma && (
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs font-semibold text-gray-500 uppercase flex items-center gap-2">
+                      <Globe className="h-4 w-4" />
+                      Idioma
+                    </Label>
+                    <p className="text-sm text-gray-700">{idioma}</p>
+                  </div>
+                )}
+                {nacionalidade && (
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs font-semibold text-gray-500 uppercase flex items-center gap-2">
+                      <Flag className="h-4 w-4" />
+                      Nacionalidade
+                    </Label>
+                    <p className="text-sm text-gray-700">{nacionalidade}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Redes Sociais */}
+            {(linkedin || github) && (
+              <div className="flex flex-col gap-3">
+                <Label className="text-xs font-semibold text-gray-500 uppercase">Redes Sociais</Label>
+                <div className="flex gap-3">
+                  {linkedin && (
+                    <a
+                      href={linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 transition-colors"
+                    >
+                      <Linkedin className="h-4 w-4" />
+                      <span className="text-sm font-medium">LinkedIn</span>
+                    </a>
+                  )}
+                  {github && (
+                    <a
+                      href={github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-200 border border-gray-300 text-gray-700 hover:bg-gray-300 transition-colors"
+                    >
+                      <Github className="h-4 w-4" />
+                      <span className="text-sm font-medium">GitHub</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>

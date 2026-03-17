@@ -89,6 +89,10 @@ model Formador {
   id            String  @id @default(uuid())
   especialidade String?
   competencias  String?
+  linkedin      String?
+  github        String?
+  idioma        String?
+  nacionalidade String?
   userId        String  @unique
   user          User    @relation(fields: [userId], references: [id])
 

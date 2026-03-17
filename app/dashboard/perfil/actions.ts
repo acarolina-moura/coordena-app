@@ -3,18 +3,21 @@
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
-export async function updateFormadorPerfil(userId: string, especialidade: string, competencias: string) {
+export async function updateFormadorPerfil(
+    userId: string,
+    especialidade: string,
+    competencias: string,
+    linkedin: string = '',
+    github: string = '',
+    idioma: string = '',
+    nacionalidade: string = ''
+) {
     try {
-        console.log('🔍 updateFormadorPerfil chamada com:', { userId, especialidade, competencias })
-
         const formador = await prisma.formador.findUnique({
             where: { userId },
         })
 
-        console.log('📊 Formador encontrado:', formador)
-
         if (!formador) {
-            console.log('❌ Formador não encontrado para userId:', userId)
             return { sucesso: false, mensagem: 'Formador não encontrado' }
         }
 
@@ -23,10 +26,12 @@ export async function updateFormadorPerfil(userId: string, especialidade: string
             data: { 
                 especialidade,
                 competencias,
+                linkedin,
+                github,
+                idioma,
+                nacionalidade,
             },
         })
-
-        console.log('✅ Formador atualizado:', resultado)
 
         revalidatePath('/dashboard/perfil')
         return { sucesso: true, mensagem: 'Perfil actualizado com sucesso!' }

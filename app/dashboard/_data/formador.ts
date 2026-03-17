@@ -230,6 +230,10 @@ export async function getFormadorPerfil(userId: string) {
                 userId,
                 especialidade: '',
                 competencias: '',
+                linkedin: '',
+                github: '',
+                idioma: '',
+                nacionalidade: '',
             },
             include: { user: true },
         })
@@ -244,5 +248,9 @@ export async function getFormadorPerfil(userId: string) {
         email: formador.user.email,
         especialidade: formador.especialidade || '',
         competencias: formador.competencias || '',
+        linkedin: formador.linkedin || '',
+        github: formador.github || '',
+        idioma: formador.idioma || '',
+        nacionalidade: formador.nacionalidade || '',
     }
 }
