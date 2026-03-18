@@ -67,7 +67,8 @@ model Formador {
 
   aulas             Aula[]
   avaliacoes        Avaliacao[]
-  Convite           Convite[]
+  convites          Convite[]
+  documentos        Documento[]
   DocumentoFormador DocumentoFormador[]
   modulosLecionados FormadorModulo[]
   presencas         Presenca[]
