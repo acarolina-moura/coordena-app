@@ -81,7 +81,6 @@ export default function LoginRolePage() {
 
     if (result?.error) {
       setError("Email ou palavra-passe inválidos.");
-      return;
     }
 
     // Sucesso: redireciona para o dashboard

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 "use client";
 import React from "react";
 
@@ -17,9 +18,21 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+=======
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { getFormadores } from "@/app/dashboard/_data/coordenador";
+import { FormadoresClient } from "./_components/formadores-client";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+export default async function FormadoresPage() {
+  const session = await auth();
+  if (!session?.user) redirect("/login");
+  if (session.user.role !== "COORDENADOR") redirect("/dashboard");
+>>>>>>> 13f7afd11ba75dc7b21186a2be41a47bf3b4c6bd
 
+  const formadores = await getFormadores();
+
+<<<<<<< HEAD
 type FormadorStatus = "aceite" | "pendente";
 
 interface Formador {
@@ -461,3 +474,7 @@ export default function FormadoresPage() {
         </div>
     );
 }
+=======
+  return <FormadoresClient formadores={formadores} />;
+}
+>>>>>>> 13f7afd11ba75dc7b21186a2be41a47bf3b4c6bd

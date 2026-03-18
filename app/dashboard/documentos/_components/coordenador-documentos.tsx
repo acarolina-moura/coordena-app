@@ -20,6 +20,7 @@ import {
   AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import type { FormadorComDocumentos } from "@/app/dashboard/_data/documentos";
+import { useRouter } from 'next/navigation'
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
@@ -67,40 +68,6 @@ function getProgressColor(validos: number, total: number) {
   if (pct === 1) return "bg-green-500";
   if (pct >= 0.75) return "bg-amber-400";
   return "bg-red-400";
-}
-
-// ─── Subcomponentes ───────────────────────────────────────────────────────────
-
-function AdicionarFormadorDialog() {
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl">
-          <Plus className="h-4 w-4" /> Adicionar Formador
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Adicionar Formador</DialogTitle>
-          <DialogDescription>Envia um convite por email para um novo formador.</DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-col gap-4 py-2">
-          <div className="flex flex-col gap-1.5">
-            <Label>Nome completo</Label>
-            <Input placeholder="Ex: João Alves" />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label>Email</Label>
-            <Input type="email" placeholder="formador@email.com" />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline">Cancelar</Button>
-          <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">Enviar Convite</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
 }
 
 function FormadorRowItem({
@@ -216,6 +183,7 @@ interface CoordenadorDocumentosProps {
 
 export function CoordenadorDocumentos({ formadores: formadoresIniciais }: CoordenadorDocumentosProps) {
   const [search, setSearch] = useState("");
+  const router = useRouter()
   const [formadores, setFormadores] = useState<FormadorRow[]>(
     formadoresIniciais.map((f) => ({
       id: f.id,
@@ -252,7 +220,6 @@ export function CoordenadorDocumentos({ formadores: formadoresIniciais }: Coorde
               className="pl-9 bg-white border-gray-200 text-sm rounded-xl"
             />
           </div>
-          <AdicionarFormadorDialog />
         </div>
       </div>
 

@@ -7,49 +7,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─── ENUMS ───────────────────────────────────────
-enum Role {
-  COORDENADOR
-  FORMADOR
-  FORMANDO
-}
-
-enum StatusCurso {
-  ATIVO
-  PAUSADO
-  ENCERRADO
-}
-
-enum StatusPresenca {
-  PRESENTE
-  AUSENTE
-  JUSTIFICADO
-}
-
-enum StatusDocumento {
-  VALIDO
-  EXPIRADO
-  A_EXPIRAR
-  EM_FALTA
-}
-
-// ─── UTILIZADOR ──────────────────────────────────
 model User {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   nome      String
-  email     String   @unique
+  email     String    @unique
   senha     String?
-  role      Role     @default(FORMANDO)
-  createdAt DateTime @default(now())
-
+  role      Role      @default(FORMANDO)
+  createdAt DateTime  @default(now())
   accounts  Account[]
-  sessions  Session[]
-
   formador  Formador?
   formando  Formando?
+  sessions  Session[]
 }
 
-// ─── AUTH.JS ─────────────────────────────────────
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -84,62 +54,62 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// ─── FORMADOR ────────────────────────────────────
 model Formador {
-  id            String  @id @default(uuid())
-  especialidade String?
-  userId        String  @unique
-  user          User    @relation(fields: [userId], references: [id])
+  id                String              @id @default(uuid())
+  especialidade     String?
+  competencias      String?
+  linkedin          String?
+  github            String?
+  idioma            String?
+  nacionalidade     String?
+  userId            String              @unique
+  user              User                @relation(fields: [userId], references: [id])
 
-  modulosLecionados FormadorModulo[]
   aulas             Aula[]
   avaliacoes        Avaliacao[]
-  presencas         Presenca[]
+  convites          Convite[]
   documentos        Documento[]
+  DocumentoFormador DocumentoFormador[]
+  modulosLecionados FormadorModulo[]
+  presencas         Presenca[]
 }
 
-// ─── FORMANDO ────────────────────────────────────
 model Formando {
-  id     String @id @default(uuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
-
-  inscricoes Inscricao[]
+  id         String      @id @default(uuid())
+  userId     String      @unique
   avaliacoes Avaliacao[]
+  documentos Documento[]
+  user       User        @relation(fields: [userId], references: [id])
+  inscricoes Inscricao[]
   presencas  Presenca[]
-    documentos Documento[]
 }
 
-// ─── CURSO ───────────────────────────────────────
 model Curso {
-  id        String      @id @default(uuid())
-  nome      String
-  descricao String?
-  dataInicio DateTime?  // ← quando começa
-  dataFim    DateTime?  // ← quando termina
-  status    StatusCurso @default(ATIVO)
-  createdAt DateTime    @default(now())
-
-  modulos    Modulo[]
-  inscricoes Inscricao[]
+  id           String      @id @default(uuid())
+  nome         String
+  descricao    String?
+  status       StatusCurso @default(ATIVO)
+  createdAt    DateTime    @default(now())
+  cargaHoraria Int         @default(0)
+  dataFim      DateTime?
+  dataInicio   DateTime?
+  inscricoes   Inscricao[]
+  modulos      Modulo[]
 }
 
-// ─── MÓDULO ──────────────────────────────────────
 model Modulo {
-  id        String  @id @default(uuid())
-  nome      String
-  descricao String?
-  ordem     Int
-  cargaHoraria Int     @default(0)
-  cursoId   String
-  curso     Curso   @relation(fields: [cursoId], references: [id])
-
-  formadores FormadorModulo[]
-  aulas      Aula[]
-  avaliacoes Avaliacao[]
+  id           String           @id @default(uuid())
+  nome         String
+  descricao    String?
+  ordem        Int
+  cursoId      String
+  cargaHoraria Int              @default(0)
+  aulas        Aula[]
+  avaliacoes   Avaliacao[]
+  formadores   FormadorModulo[]
+  curso        Curso            @relation(fields: [cursoId], references: [id])
 }
 
-// ─── FORMADOR <-> MÓDULO ─────────────────────────
 model FormadorModulo {
   formadorId String
   moduloId   String
@@ -149,33 +119,29 @@ model FormadorModulo {
   @@id([formadorId, moduloId])
 }
 
-// ─── INSCRIÇÃO ───────────────────────────────────
 model Inscricao {
   id         String   @id @default(uuid())
   formandoId String
   cursoId    String
   dataInicio DateTime @default(now())
-  formando   Formando @relation(fields: [formandoId], references: [id])
   curso      Curso    @relation(fields: [cursoId], references: [id])
+  formando   Formando @relation(fields: [formandoId], references: [id])
 
   @@unique([formandoId, cursoId])
 }
 
-// ─── AULA ────────────────────────────────────────
 model Aula {
-  id         String   @id @default(uuid())
+  id         String     @id @default(uuid())
   titulo     String
   dataHora   DateTime
   duracao    Int
   moduloId   String
   formadorId String
-  modulo     Modulo   @relation(fields: [moduloId], references: [id])
-  formador   Formador @relation(fields: [formadorId], references: [id])
-
-  presencas Presenca[]
+  formador   Formador   @relation(fields: [formadorId], references: [id])
+  modulo     Modulo     @relation(fields: [moduloId], references: [id])
+  presencas  Presenca[]
 }
 
-// ─── PRESENÇA ────────────────────────────────────
 model Presenca {
   id            String         @id @default(uuid())
   status        StatusPresenca @default(AUSENTE)
@@ -183,14 +149,13 @@ model Presenca {
   aulaId        String
   formandoId    String
   formadorId    String
-  aula          Aula     @relation(fields: [aulaId], references: [id])
-  formando      Formando @relation(fields: [formandoId], references: [id])
-  formador      Formador @relation(fields: [formadorId], references: [id])
+  aula          Aula           @relation(fields: [aulaId], references: [id])
+  formador      Formador       @relation(fields: [formadorId], references: [id])
+  formando      Formando       @relation(fields: [formandoId], references: [id])
 
   @@unique([aulaId, formandoId])
 }
 
-// ─── AVALIAÇÃO ───────────────────────────────────
 model Avaliacao {
   id         String   @id @default(uuid())
   descricao  String?
@@ -199,21 +164,77 @@ model Avaliacao {
   formandoId String
   formadorId String
   createdAt  DateTime @default(now())
-  modulo     Modulo   @relation(fields: [moduloId], references: [id])
-  formando   Formando @relation(fields: [formandoId], references: [id])
   formador   Formador @relation(fields: [formadorId], references: [id])
+  formando   Formando @relation(fields: [formandoId], references: [id])
+  modulo     Modulo   @relation(fields: [moduloId], references: [id])
 }
 
-// ─── DOCUMENTO ───────────────────────────────────
 model Documento {
-  id          String         @id @default(uuid())
-  tipo        String
-  numero      String
-  dataEmissao DateTime
+  id            String          @id @default(uuid())
+  tipo          String
+  numero        String
+  dataEmissao   DateTime
   dataExpiracao DateTime?
-  status      StatusDocumento @default(VALIDO)
-  formandoId  String
-  formando    Formando       @relation(fields: [formandoId], references: [id])
-  formadorId  String?
-  formador    Formador?      @relation(fields: [formadorId], references: [id])
+  status        StatusDocumento @default(VALIDO)
+  formandoId    String
+  formando      Formando        @relation(fields: [formandoId], references: [id])
+  formadorId    String?
+  formador      Formador?       @relation(fields: [formadorId], references: [id])
+  createdAt     DateTime        @default(now())
+}
+
+model Convite {
+  id           String        @id
+  formadorId   String
+  cursoId      String?
+  moduloId     String?
+  status       StatusConvite @default(PENDENTE)
+  descricao    String?
+  dataEnvio    DateTime      @default(now())
+  dataResposta DateTime?
+  createdAt    DateTime      @default(now())
+  Formador     Formador      @relation(fields: [formadorId], references: [id], onDelete: Cascade)
+}
+
+model DocumentoFormador {
+  id            String          @id
+  tipo          String
+  numero        String?
+  dataEmissao   DateTime?
+  dataExpiracao DateTime?
+  status        StatusDocumento @default(EM_FALTA)
+  formadorId    String
+  createdAt     DateTime        @default(now())
+  Formador      Formador        @relation(fields: [formadorId], references: [id])
+}
+
+enum Role {
+  COORDENADOR
+  FORMADOR
+  FORMANDO
+}
+
+enum StatusCurso {
+  ATIVO
+  PAUSADO
+  ENCERRADO
+}
+
+enum StatusPresenca {
+  PRESENTE
+  AUSENTE
+  JUSTIFICADO
+}
+
+enum StatusDocumento {
+  VALIDO
+  EXPIRADO
+  A_EXPIRAR
+  EM_FALTA
+}
+
+enum StatusConvite {
+  PENDENTE
+  ACEITE
+  RECUSADO
 }

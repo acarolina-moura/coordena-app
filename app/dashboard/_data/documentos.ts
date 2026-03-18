@@ -1,58 +1,109 @@
-import { prisma } from '@/lib/prisma'
+import { calcularStatus, DocStatus } from "@/lib/documento-utils";
+import { prisma } from "@/lib/prisma";
+
+// ─── Constantes ───────────────────────────────────────────────────────────────
 
 const DOCS_OBRIGATORIOS = [
-    'CV', 'Cartão de Cidadão', 'CCP', 'IBAN',
-    'Seguro', 'Registo Criminal', 'Certidão Finanças', 'Certidão Seg. Social',
-]
+  "CV",
+  "Cartão de Cidadão",
+  "CCP",
+  "IBAN",
+  "Seguro",
+  "Registo Criminal",
+  "Certidão Finanças",
+  "Certidão Seg. Social",
+];
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type DocumentoResult = {
+  id: string | null;
+  nome: string;
+  status: DocStatus | "EM_FALTA";
+  dataValidade: Date | null;
+  dataEmissao: Date | null;
+  numero: string | null;
+};
+
+// ─── Funções ──────────────────────────────────────────────────────────────────
 
 export async function getFormadoresComDocumentos() {
-    const formadores = await prisma.formador.findMany({
-        include: {
-            user: true,
-            documentos: true,
-        },
-        orderBy: { user: { nome: 'asc' } },
-    })
+  // Query 1: buscar formadores com user
+  const formadores = await prisma.formador.findMany({
+    include: { user: true },
+    orderBy: { user: { nome: "asc" } },
+  });
 
-    return formadores.map((f: (typeof formadores)[0]) => {
-        // Garante que todos os docs obrigatórios aparecem
-        const documentos = DOCS_OBRIGATORIOS.map((nomeDoc) => {
-            const doc = f.documentos.find((d: any) => d.nome === nomeDoc)
-            return {
-                nome: nomeDoc,
-                status: doc?.status ?? 'EM_FALTA',
-                dataValidade: doc?.dataValidade ?? null,
-            }
-        })
+  // Query 2: buscar todos os documentos de formadores de uma vez
+  const todosDocumentos = await prisma.$queryRaw<
+    Array<{
+      id: string;
+      tipo: string;
+      numero: string | null;
+      dataEmissao: Date | null;
+      dataExpiracao: Date | null;
+      status: string;
+      formadorId: string;
+    }>
+  >`SELECT id, tipo, numero, "dataEmissao", "dataExpiracao", status, "formadorId" FROM "DocumentoFormador"`;
 
-        return {
-            id: f.id,
-            userId: f.userId,
-            nome: f.user.nome,
-            email: f.user.email,
-            documentos,
-        }
-    })
+  return formadores.map((f) => {
+    const docsFormador = todosDocumentos.filter((d) => d.formadorId === f.id);
+
+    const documentos = DOCS_OBRIGATORIOS.map((nomeDoc): DocumentoResult => {
+      const doc = docsFormador.find((d) => d.tipo === nomeDoc);
+
+      return {
+        id: doc?.id ?? null,
+        nome: nomeDoc,
+        status: doc ? calcularStatus(doc.dataExpiracao) : "EM_FALTA",
+        dataValidade: doc?.dataExpiracao ?? null,
+        dataEmissao: doc?.dataEmissao ?? null,
+        numero: doc?.numero ?? null,
+      };
+    });
+
+    return {
+      id: f.id,
+      userId: f.userId,
+      nome: f.user.nome,
+      email: f.user.email,
+      documentos,
+    };
+  });
 }
 
-export async function getDocumentosFormador(userId: string) {
-    const formador = await prisma.formador.findUnique({
-        where: { userId },
-        include: { documentos: true },
-    })
+export async function getDocumentosFormador(
+  formadorId: string,
+): Promise<DocumentoResult[]> {
+  const docs = await prisma.$queryRaw<
+    Array<{
+      id: string;
+      tipo: string;
+      numero: string | null;
+      dataEmissao: Date | null;
+      dataExpiracao: Date | null;
+      status: string;
+      formadorId: string;
+    }>
+  >`SELECT id, tipo, numero, "dataEmissao", "dataExpiracao", status, "formadorId" FROM "DocumentoFormador" WHERE "formadorId" = ${formadorId}`;
 
-    if (!formador) return []
+  return DOCS_OBRIGATORIOS.map((nomeDoc): DocumentoResult => {
+    const doc = docs.find((d) => d.tipo === nomeDoc);
 
-    return DOCS_OBRIGATORIOS.map((nomeDoc) => {
-        const doc = formador.documentos.find((d: any) => d.nome === nomeDoc)
-        return {
-            id: doc?.id ?? null,
-            nome: nomeDoc,
-            status: doc?.status ?? 'EM_FALTA',
-            dataValidade: doc?.dataValidade ?? null,
-        }
-    })
+    return {
+      id: doc?.id ?? null,
+      nome: nomeDoc,
+      status: doc ? calcularStatus(doc.dataExpiracao) : "EM_FALTA",
+      dataValidade: doc?.dataExpiracao ?? null,
+      dataEmissao: doc?.dataEmissao ?? null,
+      numero: doc?.numero ?? null,
+    };
+  });
 }
 
-export type FormadorComDocumentos = Awaited<ReturnType<typeof getFormadoresComDocumentos>>[number]
-export type DocumentoFormador = Awaited<ReturnType<typeof getDocumentosFormador>>[number]
+// ─── Tipos exportados ─────────────────────────────────────────────────────────
+export type FormadorComDocumentos = Awaited<
+  ReturnType<typeof getFormadoresComDocumentos>
+>[number];
+export type DocumentoFormador = DocumentoResult;
