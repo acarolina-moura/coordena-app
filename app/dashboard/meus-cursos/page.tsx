@@ -14,7 +14,7 @@ export default async function DocumentosPage() {
     const cursos = await getMeusCursos(userId);
     return <FormandoCurso inicial={cursos} />;
   }
-  if (role === "FORMADOR") return <FormadorCursos userId={userId} />;
+  if (role === "FORMADOR") return <FormadorCursos />;
 
   redirect("/dashboard");
 }

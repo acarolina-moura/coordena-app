@@ -193,3 +193,86 @@ export async function getModulosAtribuidosFormador(userId: string) {
 
     return modulosComFormandos;
 }
+
+/**
+ * Obtém módulos com alunos e informações de presenças para a página de notas
+ * Retorna dados necessários para mostrar a tabela de notas mesmo sem template
+ */
+export async function getModulosComAlunos(userId: string) {
+    const formador = await prisma.formador.findUnique({
+        where: { userId },
+        include: {
+            modulosLecionados: {
+                include: {
+                    modulo: {
+                        include: {
+                            curso: true,
+                            aulas: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+
+    if (!formador) return [];
+
+    // Para cada módulo, obter alunos inscritos no curso e suas presenças
+    const modulosComDetalhes = await Promise.all(
+        formador.modulosLecionados.map(async (fm) => {
+            // Obter alunos inscritos neste curso
+            const inscricoes = await prisma.inscricao.findMany({
+                where: { cursoId: fm.modulo.curso.id },
+                include: {
+                    formando: {
+                        include: {
+                            user: true,
+                            presencas: {
+                                where: {
+                                    aula: {
+                                        moduloId: fm.modulo.id,
+                                        formadorId: formador.id,
+                                    },
+                                },
+                                include: {
+                                    aula: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+            // Contar total de aulas deste módulo com este formador
+            const totalAulas = await prisma.aula.count({
+                where: {
+                    moduloId: fm.modulo.id,
+                    formadorId: formador.id,
+                },
+            });
+
+            // Para cada aluno, calcular presenças
+            const alunos = inscricoes.map((insc) => {
+                const presencas = insc.formando.presencas.filter(
+                    (p) => p.aula.moduloId === fm.modulo.id
+                );
+                const totalPresentes = presencas.filter((p) => p.status === 'PRESENTE').length;
+
+                return {
+                    id: insc.formando.id,
+                    nome: insc.formando.user.nome,
+                    presencas: totalPresentes,
+                    totalSessoes: totalAulas,
+                };
+            });
+
+            return {
+                id: fm.modulo.id,
+                nome: fm.modulo.nome,
+                alunos,
+            };
+        })
+    );
+
+    return modulosComDetalhes;
+}

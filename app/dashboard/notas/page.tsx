@@ -15,7 +15,7 @@ export default async function NotasPage() {
     return <FormandoNotas inicial={notas} />;
   }
 
-  if (role === "FORMADOR") return <FormadorNotas userId={userId} />;
+  if (role === "FORMADOR") return <FormadorNotas />;
 
   redirect("/dashboard");
 }

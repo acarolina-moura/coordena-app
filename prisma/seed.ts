@@ -9,7 +9,7 @@ async function main() {
         where: { email: 'coordenador@coordena.pt' },
         update: {},
         create: {
-            nome: 'Ana Coordenadora',
+            nome: 'Ana',
             email: 'coordenador@coordena.pt',
             senha: await bcrypt.hash('123456', 10),
             role: 'COORDENADOR',
@@ -21,7 +21,7 @@ async function main() {
         where: { email: 'formador@coordena.pt' },
         update: {},
         create: {
-            nome: 'Carlos Formador',
+            nome: 'Carlos',
             email: 'formador@coordena.pt',
             senha: await bcrypt.hash('123456', 10),
             role: 'FORMADOR',
@@ -34,7 +34,7 @@ async function main() {
         where: { email: 'formando@coordena.pt' },
         update: {},
         create: {
-            nome: 'João Formando',
+            nome: 'Everton',
             email: 'formando@coordena.pt',
             senha: await bcrypt.hash('123456', 10),
             role: 'FORMANDO',

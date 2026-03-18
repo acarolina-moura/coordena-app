@@ -72,6 +72,8 @@ model Formador {
   DocumentoFormador DocumentoFormador[]
   modulosLecionados FormadorModulo[]
   presencas         Presenca[]
+  /// Novos: Templates de avaliação definidos por este formador
+  templatesAvaliacao TemplateAvaliacao[]
 }
 
 model Formando {
@@ -107,6 +109,8 @@ model Modulo {
   aulas        Aula[]
   avaliacoes   Avaliacao[]
   formadores   FormadorModulo[]
+  /// Novos: Templates de avaliação para este módulo
+  templatesAvaliacao TemplateAvaliacao[]
   curso        Curso            @relation(fields: [cursoId], references: [id])
 }
 
@@ -206,6 +210,78 @@ model DocumentoFormador {
   formadorId    String
   createdAt     DateTime        @default(now())
   Formador      Formador        @relation(fields: [formadorId], references: [id])
+}
+
+/// ============================================================================
+/// MODELOS DE AVALIAÇÕES COM TEMPLATES (Implementação do Sistema de Notas)
+/// ============================================================================
+/// 
+/// Sistema de avaliação flexível onde cada formador define templates de
+/// avaliação por módulo. Cada template contém um conjunto de componentes
+/// de avaliação (ex: Ficha, Projeto, Teste) com pesos específicos que somam
+/// a 80% da nota final. Os restantes 20% vêm da assiduidade.
+///
+/// Fluxo:
+/// 1. Formador define TemplateAvaliacao com ItemTemplateAvaliacao(s)
+/// 2. Sistema calcula NotaParcial(is) para cada componente de cada aluno
+/// 3. NotaFinal = (Assiduidade × 0.20) + (MédiaComponentes × 0.80)
+/// ============================================================================
+
+/// TemplateAvaliacao: Define o template de avaliação para um (formador, módulo)
+/// Um formador pode ter um template diferente para cada módulo que leciona
+model TemplateAvaliacao {
+  id         String                   @id @default(uuid())
+  formadorId String
+  moduloId   String
+  createdAt  DateTime                 @default(now())
+  updatedAt  DateTime                 @updatedAt
+  
+  /// Relações
+  formador   Formador                 @relation(fields: [formadorId], references: [id], onDelete: Cascade)
+  modulo     Modulo                   @relation(fields: [moduloId], references: [id], onDelete: Cascade)
+  items      ItemTemplateAvaliacao[]
+  notasParciais NotaParcial[]
+
+  /// Constraint: Um formador só pode ter um template por módulo
+  @@unique([formadorId, moduloId])
+}
+
+/// ItemTemplateAvaliacao: Item individual de um template (ex: Ficha, Projeto)
+/// O peso deve representar a percentagem da avaliação (máx 80%)
+model ItemTemplateAvaliacao {
+  id                 String          @id @default(uuid())
+  templateId         String
+  nome               String          /// Nome do componente: "Ficha", "Projeto", "Teste", etc
+  peso               Float           /// Peso em percentagem (máx 80%) - ex: 20.0 para 20%
+  ordem              Int             @default(1) /// Ordem de exibição na tabela
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  
+  /// Relações
+  template           TemplateAvaliacao @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  notasParciais      NotaParcial[]
+
+  @@index([templateId])
+}
+
+/// NotaParcial: Nota parcial de um aluno em um componente específico
+/// Armazena a nota (0-20) que o formador atribui em cada componente
+model NotaParcial {
+  id       String  @id @default(uuid())
+  valor    Float   /// Nota entre 0 e 20
+  formandoId String
+  itemId   String
+  templateId String /// Para queries rápidas
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  /// Relações
+  item     ItemTemplateAvaliacao @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  template TemplateAvaliacao     @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  
+  /// Constraint: Uma nota parcial única por (aluno, item)
+  @@unique([formandoId, itemId])
+  @@index([templateId, formandoId])
 }
 
 enum Role {
