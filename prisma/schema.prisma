@@ -72,7 +72,6 @@ model Formador {
   DocumentoFormador DocumentoFormador[]
   modulosLecionados FormadorModulo[]
   presencas         Presenca[]
-  convites          Convite[]
 }
 
 model Formando {
