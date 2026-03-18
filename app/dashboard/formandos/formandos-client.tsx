@@ -58,6 +58,7 @@ function AdicionarFormandoDialog({ cursos }: AdicionarFormandoDialogProps) {
   const [open, setOpen] = useState(false);
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
   const [telefone, setTelefone] = useState("");
   const [cursoId, setCursoId] = useState(cursos[0]?.id || "");
   const [erro, setErro] = useState<string | null>(null);
@@ -72,6 +73,7 @@ function AdicionarFormandoDialog({ cursos }: AdicionarFormandoDialogProps) {
       const resultado = await adicionarFormando({
         nome,
         email,
+        senha,
         telefone: telefone || undefined,
         cursoId,
       });
@@ -80,6 +82,7 @@ function AdicionarFormandoDialog({ cursos }: AdicionarFormandoDialogProps) {
         // Limpar formulário e fechar diálogo
         setNome("");
         setEmail("");
+        setSenha("");
         setTelefone("");
         setCursoId(cursos[0]?.id || "");
         setOpen(false);
@@ -134,6 +137,16 @@ function AdicionarFormandoDialog({ cursos }: AdicionarFormandoDialogProps) {
               placeholder="+351 9XX XXX XXX"
               value={telefone}
               onChange={(e) => setTelefone(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>Senha (para login)</Label>
+            <Input
+              type="password"
+              placeholder="Mínimo 6 caracteres"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              required
             />
           </div>
           <div className="flex flex-col gap-1.5">

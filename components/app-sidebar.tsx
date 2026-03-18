@@ -24,7 +24,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Disponibilidades", href: "/dashboard/disponibilidades", icon: CalendarDays, roles: ["FORMADOR"] },
   { label: "Módulos Atribuídos", href: "/dashboard/modulos-atribuidos", icon: BookOpen, roles: ["FORMADOR"] },
   { label: "Notas de Alunos", href: "/dashboard/notas", icon: ClipboardList, roles: ["FORMADOR"] },
-  { label: "Documentos", href: "/dashboard/documentos", icon: FileText, roles: ["FORMADOR", "COORDENADOR"] },
+  { label: "Documentos", href: "/dashboard/documentos", icon: FileText, roles: ["FORMADOR", "COORDENADOR", "FORMANDO"] },
   { label: "Convites", href: "/dashboard/convites", icon: Mail, roles: ["FORMADOR"] },
   { label: "Cursos", href: "/dashboard/cursos", icon: BookOpen, roles: ["COORDENADOR"] },
   { label: "Módulos", href: "/dashboard/modulos", icon: Puzzle, roles: ["COORDENADOR"] },

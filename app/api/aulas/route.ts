@@ -13,11 +13,41 @@ const AulaSchema = z.object({
   formadorId: z.string().uuid("formadorId inválido"),
 });
 
+import { auth } from "@/auth";
+
 // ─── GET /api/aulas ───────────────────────────────────────────────────────────
 
 export async function GET() {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
+
+    const { role, id: userId } = session.user;
+
+    let whereClause = {};
+
+    if (role === "FORMANDO") {
+      // Buscar cursos onde o formando está inscrito
+      const inscricoes = await prisma.inscricao.findMany({
+        where: { formando: { userId } },
+        select: { cursoId: true },
+      });
+      const cursoIds = inscricoes.map((i) => i.cursoId);
+      whereClause = {
+        modulo: {
+          cursoId: { in: cursoIds },
+        },
+      };
+    } else if (role === "FORMADOR") {
+      // Opcional: Filtro para formadores (ex: apenas sessões que dão ou todas)
+      // Por agora, permitimos ver todas no calendário, ou podemos filtrar por formadorId
+      // whereClause = { formador: { userId } };
+    }
+
     const aulas = await prisma.aula.findMany({
+      where: whereClause,
       orderBy: { dataHora: "asc" },
       include: {
         modulo: {

@@ -370,11 +370,20 @@ export function FormadoresClient({
   }
 
   async function handleDelete(id: string) {
-    const res = await fetch(`/api/formadores/${id}`, {
-      method: "DELETE",
-    });
-    if (res.ok) {
-      setFormadores((prev) => prev.filter((f) => f.id !== id));
+    try {
+      const res = await fetch(`/api/formadores/${id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      
+      if (res.ok) {
+        setFormadores((prev) => prev.filter((f) => f.id !== id));
+      } else {
+        alert(data.error || "Erro ao eliminar formador.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Erro de rede ao tentar eliminar o formador.");
     }
   }
 

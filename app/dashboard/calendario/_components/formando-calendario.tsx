@@ -4,10 +4,12 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight, Clock, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { useEffect } from "react";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Sessao {
-  id: number;
+  id: string;
   titulo: string;
   formador: string;
   data: string; // "YYYY-MM-DD"
@@ -17,15 +19,11 @@ interface Sessao {
   cor: string;
 }
 
-// ─── Só as sessões DESTE formando ─────────────────────────────────────────────
-
-const minhasSessoes: Sessao[] = [
-  { id: 1, titulo: "Design Gráfico - Sessão 12",         formador: "Ana Rodrigues", data: "2026-02-23", horaInicio: "09:00", duracao: "3h", ufcd: "UFCD-0145", cor: "bg-teal-100 text-teal-700 border-teal-200"   },
-  { id: 2, titulo: "Redes de Computadores - Sessão 10",  formador: "Ana Rodrigues", data: "2026-02-25", horaInicio: "14:00", duracao: "3h", ufcd: "UFCD-0773", cor: "bg-purple-100 text-purple-700 border-purple-200" },
-  { id: 3, titulo: "Desenvolvimento Web - Sessão 8",     formador: "Pedro Santos",  data: "2026-02-27", horaInicio: "14:00", duracao: "2h", ufcd: "UFCD-0577", cor: "bg-blue-100 text-blue-700 border-blue-200"   },
-  { id: 4, titulo: "Design Gráfico - Sessão 13",         formador: "Ana Rodrigues", data: "2026-03-02", horaInicio: "09:00", duracao: "3h", ufcd: "UFCD-0145", cor: "bg-teal-100 text-teal-700 border-teal-200"   },
-  { id: 5, titulo: "Redes de Computadores - Sessão 11",  formador: "Ana Rodrigues", data: "2026-03-04", horaInicio: "14:00", duracao: "3h", ufcd: "UFCD-0773", cor: "bg-purple-100 text-purple-700 border-purple-200" },
-  { id: 6, titulo: "Desenvolvimento Web - Sessão 9",     formador: "Pedro Santos",  data: "2026-03-06", horaInicio: "14:00", duracao: "2h", ufcd: "UFCD-0577", cor: "bg-blue-100 text-blue-700 border-blue-200"   },
+const COLORS = [
+  "bg-teal-100 text-teal-700 border-teal-200",
+  "bg-purple-100 text-purple-700 border-purple-200",
+  "bg-blue-100 text-blue-700 border-blue-200",
+  "bg-indigo-100 text-indigo-700 border-indigo-200",
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -44,6 +42,39 @@ export default function CalendarioFormandoPage() {
   const [viewYear,  setViewYear]  = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selected,  setSelected]  = useState(toISO(today.getFullYear(), today.getMonth(), today.getDate()));
+  const [minhasSessoes, setMinhasSessoes] = useState<Sessao[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchSessoes() {
+      try {
+        const res = await fetch("/api/aulas");
+        const data = await res.json();
+        
+        if (Array.isArray(data)) {
+          const mapped = data.map((aula: any, index: number) => {
+            const dt = new Date(aula.dataHora);
+            return {
+              id: aula.id,
+              titulo: aula.titulo,
+              formador: aula.formador.user.nome,
+              data: dt.toISOString().split("T")[0],
+              horaInicio: dt.toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" }),
+              duracao: `${aula.duracao}min`,
+              ufcd: `UFCD-${aula.moduloId.slice(0,4).toUpperCase()}`,
+              cor: COLORS[index % COLORS.length]
+            };
+          });
+          setMinhasSessoes(mapped);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar sessões:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchSessoes();
+  }, []);
 
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
   const firstDay    = new Date(viewYear, viewMonth, 1).getDay();

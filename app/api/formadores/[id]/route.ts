@@ -22,13 +22,34 @@ export async function DELETE(
       );
     }
 
-    // Apaga o formador e o user associado
-    await prisma.formador.delete({ where: { id } });
-    await prisma.user.delete({ where: { id: formador.userId } });
+    // Usamos uma transação para garantir que tudo é apagado ou nada é apagado
+    await prisma.$transaction(async (tx) => {
+      // 1. Apagar atribuições de módulos
+      await tx.formadorModulo.deleteMany({ where: { formadorId: id } });
+
+      // 2. Apagar convites
+      await tx.convite.deleteMany({ where: { formadorId: id } });
+
+      // 3. Tentar apagar o formador
+      // Se houver Aulas ou Avaliações, o Prisma lançará erro aqui se não houver Cascade
+      await tx.formador.delete({ where: { id } });
+
+      // 4. Apagar o utilizador (isso limpará sessões/contas se houver Cascade no schema)
+      await tx.user.delete({ where: { id: formador.userId } });
+    });
 
     return NextResponse.json({ message: "Formador eliminado com sucesso" });
   } catch (error) {
     console.error("[DELETE /api/formadores/[id]]", error);
+    
+    // Verificar se o erro é de restrição de chave estrangeira (P2003)
+    if ((error as any).code === "P2003") {
+      return NextResponse.json(
+        { error: "Não é possível eliminar o formador porque existem registos (aulas ou avaliações) associados." },
+        { status: 400 },
+      );
+    }
+
     return NextResponse.json(
       { error: "Erro ao eliminar formador" },
       { status: 500 },

@@ -2,17 +2,19 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import bcrypt from 'bcryptjs';
 
 export async function adicionarFormando(dados: {
   nome: string;
   email: string;
+  senha: string;
   telefone?: string;
   cursoId: string;
 }) {
   try {
     // Validar dados
-    if (!dados.nome?.trim() || !dados.email?.trim() || !dados.cursoId?.trim()) {
-      throw new Error('Nome, email e curso são obrigatórios');
+    if (!dados.nome?.trim() || !dados.email?.trim() || !dados.senha?.trim() || !dados.cursoId?.trim()) {
+      throw new Error('Nome, email, senha e curso são obrigatórios');
     }
 
     // Verificar se email já existe
@@ -24,11 +26,15 @@ export async function adicionarFormando(dados: {
       throw new Error('Email já está registado');
     }
 
+    // Hash da password
+    const hashedPassword = await bcrypt.hash(dados.senha, 10);
+
     // Criar usuário e formando
     const user = await prisma.user.create({
       data: {
         nome: dados.nome,
         email: dados.email,
+        senha: hashedPassword,
         role: 'FORMANDO',
         formando: {
           create: {},

@@ -8,7 +8,8 @@ export async function getFormandoStats(userId: string) {
 
     if (!formando) return { cursosInscritos: 0, modulosCompletos: 0, totalModulos: 0, proximasSessoes: 0 }
 
-    const agora = new Date()
+    const inicioDoDia = new Date();
+    inicioDoDia.setHours(0, 0, 0, 0);
     const cursoIds = formando.inscricoes.map((i: any) => i.cursoId)
 
     const [modulos, proximasSessoes] = await Promise.all([
@@ -17,7 +18,7 @@ export async function getFormandoStats(userId: string) {
         }),
         prisma.aula.count({
             where: {
-                dataHora: { gte: agora },
+                dataHora: { gte: inicioDoDia },
                 modulo: { cursoId: { in: cursoIds } },
             },
         }),
@@ -106,12 +107,13 @@ export async function getProximasSessoesFormando(userId: string) {
 
     if (!formando) return []
 
-    const agora = new Date()
+    const inicioDoDia = new Date();
+    inicioDoDia.setHours(0, 0, 0, 0);
     const cursoIds = formando.inscricoes.map((i: any) => i.cursoId)
 
     const aulas = await prisma.aula.findMany({
         where: {
-            dataHora: { gte: agora },
+            dataHora: { gte: inicioDoDia },
             modulo: { cursoId: { in: cursoIds } },
         },
         orderBy: { dataHora: 'asc' },
@@ -131,5 +133,93 @@ export async function getProximasSessoesFormando(userId: string) {
     }))
 }
 
+export async function getMeusCursos(userId: string) {
+    const formando = await prisma.formando.findUnique({
+        where: { userId },
+        include: {
+            inscricoes: {
+                include: {
+                    curso: {
+                        include: {
+                            modulos: {
+                                orderBy: { ordem: 'asc' },
+                                include: {
+                                    avaliacoes: {
+                                        where: { formando: { userId } },
+                                    },
+                                    aulas: true,
+                                },
+                            },
+                        },
+                    },
+                },
+                orderBy: { dataInicio: 'desc' }
+            },
+        },
+    })
+
+    if (!formando) return []
+
+    return formando.inscricoes.map(insc => {
+        const curso = insc.curso
+        const modulos = curso.modulos.map(m => {
+            const notas = m.avaliacoes.map(a => a.nota)
+            const media = notas.length > 0 ? notas.reduce((s, n) => s + n, 0) / notas.length : null
+            const totalAulas = m.aulas.length
+            const aulasConcluidas = m.aulas.filter(a => new Date(a.dataHora) < new Date()).length
+            const progresso = totalAulas > 0 ? Math.round((aulasConcluidas / totalAulas) * 100) : 0
+
+            return {
+                id: m.id,
+                nome: m.nome,
+                codigo: `UFCD-${m.id.slice(0, 4).toUpperCase()}`, // Simulando código se não houver no schema
+                nota: media !== null ? Math.round(media * 10) / 10 : null,
+                progresso,
+            }
+        })
+
+        const progressoGeral = modulos.length > 0
+            ? Math.round(modulos.reduce((s, m) => s + m.progresso, 0) / modulos.length)
+            : 0
+
+        return {
+            id: curso.id,
+            nome: curso.nome,
+            status: curso.status,
+            cargaHoraria: curso.cargaHoraria,
+            dataInicio: insc.dataInicio,
+            dataFim: curso.dataFim,
+            modulos,
+            progressoGeral,
+        }
+    })
+}
+
+export async function getMinhasNotas(userId: string) {
+    const formando = await prisma.formando.findUnique({
+        where: { userId },
+        include: {
+            avaliacoes: {
+                include: {
+                    modulo: { include: { curso: true } },
+                },
+                orderBy: { createdAt: 'desc' }
+            },
+        },
+    })
+
+    if (!formando) return []
+
+    return formando.avaliacoes.map(a => ({
+        id: a.id,
+        modulo: a.modulo.nome,
+        codigo: `UFCD-${a.modulo.id.slice(0, 4).toUpperCase()}`,
+        nota: a.nota,
+        createdAt: a.createdAt,
+    }))
+}
+
 export type CursoFormando = Awaited<ReturnType<typeof getCursoFormando>>
 export type SessaoFormando = Awaited<ReturnType<typeof getProximasSessoesFormando>>[number]
+export type MeusCursos = Awaited<ReturnType<typeof getMeusCursos>>
+export type MinhasNotas = Awaited<ReturnType<typeof getMinhasNotas>>

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, AlertTriangle, Clock, Upload, CalendarDays } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Clock, Upload, CalendarDays, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { DocumentoFormador } from "@/app/dashboard/_data/documentos";
+import type { DocumentoFormador as DocumentoResult } from "@/app/dashboard/_data/documentos";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -25,13 +25,10 @@ const STATUS_MAP: Record<string, DocStatus> = {
   EM_FALTA: "em falta",
 }
 
-const DOCS_COM_VALIDADE = [
-  "Cartão de Cidadão", "CCP", "Seguro",
-  "Registo Criminal", "Certidão Finanças", "Certidão Seg. Social",
-]
+const DOCS_COM_VALIDADE = ["Cartão de Cidadão"];
 
 const STATUS_CONFIG: Record<DocStatus, { label: string; icon: React.ElementType; iconClass: string; textClass: string; bgClass: string }> = {
-  "válido": { label: "Válido", icon: CheckCircle2, iconClass: "text-green-500", textClass: "text-green-600", bgClass: "bg-green-50" },
+  "válido": { label: "Válido", icon: CheckCircle2, iconClass: "text-teal-500", textClass: "text-teal-600", bgClass: "bg-teal-50" },
   "a expirar": { label: "A Expirar", icon: Clock, iconClass: "text-amber-500", textClass: "text-amber-600", bgClass: "bg-amber-50" },
   "expirado": { label: "Expirado", icon: AlertTriangle, iconClass: "text-red-500", textClass: "text-red-600", bgClass: "bg-red-50" },
   "em falta": { label: "Em Falta", icon: AlertTriangle, iconClass: "text-gray-400", textClass: "text-gray-500", bgClass: "bg-gray-50" },
@@ -41,10 +38,10 @@ const STATUS_CONFIG: Record<DocStatus, { label: string; icon: React.ElementType;
 
 function DocCard({
   doc,
-  onValidadeChange,
+  onUpload,
 }: {
   doc: MeuDocumento;
-  onValidadeChange: (id: string | null, nome: string, value: string) => void;
+  onUpload: (nome: string) => void;
 }) {
   const cfg = STATUS_CONFIG[doc.status];
   const Icon = cfg.icon;
@@ -55,7 +52,7 @@ function DocCard({
     : null
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 hover:border-purple-200 hover:shadow-sm transition-all">
+    <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 hover:border-teal-200 hover:shadow-sm transition-all">
       {/* Header */}
       <div className="flex items-start gap-3">
         <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", cfg.bgClass)}>
@@ -67,46 +64,34 @@ function DocCard({
         </div>
       </div>
 
-      {/* Validade */}
-      {dataValidadeFormatada && (
-        <div className="flex items-center gap-1.5 text-xs text-gray-400">
-          <CalendarDays className="h-3.5 w-3.5" />
-          Validade: {dataValidadeFormatada}
+      {/* Info extra */}
+      <div className="flex flex-col gap-2">
+        {dataValidadeFormatada && (
+          <div className="flex items-center gap-1.5 text-xs text-gray-400">
+            <CalendarDays className="h-3.5 w-3.5" />
+            Validade: {dataValidadeFormatada}
+          </div>
+        )}
+        <div className="text-[11px] text-gray-400">
+          Documento obrigatório para a inscrição.
         </div>
-      )}
+      </div>
 
-      {/* Input validade */}
-      {temValidade && (
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold text-gray-600">Data de validade</label>
-          <input
-            type="date"
-            value={doc.dataValidade?.slice(0, 10) ?? ""}
-            onChange={(e) => onValidadeChange(doc.id, doc.nome, e.target.value)}
-            className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400"
-          />
-        </div>
-      )}
-
-      {/* Upload */}
-      <button className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-2.5 text-sm font-medium text-gray-600 hover:border-purple-300 hover:text-purple-600 transition-colors">
+      {/* Upload button */}
+      <button 
+        onClick={() => onUpload(doc.nome)}
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-2.5 text-sm font-medium text-gray-600 hover:border-teal-300 hover:text-teal-600 transition-colors"
+      >
         <Upload className="h-4 w-4" />
-        {doc.status === "em falta" ? "Fazer upload" : "Substituir ficheiro"}
+        {doc.status === "em falta" ? "Enviar documento" : "Substituir ficheiro"}
       </button>
     </div>
   )
 }
 
-// ─── Props ────────────────────────────────────────────────────────────────────
+// ─── Main Component ───────────────────────────────────────────────────────────
 
-interface FormadorDocumentosProps {
-  documentos: DocumentoFormador[];
-  userId: string;
-}
-
-// ─── Componente Principal ─────────────────────────────────────────────────────
-
-export function FormadorDocumentos({ documentos: documentosIniciais, userId }: FormadorDocumentosProps) {
+export function FormandoDocumentos({ documentos: documentosIniciais, userId }: { documentos: DocumentoResult[], userId: string }) {
   const [docs, setDocs] = useState<MeuDocumento[]>(
     documentosIniciais.map((d) => ({
       id: d.id,
@@ -116,10 +101,9 @@ export function FormadorDocumentos({ documentos: documentosIniciais, userId }: F
     }))
   )
 
-  function handleValidadeChange(id: string | null, nome: string, value: string) {
-    setDocs((prev) =>
-      prev.map((d) => (d.nome === nome ? { ...d, dataValidade: value } : d))
-    )
+  function handleUpload(nome: string) {
+    // Simulação de upload por agora
+    alert(`Funcionalidade de upload para "${nome}" em desenvolvimento. Por agora, os documentos são validados pela secretaria.`);
   }
 
   const emFalta = docs.filter((d) => d.status === "em falta").length
@@ -128,33 +112,40 @@ export function FormadorDocumentos({ documentos: documentosIniciais, userId }: F
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <div>
-        <h1 className="text-[26px] font-bold text-gray-900">Os Meus Documentos</h1>
-        <p className="mt-0.5 text-sm text-gray-500">Faça upload dos documentos necessários</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-[26px] font-bold text-gray-900">Os Meus Documentos</h1>
+          <p className="mt-0.5 text-sm text-gray-500">Mantém a tua documentação em dia para evitar suspensões</p>
+        </div>
+        <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 shadow-sm">
+          <FileText className="h-4 w-4 text-teal-500" />
+          <span className="text-sm font-bold text-gray-900">{docs.length - emFalta}/{docs.length}</span>
+          <span className="text-xs text-gray-400 font-medium">concluídos</span>
+        </div>
       </div>
 
-      {/* Alerta */}
+      {/* Alerts */}
       {(emFalta > 0 || expirados > 0) && (
         <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
           <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
           <p className="text-sm text-red-700">
             {expirados > 0 && (
-              <><span className="font-semibold">{expirados} documento{expirados > 1 ? "s" : ""} expirado{expirados > 1 ? "s" : ""}</span> — renova o mais rápido possível. </>
+              <><span className="font-semibold">{expirados} documento{expirados > 1 ? "s" : ""} expirado{expirados > 1 ? "s" : ""}</span>. </>
             )}
             {emFalta > 0 && (
-              <><span className="font-semibold">{emFalta} documento{emFalta > 1 ? "s" : ""} em falta</span> — faz upload para completar o teu perfil.</>
+              <><span className="font-semibold">{emFalta} documento{emFalta > 1 ? "s" : ""} em falta</span>. Por favor, envia os teus documentos para regularizar a tua situação académica.</>
             )}
           </p>
         </div>
       )}
 
       {/* Grid */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {docs.map((doc) => (
           <DocCard
             key={doc.nome}
             doc={doc}
-            onValidadeChange={handleValidadeChange}
+            onUpload={handleUpload}
           />
         ))}
       </div>

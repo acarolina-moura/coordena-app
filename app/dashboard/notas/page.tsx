@@ -1,20 +1,21 @@
 import { redirect } from "next/navigation";
-import { UserRole } from "@/components/app-sidebar";
-import FormandoNotas  from "./_components/formando-notas";
-import FormadorNotas  from "./_components/formador-notas";
-
-async function getAuthUser(): Promise<{ name: string; role: UserRole } | null> {
-  return { name: "Ana Rodrigues", role: "FORMANDO" };
-}
+import { auth } from "@/auth";
+import FormandoNotas from "./_components/formando-notas";
+import FormadorNotas from "./_components/formador-notas";
+import { getMinhasNotas } from "../_data/formando";
 
 export default async function NotasPage() {
-  const user = await getAuthUser();
-  if (!user) redirect("/login");
+  const session = await auth();
+  if (!session?.user) redirect("/login");
 
-  if (user.role === "FORMANDO") return <FormandoNotas />;
-  
-  if (user.role === "FORMADOR") return <FormadorNotas />;
+  const { role, id: userId } = session.user;
 
+  if (role === "FORMANDO") {
+    const notas = await getMinhasNotas(userId);
+    return <FormandoNotas inicial={notas} />;
+  }
+
+  if (role === "FORMADOR") return <FormadorNotas userId={userId} />;
 
   redirect("/dashboard");
 }
