@@ -63,12 +63,17 @@ interface NotasState {
   };
 }
 
+interface NotasFinaisState {
+  [formandoId: string]: number | null;
+}
+
 export default function FormadorNotasPage() {
   const [search, setSearch] = useState('');
   const [saved, setSaved] = useState(false);
   const [modulos, setModulos] = useState<Modulo[]>([]);
   const [templates, setTemplates] = useState<Record<string, Template | null>>({});
   const [notas, setNotas] = useState<NotasState>({});
+  const [notasFinais, setNotasFinais] = useState<NotasFinaisState>({});
   const [loading, setLoading] = useState(true);
   const [modalTemplateAberto, setModalTemplateAberto] = useState(false);
   const [modalModuloId, setModalModuloId] = useState<string | null>(null);
@@ -179,6 +184,24 @@ export default function FormadorNotasPage() {
             if (!resultado.success) {
               console.error(`Erro ao salvar notas de ${aluno.nome}:`, resultado.error);
             }
+          }
+
+          // Calcular nota final após salvar as notas
+          const percentualAssiduidade = aluno.totalSessoes > 0
+            ? Math.round((aluno.presencas / aluno.totalSessoes) * 100)
+            : 0;
+
+          const resultadoNotaFinal = await calcularNotaFinal(
+            aluno.id,
+            modulo.id,
+            percentualAssiduidade
+          );
+
+          if (resultadoNotaFinal.success && resultadoNotaFinal.notaFinal !== undefined) {
+            setNotasFinais((prev) => ({
+              ...prev,
+              [aluno.id]: resultadoNotaFinal.notaFinal || null,
+            }));
           }
         }
       }
@@ -387,8 +410,18 @@ export default function FormadorNotasPage() {
                               })}
 
                             {/* Nota Final */}
-                            <td className="px-6 py-4 text-center text-sm font-bold text-gray-400">
-                              —
+                            <td className="px-6 py-4 text-center text-sm font-bold">
+                              {notasFinais[aluno.id] !== undefined && notasFinais[aluno.id] !== null ? (
+                                <span className={cn(
+                                  notasFinais[aluno.id]! >= 10
+                                    ? 'text-green-600'
+                                    : 'text-red-600'
+                                )}>
+                                  {notasFinais[aluno.id]}
+                                </span>
+                              ) : (
+                                <span className="text-gray-400">—</span>
+                              )}
                             </td>
                           </tr>
                         );
