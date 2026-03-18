@@ -110,3 +110,45 @@ export async function getFormadorPerfil(userId: string) {
         userId: user.id,
     };
 }
+
+/**
+ * Fetches all modules assigned to a trainer (formador)
+ * @param userId - The user ID of the trainer
+ * @returns Array of assigned modules with course information
+ */
+export async function getModulosAtribuidosFormador(userId: string) {
+    // Find the trainer by userId
+    const formador = await prisma.formador.findUnique({
+        where: { userId },
+        include: {
+            // Include the relationship between trainer and modules
+            modulosLecionados: {
+                include: {
+                    // Include module details and course information
+                    modulo: {
+                        include: { curso: true },
+                    },
+                },
+            },
+        },
+    });
+
+    // Return empty array if trainer not found
+    if (!formador) return [];
+
+    // Map the data to match the ModuloAtribuido interface
+    return formador.modulosLecionados.map((fm) => ({
+        id: fm.modulo.id,
+        nome: fm.modulo.nome,
+        // Generate a code from the module ID
+        codigo: fm.modulo.id.substring(0, 8).toUpperCase(),
+        // Get the course name
+        curso: fm.modulo.curso.nome,
+        // Tags - empty for now (can be expanded later)
+        tags: [],
+        // Number of students - hardcoded to 0 (can be calculated from inscriptions)
+        formandos: 0,
+        // Default status is active
+        status: 'Ativo' as const,
+    }));
+}
