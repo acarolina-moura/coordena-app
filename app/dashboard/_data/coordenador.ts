@@ -118,20 +118,28 @@ export async function getDocumentosEmFalta(): Promise<DocumentoEmFalta[]> {
 
 export type FormadorComDetalhes = {
   id: string;
-  especialidade: string | null;
-  competencias?: string | null;
-  linkedin?: string | null;
-  github?: string | null;
-  idioma?: string | null;
-  nacionalidade?: string | null;
   userId: string;
+  especialidade: string | null;
+  competencias: string | null;
+  linkedin: string | null;
+  github: string | null;
+  idioma: string | null;
+  nacionalidade: string | null;
   modulosLecionados: Array<{ modulo: { nome: string } }>;
   user: { id: string; nome: string; email: string };
 };
 
 export async function getFormadores(): Promise<FormadorComDetalhes[]> {
-  return await prisma.formador.findMany({
-    include: {
+  const formadores = await prisma.formador.findMany({
+    select: {
+      id: true,
+      userId: true,
+      especialidade: true,
+      competencias: true,
+      linkedin: true,
+      github: true,
+      idioma: true,
+      nacionalidade: true,
       user: { select: { id: true, nome: true, email: true } },
       modulosLecionados: {
         include: { modulo: { select: { nome: true } } },
@@ -139,6 +147,8 @@ export async function getFormadores(): Promise<FormadorComDetalhes[]> {
     },
     orderBy: { user: { nome: "asc" } },
   });
+
+  return formadores;
 }
 
 // ─── Perfil de um Formador (por ID) ──────────────────────────────────────────
@@ -172,7 +182,14 @@ export async function getFormadorById(
 ): Promise<FormadorPerfil | null> {
   const formador = await prisma.formador.findUnique({
     where: { id },
-    include: {
+    select: {
+      id: true,
+      especialidade: true,
+      competencias: true,
+      linkedin: true,
+      github: true,
+      idioma: true,
+      nacionalidade: true,
       user: { select: { nome: true, email: true } },
       modulosLecionados: {
         include: {
