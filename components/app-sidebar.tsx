@@ -6,6 +6,7 @@ import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, BookOpen, Puzzle, Users, GraduationCap,
   CalendarDays, FileText, LogOut, User, ClipboardList, Mail,
+  CheckCircle2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +34,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Calendário", href: "/dashboard/calendario", icon: CalendarDays, roles: ["COORDENADOR", "FORMADOR", "FORMANDO"] },
   { label: "Os Meus Cursos", href: "/dashboard/meus-cursos", icon: BookOpen, roles: ["FORMANDO"] },
   { label: "Minhas Notas", href: "/dashboard/notas", icon: ClipboardList, roles: ["FORMANDO"] },
+  { label: "Minhas Presenças", href: "/dashboard/assiduidade", icon: CheckCircle2, roles: ["FORMANDO"] },
 ];
 
 const ROLE_CONFIG: Record<UserRole, { label: string; active: string; logo: string; color: string }> = {

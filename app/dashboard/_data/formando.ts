@@ -219,7 +219,41 @@ export async function getMinhasNotas(userId: string) {
     }))
 }
 
+export async function getMinhasPresencas(userId: string) {
+    const formando = await prisma.formando.findUnique({
+        where: { userId },
+        include: {
+            presencas: {
+                include: {
+                    aula: {
+                        include: {
+                            modulo: true,
+                        },
+                    },
+                },
+                orderBy: {
+                    aula: {
+                        dataHora: 'desc',
+                    },
+                },
+            },
+        },
+    })
+
+    if (!formando) return []
+
+    return formando.presencas.map(p => ({
+        id: p.id,
+        dataHora: p.aula.dataHora.toISOString(), 
+        modulo: p.aula.modulo.nome,
+        aula: p.aula.titulo,
+        status: p.status,
+        justificativa: p.justificativa,
+    }))
+}
+
 export type CursoFormando = Awaited<ReturnType<typeof getCursoFormando>>
 export type SessaoFormando = Awaited<ReturnType<typeof getProximasSessoesFormando>>[number]
 export type MeusCursos = Awaited<ReturnType<typeof getMeusCursos>>
 export type MinhasNotas = Awaited<ReturnType<typeof getMinhasNotas>>
+export type MinhasPresencas = Awaited<ReturnType<typeof getMinhasPresencas>>

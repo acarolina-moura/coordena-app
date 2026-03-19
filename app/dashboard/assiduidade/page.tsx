@@ -1,13 +1,23 @@
 import { redirect } from "next/navigation";
-import { UserRole } from "@/components/app-sidebar";
+import { auth } from "@/auth";
+import { getMinhasPresencas } from "../_data/formando";
 import { FormandoAssiduidade } from "./_components/formando-assiduidade";
 
-async function getAuthUser(): Promise<{ role: UserRole } | null> {
-  return { role: "FORMANDO" };
-}
-
 export default async function AssiduidadePage() {
-  const user = await getAuthUser();
-  if (!user || user.role !== "FORMANDO") redirect("/dashboard");
-  return <FormandoAssiduidade />;
+  const session = await auth();
+  if (!session?.user) redirect("/login");
+
+  const { role, id: userId } = session.user;
+
+  if (role !== "FORMANDO") {
+    redirect("/dashboard");
+  }
+
+  const presencas = await getMinhasPresencas(userId);
+
+  return (
+    <div className="p-0">
+      <FormandoAssiduidade presencas={presencas} />
+    </div>
+  );
 }

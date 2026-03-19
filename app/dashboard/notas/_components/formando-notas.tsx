@@ -18,8 +18,8 @@ export default function FormandoNotas({ inicial }: { inicial: MinhasNotas }) {
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
       <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
-          
+        <main className="flex-1 overflow-y-auto space-y-6">
+
           {/* Header */}
           <div>
             <h1 className="text-2xl font-bold text-slate-800">As Minhas Notas</h1>
@@ -27,9 +27,9 @@ export default function FormandoNotas({ inicial }: { inicial: MinhasNotas }) {
           </div>
 
           {/* Card de Média Geral */}
-          <motion.div 
-            initial={{ opacity: 0, y: 15 }} 
-            animate={{ opacity: 1, y: 0 }} 
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
             className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-2xl p-6 text-white shadow-lg shadow-teal-200/50"
           >
             <div className="flex items-center gap-4">
@@ -96,9 +96,8 @@ export default function FormandoNotas({ inicial }: { inicial: MinhasNotas }) {
                           {new Date(item.createdAt).toLocaleDateString("pt-PT")}
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
-                            isPassed ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
-                          }`}>
+                          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${isPassed ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+                            }`}>
                             {isPassed ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
                             {isPassed ? "Aprovado" : "Reprovado"}
                           </div>

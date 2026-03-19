@@ -1,97 +1,110 @@
-"use client";
+/**
+ * Modulos Atribuidos Page
+ * 
+ * File: app/dashboard/modulos-atribuidos/page.tsx
+ * 
+ * This is a server-side page component that displays all modules assigned to a trainer.
+ * 
+ * Process Flow:
+ * 1. Authenticates the user using NextAuth
+ * 2. Retrieves user data from the database
+ * 3. Fetches all modules assigned to that user
+ * 4. Renders them in a responsive grid of cards
+ * 
+ * Each card displays:
+ * - Module name, code, and course
+ * - Status badge (Ativo, Inativo, Concluído)
+ * - Skills/competencies tags
+ * - Number of enrolled students
+ * - Eye icon button to view full details
+ */
 
-import { Puzzle, GraduationCap, Tag } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { getModulosAtribuidosFormador } from "@/app/dashboard/_data/formador";
+import { prisma } from "@/lib/prisma";
+import ModuloCard from "./_components/modulo-card";
 
-type ModuloStatus = "Ativo" | "Inativo" | "Concluído";
+/**
+ * ModulosAtribuidosPage
+ * 
+ * Server component (async) that handles:
+ * 1. User authentication
+ * 2. Data fetching from database
+ * 3. Page rendering with responsive grid layout
+ */
+export default async function ModulosAtribuidosPage() {
+  /**
+   * Step 1: Get Current User Session
+   * Retrieves the authenticated user's session information
+   * Contains: user.email, user.name, user.role, etc.
+   */
+  const session = await auth();
+  
+  /**
+   * Redirect to login if user is not authenticated
+   * Essential for security - ensures only logged-in users can access this page
+   */
+  if (!session?.user?.email) redirect('/login');
 
-interface ModuloAtribuido {
-  id: number;
-  nome: string;
-  codigo: string;
-  curso: string;
-  tags: string[];
-  formandos: number;
-  status: ModuloStatus;
-}
+  /**
+   * Step 2: Fetch User Data
+   * Looks up the user in the database using their email from the session
+   * This ensures we have the correct user ID for fetching their modules
+   */
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+  });
 
-const modulos: ModuloAtribuido[] = [
-  {
-    id: 1,
-    nome: "Design Gráfico",
-    codigo: "UFCD-0145",
-    curso: "Técnico de Multimédia",
-    tags: ["Design", "Photoshop", "Illustrator"],
-    formandos: 4,
-    status: "Ativo",
-  },
-  {
-    id: 2,
-    nome: "Redes de Computadores",
-    codigo: "UFCD-0773",
-    curso: "Técnico de Informática",
-    tags: ["Redes", "TCP/IP", "Cisco"],
-    formandos: 2,
-    status: "Ativo",
-  },
-];
+  /**
+   * Security check: Redirect if user not found in database
+   * This should only happen in edge cases (user session but removed from DB)
+   */
+  if (!user?.id) redirect('/login');
 
-const STATUS_STYLE: Record<ModuloStatus, string> = {
-  Ativo:     "border-green-300 text-green-700 bg-green-50",
-  Inativo:   "border-gray-300 text-gray-500 bg-gray-50",
-  Concluído: "border-blue-300 text-blue-700 bg-blue-50",
-};
+  /**
+   * Step 3: Fetch Assigned Modules
+   * Calls getModulosAtribuidosFormador which:
+   * - Gets the formador record for this user
+   * - Includes all modules assigned to this formador
+   * - Returns formatted module data with course info
+   */
+  const modulos = await getModulosAtribuidosFormador(user.id);
 
-function ModuloCard({ modulo }: { modulo: ModuloAtribuido }) {
-  return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 hover:border-purple-200 hover:shadow-sm transition-all">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-purple-100">
-          <Puzzle className="h-6 w-6 text-purple-500" />
-        </div>
-        <span className={cn("rounded-full border px-3 py-0.5 text-xs font-semibold", STATUS_STYLE[modulo.status])}>
-          {modulo.status}
-        </span>
-      </div>
-
-      {/* Info */}
-      <div className="flex flex-col gap-1">
-        <h3 className="text-base font-bold text-gray-900">{modulo.nome}</h3>
-        <span className="text-sm text-purple-500 font-medium">{modulo.codigo}</span>
-        <span className="text-sm text-gray-400">{modulo.curso}</span>
-      </div>
-
-      {/* Tags */}
-      <div className="flex flex-wrap gap-1.5">
-        {modulo.tags.map((tag) => (
-          <span
-            key={tag}
-            className="rounded-full border border-purple-100 bg-purple-50 px-2.5 py-0.5 text-xs font-medium text-purple-600"
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
-
-      {/* Footer */}
-      <div className="flex items-center gap-1.5 border-t border-gray-100 pt-3 text-sm text-gray-500">
-        <GraduationCap className="h-4 w-4 text-gray-400" />
-        {modulo.formandos} formando{modulo.formandos !== 1 ? "s" : ""}
-      </div>
-    </div>
-  );
-}
-
-export default function ModulosAtribuidosPage() {
+  /**
+   * Step 4: Render Page
+   * Returns JSX with:
+   * - Page header with title and module count
+   * - Responsive grid (1 col on mobile, 2 cols on tablet, 3 cols on desktop)
+   * - ModuloCard components for each module
+   */
   return (
     <div className="flex flex-col gap-6">
+      {/* Page Header Section */}
       <div>
         <h1 className="text-[26px] font-bold text-gray-900">Módulos Atribuídos</h1>
+        {/* Dynamic count of assigned modules */}
         <p className="mt-0.5 text-sm text-gray-500">{modulos.length} módulos atribuídos</p>
       </div>
 
+      {/* 
+        Responsive Grid Layout
+        - Mobile (default): grid-cols-1 (1 column)
+        - Tablet (md): grid-cols-2 (2 columns)
+        - Desktop (xl): grid-cols-3 (3 columns)
+        - Gap: 4px between cards
+      */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {/* 
+          Map through modules and render a ModuloCard for each
+          
+          Key prop is important for React's rendering optimization:
+          - Must be unique for each item
+          - Using m.id (module ID) as the key
+          
+          Props passed to ModuloCard:
+          - modulo: The module data object
+        */}
         {modulos.map((m) => (
           <ModuloCard key={m.id} modulo={m} />
         ))}
