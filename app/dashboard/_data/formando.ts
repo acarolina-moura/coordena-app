@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 
+// ------------------- STATS -------------------
 export async function getFormandoStats(userId: string) {
     const formando = await prisma.formando.findUnique({
         where: { userId },
@@ -8,9 +9,10 @@ export async function getFormandoStats(userId: string) {
 
     if (!formando) return { cursosInscritos: 0, modulosCompletos: 0, totalModulos: 0, proximasSessoes: 0, pendingInvitations: 0 }
 
-    const inicioDoDia = new Date();
-    inicioDoDia.setHours(0, 0, 0, 0);
-    const cursoIds = formando.inscricoes.map((i: any) => i.cursoId)
+    const inicioDoDia = new Date()
+    inicioDoDia.setHours(0, 0, 0, 0)
+
+    const cursoIds = formando.inscricoes.map(i => i.cursoId)
 
     const [modulos, proximasSessoes] = await Promise.all([
         prisma.modulo.findMany({
@@ -41,6 +43,7 @@ export async function getFormandoStats(userId: string) {
     }
 }
 
+// ------------------- CURSO DO FORMANDO -------------------
 export async function getCursoFormando(userId: string) {
     const formando = await prisma.formando.findUnique({
         where: { userId },
@@ -63,19 +66,21 @@ export async function getCursoFormando(userId: string) {
                 },
             },
         },
-    }) as any
+    })
 
-    if (!formando || (formando.inscricoes as any[]).length === 0) return null
+    if (!formando || formando.inscricoes.length === 0) return null
 
     const inscricao = formando.inscricoes[0]
     const curso = inscricao.curso
     const hoje = new Date()
 
-    const modulos = curso.modulos.map((m: any) => {
-        const notas = m.avaliacoes.map((a: any) => a.nota)
-        const media = notas.length > 0 ? notas.reduce((s: any, n: any) => s + n, 0) / notas.length : null
+    const modulos = curso.modulos.map(m => {
+        const notas = m.avaliacoes.map(a => a.nota)
+        const media = notas.length > 0 ? notas.reduce((s, n) => s + n, 0) / notas.length : null
+
         const totalAulas = m.aulas.length
-        const aulasFuturas = m.aulas.filter((a: any) => new Date(a.dataHora) > hoje).length
+        const aulasFuturas = m.aulas.filter(a => new Date(a.dataHora) > hoje).length
+
         const progresso = totalAulas > 0
             ? Math.round(((totalAulas - aulasFuturas) / totalAulas) * 100)
             : 0
@@ -89,7 +94,7 @@ export async function getCursoFormando(userId: string) {
     })
 
     const progressoGeral = modulos.length > 0
-        ? Math.round(modulos.reduce((s: any, m: any) => s + m.progresso, 0) / modulos.length)
+        ? Math.round(modulos.reduce((s, m) => s + m.progresso, 0) / modulos.length)
         : 0
 
     return {
@@ -102,6 +107,7 @@ export async function getCursoFormando(userId: string) {
     }
 }
 
+// ------------------- PRÓXIMAS SESSÕES -------------------
 export async function getProximasSessoesFormando(userId: string) {
     const formando = await prisma.formando.findUnique({
         where: { userId },
@@ -110,9 +116,10 @@ export async function getProximasSessoesFormando(userId: string) {
 
     if (!formando) return []
 
-    const inicioDoDia = new Date();
-    inicioDoDia.setHours(0, 0, 0, 0);
-    const cursoIds = formando.inscricoes.map((i: any) => i.cursoId)
+    const inicioDoDia = new Date()
+    inicioDoDia.setHours(0, 0, 0, 0)
+
+    const cursoIds = formando.inscricoes.map(i => i.cursoId)
 
     const aulas = await prisma.aula.findMany({
         where: {
@@ -127,7 +134,7 @@ export async function getProximasSessoesFormando(userId: string) {
         },
     })
 
-    return aulas.map((aula: any) => ({
+    return aulas.map(aula => ({
         id: aula.id,
         titulo: `${aula.modulo.curso.nome} · ${aula.titulo}`,
         formador: aula.formador.user.nome,
@@ -136,6 +143,7 @@ export async function getProximasSessoesFormando(userId: string) {
     }))
 }
 
+// ------------------- MEUS CURSOS -------------------
 export async function getMeusCursos(userId: string) {
     const formando = await prisma.formando.findUnique({
         where: { userId },
@@ -159,19 +167,22 @@ export async function getMeusCursos(userId: string) {
                 orderBy: { dataInicio: 'desc' }
             },
         },
-    }) as any
+    })
 
     if (!formando) return []
 
     const hoje = new Date()
 
-    return (formando.inscricoes as any[]).map(insc => {
+    return formando.inscricoes.map(insc => {
         const curso = insc.curso
-        const modulos = curso.modulos.map((m: any) => {
-            const notas = m.avaliacoes.map((a: any) => a.nota)
-            const media = notas.length > 0 ? notas.reduce((s: any, n: any) => s + n, 0) / notas.length : null
+
+        const modulos = curso.modulos.map(m => {
+            const notas = m.avaliacoes.map(a => a.nota)
+            const media = notas.length > 0 ? notas.reduce((s, n) => s + n, 0) / notas.length : null
+
             const totalAulas = m.aulas.length
-            const aulasFuturas = m.aulas.filter((a: any) => new Date(a.dataHora) > hoje).length
+            const aulasFuturas = m.aulas.filter(a => new Date(a.dataHora) > hoje).length
+
             const progresso = totalAulas > 0
                 ? Math.round(((totalAulas - aulasFuturas) / totalAulas) * 100)
                 : 0
@@ -186,7 +197,7 @@ export async function getMeusCursos(userId: string) {
         })
 
         const progressoGeral = modulos.length > 0
-            ? Math.round(modulos.reduce((s: any, m: any) => s + m.progresso, 0) / modulos.length)
+            ? Math.round(modulos.reduce((s, m) => s + m.progresso, 0) / modulos.length)
             : 0
 
         return {
@@ -202,26 +213,15 @@ export async function getMeusCursos(userId: string) {
     })
 }
 
+// ------------------- MINHAS NOTAS -------------------
 export async function getMinhasNotas(userId: string) {
-    const formando = await prisma.formando.findUnique({
-        where: { userId },
-    })
-
+    const formando = await prisma.formando.findUnique({ where: { userId } })
     if (!formando) return []
 
     const notasParciais = await prisma.notaParcial.findMany({
         where: { formandoId: formando.id },
-        include: {
-            item: true,
-            template: {
-                include: {
-                    modulo: {
-                        include: { curso: true }
-                    }
-                }
-            }
-        },
-        orderBy: { createdAt: 'desc' }
+        include: { item: true, template: { include: { modulo: { include: { curso: true } } } } },
+        orderBy: { createdAt: 'desc' },
     })
 
     return notasParciais.map(n => ({
@@ -235,30 +235,15 @@ export async function getMinhasNotas(userId: string) {
     }))
 }
 
+// ------------------- MINHAS PRESENÇAS -------------------
 export async function getMinhasPresencas(userId: string) {
     const formando = await prisma.formando.findUnique({
         where: { userId },
-        include: {
-            presencas: {
-                include: {
-                    aula: {
-                        include: {
-                            modulo: true,
-                        },
-                    },
-                },
-                orderBy: {
-                    aula: {
-                        dataHora: 'desc',
-                    },
-                },
-            },
-        },
-    }) as any
-
+        include: { presencas: { include: { aula: { include: { modulo: true } } }, orderBy: { aula: { dataHora: 'desc' } } } },
+    })
     if (!formando) return []
 
-    return (formando.presencas as any[]).map((p: any) => ({
+    return formando.presencas.map(p => ({
         id: p.id,
         dataHora: p.aula.dataHora.toISOString(),
         modulo: p.aula.modulo.nome,
@@ -270,6 +255,7 @@ export async function getMinhasPresencas(userId: string) {
     }))
 }
 
+// ------------------- CRONOGRAMA -------------------
 export async function getCourseSchedule(userId: string) {
     const formando = await prisma.formando.findUnique({
         where: { userId },
@@ -281,12 +267,8 @@ export async function getCourseSchedule(userId: string) {
                             modulos: {
                                 orderBy: { ordem: 'asc' },
                                 include: {
-                                    formadores: {
-                                        include: { formador: { include: { user: true } } }
-                                    },
-                                    aulas: {
-                                        orderBy: { dataHora: 'asc' },
-                                    },
+                                    formadores: { include: { formador: { include: { user: true } } } },
+                                    aulas: { orderBy: { dataHora: 'asc' } },
                                 },
                             },
                         },
@@ -294,19 +276,18 @@ export async function getCourseSchedule(userId: string) {
                 },
             },
         },
-    }) as any
-
+    })
     if (!formando) return []
 
-    return (formando.inscricoes as any[]).map(insc => ({
+    return formando.inscricoes.map(insc => ({
         cursoId: insc.curso.id,
         cursoNome: insc.curso.nome,
-        modulos: (insc.curso.modulos as any[]).map(m => ({
+        modulos: insc.curso.modulos.map(m => ({
             id: m.id,
             nome: m.nome,
             cargaHoraria: m.cargaHoraria,
-            formadorPrincipal: m.formadores[0]?.formador.user.nome || 'Não atribuído',
-            aulas: (m.aulas as any[]).map(a => ({
+            formadorPrincipal: m.formadores[0]?.formador.user.nome ?? 'Não atribuído',
+            aulas: m.aulas.map(a => ({
                 id: a.id,
                 titulo: a.titulo,
                 dataHora: a.dataHora,
@@ -316,11 +297,9 @@ export async function getCourseSchedule(userId: string) {
     }))
 }
 
+// ------------------- MEUS TRABALHOS -------------------
 export async function getMeusTrabalhos(userId: string) {
-    const formando = await prisma.formando.findUnique({
-        where: { userId },
-    })
-
+    const formando = await prisma.formando.findUnique({ where: { userId } })
     if (!formando) return []
 
     const inscricoes = await prisma.inscricao.findMany({
@@ -332,16 +311,7 @@ export async function getMeusTrabalhos(userId: string) {
                         orderBy: { ordem: 'asc' },
                         include: {
                             templatesAvaliacao: {
-                                include: {
-                                    items: {
-                                        orderBy: { ordem: 'asc' },
-                                        include: {
-                                            submissoes: {
-                                                where: { formandoId: formando.id },
-                                            } as any
-                                        }
-                                    }
-                                }
+                                include: { items: { orderBy: { ordem: 'asc' }, include: { submissoes: { where: { formandoId: formando.id } } } } }
                             }
                         }
                     }
@@ -352,23 +322,18 @@ export async function getMeusTrabalhos(userId: string) {
 
     const hoje = new Date()
 
-    return (inscricoes as any[]).flatMap((insc: any) =>
-        (insc.curso.modulos as any[]).flatMap((modulo: any) =>
-            (modulo.templatesAvaliacao as any[]).flatMap((template: any) =>
-                (template.items as any[]).map((item: any) => {
-                    const submissao = item.submissoes?.[0] as any
+    return inscricoes.flatMap(insc =>
+        insc.curso.modulos.flatMap(modulo =>
+            modulo.templatesAvaliacao.flatMap(template =>
+                template.items.map(item => {
+                    const submissao = item.submissoes?.[0]
 
                     let status: 'PENDENTE' | 'ENTREGUE' | 'EM_FALTA' | 'ATRASADO' = 'PENDENTE'
 
                     if (submissao) {
-                        if (item.dataLimite && new Date(submissao.dataEntrega) > new Date(item.dataLimite)) {
-                            status = 'ATRASADO'
-                        } else {
-                            status = 'ENTREGUE'
-                        }
-                    } else if (item.dataLimite && new Date(item.dataLimite) < hoje) {
-                        status = 'EM_FALTA'
-                    }
+                        if (item.dataLimite && new Date(submissao.dataEntrega) > new Date(item.dataLimite)) status = 'ATRASADO'
+                        else status = 'ENTREGUE'
+                    } else if (item.dataLimite && new Date(item.dataLimite) < hoje) status = 'EM_FALTA'
 
                     return {
                         moduloId: modulo.id,
@@ -380,12 +345,9 @@ export async function getMeusTrabalhos(userId: string) {
                         ficheiroAnexoUrl: item.ficheiroAnexoUrl,
                         peso: item.peso,
                         status,
-                        submissao: submissao ? {
-                            id: submissao.id,
-                            ficheiroUrl: submissao.ficheiroUrl,
-                            dataEntrega: submissao.dataEntrega,
-                            comentario: submissao.comentario,
-                        } : null,
+                        submissao: submissao
+                            ? { id: submissao.id, ficheiroUrl: submissao.ficheiroUrl, dataEntrega: submissao.dataEntrega, comentario: submissao.comentario }
+                            : null,
                     }
                 })
             )
@@ -393,16 +355,43 @@ export async function getMeusTrabalhos(userId: string) {
     )
 }
 
-// Convites são apenas para Formadores — não existe formandoId no modelo Convite
-export async function getMeusConvites(userId: string) {
-    return []
-}
-
-// Modelo "reviews" não existe no schema
+// ------------------- CONVITES & REVIEWS -------------------
+export async function getMeusConvites(userId: string) { return [] }
 export async function getModulosParaReview(userId: string) {
-    return []
+    const formando = await prisma.formando.findUnique({
+        where: { userId },
+        include: {
+            inscricoes: {
+                include: {
+                    curso: {
+                        include: {
+                            modulos: {
+                                orderBy: { ordem: 'asc' },
+                                include: { avaliacoes: { where: { formando: { userId } } } },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    })
+
+    if (!formando) return []
+
+    return formando.inscricoes.flatMap(insc =>
+        insc.curso.modulos.map(m => ({
+            id: m.id,
+            nome: m.nome,
+            cursoNome: insc.curso.nome,
+            hasReview: m.avaliacoes.length > 0,
+            review: m.avaliacoes[0]
+                ? { nota: m.avaliacoes[0].nota, comentario: m.avaliacoes[0].descricao ?? '', data: m.avaliacoes[0].createdAt }
+                : undefined
+        }))
+    )
 }
 
+// ------------------- TYPES -------------------
 export type MeusConvites = Awaited<ReturnType<typeof getMeusConvites>>
 export type ModuloReviewData = Awaited<ReturnType<typeof getModulosParaReview>>[number]
 export type CursoFormando = Awaited<ReturnType<typeof getCursoFormando>>
