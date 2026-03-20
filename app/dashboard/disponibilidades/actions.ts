@@ -29,9 +29,11 @@ export async function salvarDisponibilidades(
       throw new Error('Formador não encontrado');
     }
 
+    const formadorId = user.formador.id;
+
     // Limpar disponibilidades antigas
     await prisma.disponibilidade.deleteMany({
-      where: { formadorId: user.formador.id },
+      where: { formadorId },
     });
 
     // Inserir novas disponibilidades
@@ -43,7 +45,7 @@ export async function salvarDisponibilidades(
         
         return {
           id: crypto.randomUUID(),
-          formadorId: user.formador.id,
+          formadorId,
           diaSemana: day,
           hora,
           minuto,
