@@ -18,8 +18,13 @@ export async function getFormadorStats(userId: string) {
                 dataHora: { gte: agora },
             },
         }),
-        // placeholder para quando tiveres o modelo de convites
-        Promise.resolve(0),
+        // Contar convites pendentes do formador
+        prisma.convite.count({
+            where: {
+                formadorId: formador.id,
+                status: 'PENDENTE',
+            },
+        }),
     ]);
 
     return {
@@ -124,24 +129,10 @@ export async function getModulosAtribuidosFormador(userId: string) {
             // Include the relationship between trainer and modules
             modulosLecionados: {
                 include: {
-                    // Include module details and course information with inscriptions
+                    // Include module details and course information
                     modulo: {
                         include: {
                             curso: true,
-                            // Include all students inscribed in this course
-                            aulas: {
-                                include: {
-                                    presencas: {
-                                        include: {
-                                            formando: {
-                                                include: {
-                                                    user: true,
-                                                },
-                                            },
-                                        },
-                                    },
-                                },
-                            },
                         },
                     },
                 },

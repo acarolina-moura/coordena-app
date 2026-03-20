@@ -154,6 +154,15 @@ export function FormadorDocumentos({ documentos: documentosIniciais, userId }: {
         alert(`Erro no upload: ${result.error}`);
       } else {
         alert(`Documento "${nome}" enviado com sucesso!`);
+        
+        // Atualizar estado local após sucesso
+        setDocs((prev) =>
+          prev.map((d) =>
+            d.nome === nome
+              ? { ...d, status: "válido", dataValidade: validade ? new Date(validade).toISOString() : null }
+              : d
+          )
+        );
       }
     } catch (err) {
       console.error("Erro inesperado:", err);
