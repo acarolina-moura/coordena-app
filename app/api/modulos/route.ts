@@ -74,12 +74,17 @@ export async function POST(req: Request) {
       },
     })
 
-    // Atribuir formador se fornecido
+    // Criar Convite para o formador se fornecido
+    // (em vez de atribuir diretamente, deixa-se o formador aceitar/recusar)
     if (formadorId) {
-      await prisma.formadorModulo.create({
+      await prisma.convite.create({
         data: {
+          id: crypto.randomUUID(),
           formadorId,
           moduloId: modulo.id,
+          cursoId: cursoId,
+          descricao: `Convite para lecionar o módulo "${nome}"`,
+          status: 'PENDENTE',
         },
       })
     }

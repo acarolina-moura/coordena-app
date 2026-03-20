@@ -1,11 +1,14 @@
-﻿import { FormandosContent } from './formandos-client';
-import { getFormandos, getCursos } from '@/app/dashboard/_data/coordenador';
+﻿import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { getFormandos } from "@/app/dashboard/_data/coordenador";
+import { FormandosClient } from "./formandos-client";
 
 export default async function FormandosPage() {
-  const [formandos, cursos] = await Promise.all([
-    getFormandos(),
-    getCursos(),
-  ]);
+  const session = await auth();
+  if (!session?.user) redirect("/login");
+  if (session.user.role !== "COORDENADOR") redirect("/dashboard");
 
-  return <FormandosContent data={formandos} cursos={cursos} />;
+  const formandos = await getFormandos();
+
+  return <FormandosClient formandos={formandos} />;
 }

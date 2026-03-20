@@ -1,40 +1,69 @@
-## ESTRUTURA DO PROJETO
+## ESTRUTURA DO CÓDIGO
 
 coordena-app/
 ├─ app/
-│  ├─ layout.tsx
-│  ├─ page.tsx
-│  └─ api/
-│     ├─ auth/
-│     │  └─ [...nextauth]/
-│     │     └─ route.ts
-│     ├─ cursos/
-│     │  └─ route.ts              ✅ NOVO — GET listar / POST criar cursos
-│     └─ formadores/
-│        └─ route.ts              
-│
-├─ dashboard/
-│  ├─ components/
-│  ├─ data/
-│  ├─ assiduidade/
-│  ├─ calendario/
-│  ├─ convites/
-│  ├─ cursos/
-│  │  └─ page.tsx                 ✅ ATUALIZADO — dados reais da BD
-│  ├─ disponibilidades/
-│  ├─ documentos/
-│  ├─ formadores/
-│  ├─ formandos/
-│  ├─ meus-cursos/
-│  ├─ meus-cursos-formando/
-│  ├─ modulos/
-│  ├─ modulos-atribuidos/
-│  ├─ notas/
-│  └─ perfil/
-│
-├─ login/
-│  └─ [role]/
-│     └─ page.tsx
+│  ├─ api/
+│  │  ├─ auth/
+│  │  │  └─ [...nextauth]/
+│  │  │      └─ route.ts
+│  │  ├─ cursos/
+│  │  │  └─ route.ts
+│  │  ├─ formadores/
+│  │  │  └─ route.ts
+│  │  └─ notificacoes/
+│  │      └─ route.ts              ✅ NOVO — GET notificações agregadas
+│  │
+│  ├─ dashboard/
+│  │  ├─ _components/
+│  │  │  ├─ coordenador-dashboard.tsx
+│  │  │  ├─ formador-dashboard.tsx
+│  │  │  └─ formando-dashboard.tsx
+│  │  │
+│  │  ├─ _data/
+│  │  │  ├─ coordenador.ts
+│  │  │  ├─ documentos.ts
+│  │  │  ├─ formador.ts
+│  │  │  ├─ formadores.ts
+│  │  │  └─ formando.ts
+│  │  │
+│  │  ├─ assiduidade/
+│  │  │  └─ page.tsx
+│  │  ├─ calendario/
+│  │  │  └─ page.tsx
+│  │  ├─ convites/
+│  │  │  └─ page.tsx
+│  │  ├─ cursos/
+│  │  │  └─ page.tsx
+│  │  ├─ disponibilidades/
+│  │  │  └─ page.tsx
+│  │  ├─ documentos/
+│  │  │  └─ page.tsx
+│  │  ├─ formadores/
+│  │  │  ├─ page.tsx
+│  │  │  ├─ [id]/
+│  │  │  │  └─ page.tsx           ✅ NOVO — perfil do formador
+│  │  │  └─ _components/
+│  │  │      └─ formadores-client.tsx
+│  │  ├─ formandos/
+│  │  │  └─ page.tsx
+│  │  ├─ meus-cursos/
+│  │  │  └─ page.tsx
+│  │  ├─ meus-cursos-formando/
+│  │  │  └─ page.tsx
+│  │  ├─ modulos/
+│  │  │  └─ page.tsx
+│  │  ├─ modulos-atribuidos/
+│  │  │  └─ page.tsx
+│  │  ├─ notas/
+│  │  │  └─ page.tsx
+│  │  ├─ perfil/
+│  │  │  └─ page.tsx
+│  │  ├─ layout.tsx
+│  │  └─ page.tsx
+│  │
+│  └─ login/
+│     └─ [role]/
+│         └─ page.tsx
 │
 ├─ components/
 │  ├─ ui/
@@ -48,7 +77,7 @@ coordena-app/
 │  │  ├─ progress.tsx
 │  │  └─ textarea.tsx
 │  ├─ app-sidebar.tsx
-│  └─ topbar.tsx
+│  └─ top-bar.tsx                  ✅ ATUALIZADO — sino de notificações funcional
 │
 ├─ lib/
 │  ├─ documento-utils.ts

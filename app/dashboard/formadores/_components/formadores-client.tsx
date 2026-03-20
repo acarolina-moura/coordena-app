@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import Link from "next/link";
 import { Plus, Search, Star, Users, Mail, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -32,8 +33,11 @@ interface FormadorUI {
 
 function toFormadorUI(f: FormadorComDetalhes): FormadorUI {
   const especialidadeTag = f.especialidade ? [f.especialidade] : [];
-  const competenciasTags = f.competencias 
-    ? f.competencias.split(",").map(c => c.trim()).filter(c => c !== "")
+  const competenciasTags = f.competencias
+    ? f.competencias
+        .split(",")
+        .map((c) => c.trim())
+        .filter((c) => c !== "")
     : [];
 
   return {
@@ -272,9 +276,9 @@ function FormadorCard({
               key={tag}
               className={cn(
                 "flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-medium transition-colors",
-                tag === formador.tags[0] 
-                  ? "border-indigo-100 bg-indigo-50 text-indigo-600 font-bold" // Destaque para especialidade (primeira tag)
-                  : "border-gray-100 bg-gray-50 text-gray-500 hover:bg-gray-100" // Estilo mais discreto para competências
+                tag === formador.tags[0]
+                  ? "border-indigo-100 bg-indigo-50 text-indigo-600 font-bold"
+                  : "border-gray-100 bg-gray-50 text-gray-500 hover:bg-gray-100",
               )}
             >
               {tag}
@@ -295,13 +299,14 @@ function FormadorCard({
         >
           {formador.status === "aceite" ? "Aceite" : "Pendente"}
         </span>
-        <Button
-          variant="outline"
-          size="sm"
-          className="rounded-full border-gray-200 text-gray-700 hover:border-indigo-300 hover:text-indigo-600 text-sm"
+
+        {/* ← Ver Perfil como Link direto */}
+        <Link
+          href={`/dashboard/formadores/${formador.id}`}
+          className="rounded-full border border-gray-200 px-4 py-1.5 text-sm font-medium text-gray-700 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
         >
           Ver Perfil
-        </Button>
+        </Link>
       </div>
 
       {/* Confirmação de eliminação */}
@@ -371,11 +376,8 @@ export function FormadoresClient({
 
   async function handleDelete(id: string) {
     try {
-      const res = await fetch(`/api/formadores/${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`/api/formadores/${id}`, { method: "DELETE" });
       const data = await res.json();
-      
       if (res.ok) {
         setFormadores((prev) => prev.filter((f) => f.id !== id));
       } else {
