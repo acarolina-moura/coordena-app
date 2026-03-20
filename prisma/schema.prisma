@@ -74,6 +74,26 @@ model Formador {
   presencas         Presenca[]
   /// Novos: Templates de avaliação definidos por este formador
   templatesAvaliacao TemplateAvaliacao[]
+  /// Disponibilidades do formador
+  disponibilidades  Disponibilidade[]
+}
+
+/// Disponibilidade: Horários em que o formador está disponível
+/// Estrutura: dia da semana + hora:minuto (30 em 30 min)
+model Disponibilidade {
+  id        String   @id @default(uuid())
+  formadorId String
+  diaSemana String   /// "Segunda", "Terça", "Quarta", "Quinta", "Sexta"
+  hora      Int      /// 9-17
+  minuto    Int      /// 0 ou 30
+  disponivel Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  formador  Formador @relation(fields: [formadorId], references: [id], onDelete: Cascade)
+  
+  /// Garantir apenas um slot por (formadorId, diaSemana, hora, minuto)
+  @@unique([formadorId, diaSemana, hora, minuto])
 }
 
 model Formando {
@@ -147,15 +167,17 @@ model Aula {
 }
 
 model Presenca {
-  id            String         @id @default(uuid())
-  status        StatusPresenca @default(AUSENTE)
-  justificativa String?
-  aulaId        String
-  formandoId    String
-  formadorId    String
-  aula          Aula           @relation(fields: [aulaId], references: [id])
-  formador      Formador       @relation(fields: [formadorId], references: [id])
-  formando      Formando       @relation(fields: [formandoId], references: [id])
+  id                  String         @id @default(uuid())
+  status              StatusPresenca @default(AUSENTE)
+  justificativa       String?
+  comentarioFormando  String?
+  documentoUrl        String?
+  aulaId              String
+  formandoId          String
+  formadorId          String
+  aula                Aula           @relation(fields: [aulaId], references: [id])
+  formador            Formador       @relation(fields: [formadorId], references: [id])
+  formando            Formando       @relation(fields: [formandoId], references: [id])
 
   @@unique([aulaId, formandoId])
 }
@@ -190,7 +212,8 @@ model Documento {
 
 model Convite {
   id           String        @id
-  formadorId   String
+  formadorId   String?
+  formandoId   String?
   cursoId      String?
   moduloId     String?
   status       StatusConvite @default(PENDENTE)
@@ -198,7 +221,7 @@ model Convite {
   dataEnvio    DateTime      @default(now())
   dataResposta DateTime?
   createdAt    DateTime      @default(now())
-  Formador     Formador      @relation(fields: [formadorId], references: [id], onDelete: Cascade)
+  Formador     Formador?     @relation(fields: [formadorId], references: [id], onDelete: Cascade)
 }
 
 model DocumentoFormador {
@@ -256,6 +279,9 @@ model ItemTemplateAvaliacao {
   nome               String          /// Nome do componente: "Ficha", "Projeto", "Teste", etc
   peso               Float           /// Peso em percentagem (máx 80%) - ex: 20.0 para 20%
   ordem              Int             @default(1) /// Ordem de exibição na tabela
+  descricao          String?
+  dataLimite         DateTime?
+  ficheiroAnexoUrl   String?
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
   
@@ -302,6 +328,7 @@ enum StatusPresenca {
   PRESENTE
   AUSENTE
   JUSTIFICADO
+  PENDENTE
 }
 
 enum StatusDocumento {
@@ -315,4 +342,34 @@ enum StatusConvite {
   PENDENTE
   ACEITE
   RECUSADO
+}
+
+/// ReviewModulo: Avaliações/reviews de módulos (existente na BD)
+model ReviewModulo {
+  id         String   @id @default(uuid())
+  formandoId String
+  moduloId   String
+  rating     Int?
+  nota       Float?
+  comentario String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([formandoId, moduloId])
+}
+
+/// SubmissaoTrabalho: Submissões de trabalhos/tarefas (existente na BD)
+model SubmissaoTrabalho {
+  id         String   @id @default(uuid())
+  itemId     String
+  formandoId String
+  ficheiro   String?
+  comentario String?
+  ficheiroUrl String?
+  dataSubmissao DateTime @default(now())
+  dataEntrega DateTime?
+  createdAt  DateTime @default(now())
+
+  @@unique([itemId, formandoId])
+  @@index([formandoId])
 }

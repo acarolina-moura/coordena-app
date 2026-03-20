@@ -1,35 +1,58 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Save } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { Save } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { salvarDisponibilidades } from './actions';
 
-const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
-const HORAS = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+const DIAS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
+const HORAS = [
+  '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', 
+  '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00'
+];
 
-// Pre-selected slots matching the image
+// Pre-selected slots matching the image (updated for 30-min intervals)
 const INITIAL: Record<string, boolean> = {
-  "09:00-Segunda": true,  "09:00-Terça": true,  "09:00-Quinta": true, "09:00-Sexta": true,
-  "10:00-Segunda": true,  "10:00-Terça": true,  "10:00-Quinta": true, "10:00-Sexta": true,
-  "11:00-Segunda": true,  "11:00-Terça": true,  "11:00-Quinta": true,
-  "14:00-Segunda": true,  "14:00-Quarta": true, "14:00-Quinta": true,
-  "15:00-Segunda": true,  "15:00-Quarta": true,
-  "16:00-Quarta": true,
+  '09:00-Segunda': true,  '09:00-Terça': true,  '09:00-Quinta': true, '09:00-Sexta': true,
+  '09:30-Segunda': true,  '09:30-Terça': true,  '09:30-Quinta': true, '09:30-Sexta': true,
+  '10:00-Segunda': true,  '10:00-Terça': true,  '10:00-Quinta': true, '10:00-Sexta': true,
+  '10:30-Segunda': true,  '10:30-Terça': true,  '10:30-Quinta': true,
+  '11:00-Segunda': true,  '11:00-Terça': true,  '11:00-Quinta': true,
+  '14:00-Segunda': true,  '14:00-Quarta': true, '14:00-Quinta': true,
+  '14:30-Segunda': true,  '14:30-Quarta': true,
+  '15:00-Segunda': true,  '15:00-Quarta': true,
+  '16:00-Quarta': true,
+  '16:30-Quarta': true,
 };
 
 export default function DisponibilidadesPage() {
   const [slots, setSlots] = useState<Record<string, boolean>>(INITIAL);
   const [saved, setSaved] = useState(false);
+  const [carregando, setCarregando] = useState(false);
 
   function toggle(hora: string, dia: string) {
     const key = `${hora}-${dia}`;
     setSlots((prev) => ({ ...prev, [key]: !prev[key] }));
   }
 
-  function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  async function handleSave() {
+    setCarregando(true);
+    try {
+      const resultado = await salvarDisponibilidades(slots);
+      
+      if (resultado.success) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      } else {
+        alert(`Erro ao guardar: ${resultado.error}`);
+      }
+    } catch (erro) {
+      console.error('Erro:', erro);
+      alert('Erro ao guardar disponibilidades');
+    } finally {
+      setCarregando(false);
+    }
   }
 
   const totalSelected = Object.values(slots).filter(Boolean).length;
@@ -46,10 +69,11 @@ export default function DisponibilidadesPage() {
         </div>
         <Button
           onClick={handleSave}
+          disabled={carregando}
           className="gap-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white px-5"
         >
           <Save className="h-4 w-4" />
-          {saved ? "Guardado!" : "Guardar"}
+          {carregando ? 'Guardando...' : saved ? 'Guardado!' : 'Guardar'}
         </Button>
       </div>
 
@@ -81,16 +105,18 @@ export default function DisponibilidadesPage() {
                     <td key={dia} className="px-1.5 py-1">
                       <button
                         onClick={() => toggle(hora, dia)}
+                        disabled={carregando}
                         className={cn(
-                          "w-full h-12 rounded-xl border-2 flex items-center justify-center transition-all duration-150",
+                          'w-full h-12 rounded-xl border-2 flex items-center justify-center transition-all duration-150',
+                          carregando && 'opacity-50 cursor-not-allowed',
                           isActive
-                            ? "border-purple-300 bg-purple-100 hover:bg-purple-200"
-                            : "border-gray-100 bg-gray-50 hover:border-purple-200 hover:bg-purple-50"
+                            ? 'border-purple-300 bg-purple-100 hover:bg-purple-200'
+                            : 'border-gray-100 bg-gray-50 hover:border-purple-200 hover:bg-purple-50'
                         )}
                       >
                         <span className={cn(
-                          "h-2.5 w-2.5 rounded-full transition-all",
-                          isActive ? "bg-purple-500 scale-110" : "bg-transparent"
+                          'h-2.5 w-2.5 rounded-full transition-all',
+                          isActive ? 'bg-purple-500 scale-110' : 'bg-transparent'
                         )} />
                       </button>
                     </td>
