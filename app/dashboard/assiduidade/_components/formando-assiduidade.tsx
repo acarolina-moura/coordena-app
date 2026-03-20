@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
     AlertTriangle,
     BookOpen,
@@ -9,12 +9,30 @@ import {
     Activity,
     UserCheck,
     RotateCcw,
-    BarChart3
+    BarChart3,
+    Send,
+    Loader2,
+    FileUp,
+    FileText,
+    Clock3
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
-import { MinhasPresencas } from "../../_data/formando";
+import type { MinhasPresencas } from "../../_data/formando";
+import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { justificarFalta } from "../actions";
 
 // ---------------------------------------------------------------------------
 // Tipos
@@ -29,19 +47,25 @@ interface FormandoAssiduidadeProps {
 function BadgeEstado({ estado }: { estado: string }) {
     if (estado === "PRESENTE")
         return (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100/50">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Presente
+            </div>
+        );
+    if (estado === "PENDENTE")
+        return (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100/50">
+                <Clock3 className="w-3.5 h-3.5" /> Pendente
             </div>
         );
     if (estado === "JUSTIFICADO")
         return (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700">
-                <AlertTriangle className="w-3.5 h-3.5" /> Justificada
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100/50">
+                <CheckCircle2 className="w-3.5 h-3.5" /> Justificada
             </div>
         );
     return (
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700">
-            <XCircle className="w-3.5 h-3.5" /> Falta
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-100/50">
+            <XCircle className="w-3.5 h-3.5" /> {estado === "AUSENTE" ? "Falta" : estado}
         </div>
     );
 }
@@ -60,15 +84,297 @@ function KPI({ label, value, icon: Icon, bg, iconBg, iconColor }: any) {
     );
 }
 
+function JustificarDialog({ presencaId, data, modulo }: { presencaId: string, data: string, modulo: string }) {
+    const [open, setOpen] = useState(false);
+    const [justificativa, setJustificativa] = useState("");
+    const [carregando, setCarregando] = useState(false);
+    const [sucesso, setSucesso] = useState(false);
+
+    async function handleSubmeter() {
+        if (!justificativa.trim()) return;
+        setCarregando(true);
+        const result = await justificarFalta(presencaId, justificativa);
+        setCarregando(false);
+        if (result.sucesso) {
+            setSucesso(true);
+            setTimeout(() => {
+                setOpen(false);
+                setSucesso(false);
+                setJustificativa("");
+            }, 2000);
+        } else {
+            alert(result.mensagem);
+        }
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-2 h-7 gap-1.5 border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-all font-bold text-[9px] uppercase tracking-wider rounded-lg shadow-sm"
+                >
+                    <RotateCcw className="w-3 h-3" /> Justificar Falta
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[450px] border-none shadow-2xl overflow-hidden rounded-[2rem] p-0">
+                <div className="bg-gradient-to-br from-amber-500 to-rose-600 p-8 text-white relative">
+                    <div className="absolute top-4 right-4 h-24 w-24 bg-white/10 rounded-full blur-2xl" />
+                    <DialogHeader className="relative z-10">
+                        <DialogTitle className="text-2xl font-bold tracking-tight">Justificar Falta</DialogTitle>
+                        <DialogDescription className="text-amber-50 text-base leading-relaxed mt-2">
+                            Estás Prestes a justificar a tua ausência no módulo <span className="font-bold text-white">{modulo}</span> ({data}).
+                        </DialogDescription>
+                    </DialogHeader>
+                </div>
+
+                <div className="p-8 bg-white">
+                    {sucesso ? (
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="flex flex-col items-center justify-center py-8 text-center"
+                        >
+                            <div className="h-16 w-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4">
+                                <CheckCircle2 className="h-10 w-10" />
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-900">Sucesso!</h3>
+                            <p className="text-slate-500 mt-1">A tua justificação foi registada com sucesso.</p>
+                        </motion.div>
+                    ) : (
+                        <div className="flex flex-col gap-6">
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="justificativa" className="text-sm font-bold text-slate-700 ml-1">MOTIVO DA AUSÊNCIA</Label>
+                                <Textarea
+                                    id="justificativa"
+                                    placeholder="Explica brevemente o motivo da tua falta..."
+                                    value={justificativa}
+                                    onChange={(e) => setJustificativa(e.target.value)}
+                                    className="min-h-[120px] bg-slate-50 border-slate-100 focus:bg-white rounded-2xl resize-none p-4 text-slate-600 focus:ring-2 focus:ring-amber-500/20 transition-all"
+                                />
+                            </div>
+
+                            <DialogFooter className="flex gap-3 sm:justify-end">
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => setOpen(false)}
+                                    disabled={carregando}
+                                    className="rounded-xl font-semibold text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button
+                                    onClick={handleSubmeter}
+                                    disabled={carregando || !justificativa.trim()}
+                                    className="bg-slate-900 hover:bg-black text-white rounded-xl px-6 font-bold shadow-lg shadow-slate-200 gap-2 h-11"
+                                >
+                                    {carregando ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <Send className="w-4 h-4" />
+                                    )}
+                                    Enviar Justificação
+                                </Button>
+                            </DialogFooter>
+                        </div>
+                    )}
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function JustificarFaltasGeral({ faltas }: { faltas: any[] }) {
+    const [open, setOpen] = useState(false);
+    const [selectedFaltaId, setSelectedFaltaId] = useState<string | null>(faltas.length === 1 ? faltas[0].id : null);
+    const [justificativa, setJustificativa] = useState("");
+    const [file, setFile] = useState<File | null>(null);
+    const [carregando, setCarregando] = useState(false);
+    const [sucesso, setSucesso] = useState(false);
+
+    async function handleSubmeter() {
+        if (!selectedFaltaId || !justificativa.trim()) return;
+        setCarregando(true);
+        // Simulando o upload enviando apenas o nome do arquivo
+        const result = await justificarFalta(selectedFaltaId, justificativa, file?.name);
+        setCarregando(false);
+        if (result.sucesso) {
+            setSucesso(true);
+            setTimeout(() => {
+                setOpen(false);
+                setSucesso(false);
+                setJustificativa("");
+                setFile(null);
+                setSelectedFaltaId(faltas.length === 1 ? faltas[0].id : null);
+            }, 2000);
+        } else {
+            alert(result.mensagem);
+        }
+    }
+
+    const selecionada = faltas.find(f => f.id === selectedFaltaId);
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button className="bg-slate-900 hover:bg-black text-white font-bold rounded-xl shadow-lg transition-all gap-2 px-6 h-11 border-none">
+                    <RotateCcw className="w-4 h-4 text-teal-400" /> Justificar Ausências
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px] border-none shadow-2xl overflow-hidden rounded-[2rem] p-0">
+                <div className="bg-slate-900 p-8 text-white relative">
+                    <div className="absolute top-4 right-4 h-24 w-24 bg-teal-500/10 rounded-full blur-2xl" />
+                    <DialogHeader className="relative z-10">
+                        <DialogTitle className="text-2xl font-bold tracking-tight">Justificar Faltas</DialogTitle>
+                        <DialogDescription className="text-slate-400 text-base leading-relaxed mt-2 italic">
+                            Tens <span className="font-bold text-teal-400">{faltas.length}</span> ausências pendentes de justificação.
+                        </DialogDescription>
+                    </DialogHeader>
+                </div>
+                
+                <div className="p-8 bg-white">
+                    {sucesso ? (
+                        <motion.div 
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="flex flex-col items-center justify-center py-8 text-center"
+                        >
+                            <div className="h-16 w-16 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center mb-4">
+                                <CheckCircle2 className="h-10 w-10" />
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-900">Sucesso!</h3>
+                            <p className="text-slate-500 mt-1">A tua justificação foi registada com sucesso.</p>
+                        </motion.div>
+                    ) : (
+                        <div className="flex flex-col gap-6">
+                            {faltas.length > 1 && (
+                                <div className="flex flex-col gap-3">
+                                    <Label className="text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-widest">Seleciona a Aula</Label>
+                                    <div className="grid grid-cols-1 gap-2 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
+                                        {faltas.map((f) => {
+                                            const d = new Date(f.dataHora);
+                                            return (
+                                                <button
+                                                    key={f.id}
+                                                    onClick={() => setSelectedFaltaId(f.id)}
+                                                    className={cn(
+                                                        "flex flex-col p-4 rounded-2xl border text-left transition-all",
+                                                        selectedFaltaId === f.id 
+                                                            ? "border-teal-500 bg-teal-50 ring-4 ring-teal-500/5 shadow-sm" 
+                                                            : "border-slate-100 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-200"
+                                                    )}
+                                                >
+                                                    <span className={cn(
+                                                        "text-[10px] font-bold uppercase tracking-wider mb-1",
+                                                        selectedFaltaId === f.id ? "text-teal-600" : "text-slate-400"
+                                                    )}>{f.modulo}</span>
+                                                    <span className="text-sm font-bold text-slate-900">{f.aula}</span>
+                                                    <span className="text-xs text-slate-500 mt-0.5">{d.toLocaleDateString("pt-PT")}</span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedFaltaId && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="flex flex-col gap-5"
+                                >
+                                    <div className="flex flex-col gap-2">
+                                        <Label htmlFor="justificativa" className="text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-widest leading-none">
+                                            {faltas.length === 1 ? "Comentário da Ausência" : `Comentário para ${selecionada?.modulo}`}
+                                        </Label>
+                                        <Textarea
+                                            id="justificativa"
+                                            placeholder="Explica brevemente o motivo da tua falta..."
+                                            value={justificativa}
+                                            onChange={(e) => setJustificativa(e.target.value)}
+                                            className="min-h-[100px] bg-slate-50 border-slate-100 focus:bg-white focus:border-teal-400 rounded-2xl resize-none p-4 text-slate-600 focus:ring-4 focus:ring-teal-500/5 transition-all outline-none text-sm"
+                                        />
+                                    </div>
+
+                                    {/* Mock File Upload */}
+                                    <div className="flex flex-col gap-2">
+                                        <Label className="text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-widest leading-none">Documento Comprovativo</Label>
+                                        <div className="relative">
+                                            <input 
+                                                type="file" 
+                                                id="file-upload" 
+                                                className="hidden" 
+                                                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                                            />
+                                            <label 
+                                                htmlFor="file-upload"
+                                                className={cn(
+                                                    "flex items-center gap-3 w-full p-4 rounded-2xl border-2 border-dashed transition-all cursor-pointer",
+                                                    file 
+                                                        ? "border-teal-200 bg-teal-50/30 text-teal-600" 
+                                                        : "border-slate-100 bg-slate-50/50 text-slate-400 hover:border-teal-200 hover:bg-teal-50/20"
+                                                )}
+                                            >
+                                                <div className={cn(
+                                                    "h-10 w-10 rounded-xl flex items-center justify-center shrink-0",
+                                                    file ? "bg-teal-100 text-teal-600" : "bg-white text-slate-400"
+                                                )}>
+                                                    <FileUp className="w-5 h-5" />
+                                                </div>
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="text-sm font-bold truncate">
+                                                        {file ? file.name : "Selecionar Documento"}
+                                                    </span>
+                                                    <span className="text-[11px] opacity-70">
+                                                        {file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : "PDF, JPG ou PNG (máx 5MB)"}
+                                                    </span>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <DialogFooter className="flex gap-3 sm:justify-end pt-2">
+                                        <Button 
+                                            variant="ghost" 
+                                            onClick={() => setOpen(false)} 
+                                            disabled={carregando}
+                                            className="rounded-xl font-semibold text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+                                        >
+                                            Cancelar
+                                        </Button>
+                                        <Button 
+                                            onClick={handleSubmeter} 
+                                            disabled={carregando || !justificativa.trim() || !file}
+                                            className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl px-10 font-bold shadow-lg shadow-teal-100 gap-2 h-11"
+                                        >
+                                            {carregando ? (
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                            ) : (
+                                                <Send className="w-4 h-4" />
+                                            )}
+                                            Submeter Justificação
+                                        </Button>
+                                    </DialogFooter>
+                                </motion.div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 // ---------------------------------------------------------------------------
 // Componente principal
 // ---------------------------------------------------------------------------
 export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
     const LIMITE_RISCO = 75; // % mínima exigida
     const totalAulas = presencas.length;
-    const totalPresencas = presencas.filter((p) => p.status === "PRESENTE").length;
-    const totalFaltas = presencas.filter((p) => p.status === "AUSENTE").length;
-    const totalJustificadas = presencas.filter((p) => p.status === "JUSTIFICADO").length;
+    const totalPresencas = presencas.filter((p: any) => p.status === "PRESENTE").length;
+    const totalFaltas = presencas.filter((p: any) => p.status === "AUSENTE" || p.status === "PENDENTE").length;
+    const totalJustificadas = presencas.filter((p: any) => p.status === "JUSTIFICADO").length;
 
     const percentagem = totalAulas > 0
         ? Math.round(((totalPresencas + totalJustificadas) / totalAulas) * 100)
@@ -84,26 +390,47 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
         const mesDocs = presencas.filter(p => new Date(p.dataHora).toLocaleString('pt-PT', { month: 'short' }) === mes);
         return {
             mes,
-            presencas: mesDocs.filter(p => p.status === "PRESENTE").length,
-            faltas: mesDocs.filter(p => p.status === "AUSENTE").length
+            presencas: mesDocs.filter(p => (p.status as string) === "PRESENTE").length,
+            faltas: mesDocs.filter(p => (p.status as string) === "AUSENTE" || (p.status as string) === "PENDENTE").length
         };
     }).reverse();
+
+    const faltasPendentes = presencas.filter(p => {
+        const s = p.status as string;
+        return (
+            s !== "PRESENTE" && 
+            s !== "JUSTIFICADO" && 
+            s !== "PENDENTE" &&
+            !p.comentarioFormando
+        );
+    });
 
     return (
         <div className="flex flex-col gap-8">
             {/* Header */}
-            <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-            >
-                <h1 className="text-[26px] font-bold text-gray-900">
-                    Minha Assiduidade
-                </h1>
-                <p className="mt-1 text-sm text-gray-400">Acompanha o teu registo de presenças e faltas</p>
-            </motion.div>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                >
+                    <h1 className="text-[26px] font-bold text-gray-900">
+                        Minha Assiduidade
+                    </h1>
+                    <p className="mt-1 text-sm text-gray-400">Acompanha o teu registo de presenças e faltas</p>
+                </motion.div>
+
+                {faltasPendentes.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                    >
+                        <JustificarFaltasGeral faltas={faltasPendentes} />
+                    </motion.div>
+                )}
+            </div>
 
             {/* KPIs */}
-            <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 xl:grid-cols-4">
                 <KPI
                     label="TAXA GLOBAL"
                     value={`${percentagem}%`}
@@ -131,10 +458,10 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                 <KPI
                     label="JUSTIFICADAS"
                     value={totalJustificadas}
-                    icon={RotateCcw}
-                    bg="bg-amber-50"
-                    iconBg="bg-amber-100"
-                    iconColor="text-amber-500"
+                    icon={CheckCircle2}
+                    bg="bg-emerald-50"
+                    iconBg="bg-emerald-100"
+                    iconColor="text-emerald-500"
                 />
             </div>
 
@@ -174,7 +501,7 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                                     <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Data e Hora</th>
                                     <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Módulo / Aula</th>
                                     <th className="px-6 py-4 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Justificativa</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">Justificativa</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -185,7 +512,7 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                                         </td>
                                     </tr>
                                 ) : (
-                                    presencas.map((p, i) => {
+                                    presencas.map((p: any, i: number) => {
                                         const data = new Date(p.dataHora);
                                         return (
                                             <motion.tr
@@ -210,12 +537,24 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
-                                                    <BadgeEstado estado={p.status} />
+                                                    <BadgeEstado estado={p.status as string} />
                                                 </td>
-                                                <td className="px-6 py-4">
-                                                    <span className="text-xs text-slate-400 italic">
-                                                        {p.justificativa || "—"}
-                                                    </span>
+                                                <td className="px-6 py-4 hidden md:table-cell">
+                                                    {(p.status as string) === "PENDENTE" ? (
+                                                        <div className="flex flex-col gap-1">
+                                                            <div className="flex items-center gap-1.5 text-indigo-600">
+                                                                <FileText className="w-3.5 h-3.5" />
+                                                                <span className="text-xs font-bold uppercase tracking-wider">Em Análise</span>
+                                                            </div>
+                                                            <span className="text-[10px] text-slate-400 italic truncate max-w-[200px]">
+                                                                DOC: {p.documentoUrl || "Sem anexo"}
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-xs text-slate-400 italic">
+                                                            {p.justificativa || "—"}
+                                                        </span>
+                                                    )}
                                                 </td>
                                             </motion.tr>
                                         );

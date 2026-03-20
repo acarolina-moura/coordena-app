@@ -1,4 +1,4 @@
-import { BookOpen, Clock, ClipboardList, CalendarDays, GraduationCap, ArrowRight } from 'lucide-react'
+import { BookOpen, Clock, ClipboardList, CalendarDays, GraduationCap, ArrowRight, Mail } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { Progress } from '@/components/ui/progress'
@@ -28,6 +28,27 @@ export async function FormandoDashboard({ userName, userId }: { userName: string
 
   return (
     <div className="flex flex-col gap-8">
+      {/* Alert for Pending Invitations */}
+      {stats.pendingInvitations > 0 && (
+        <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 flex items-center justify-between gap-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+              <Mail className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-amber-900">Tens convites pendentes!</h3>
+              <p className="text-xs text-amber-700/80">Foste convidado para {stats.pendingInvitations} novo(s) curso(s) ou módulo(s).</p>
+            </div>
+          </div>
+          <Link
+            href="/dashboard/convites"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-600/20 whitespace-nowrap"
+          >
+            Ver Convites
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      )}
       {/* Header */}
       <div>
         <h1 className="text-[26px] font-bold text-gray-900">
@@ -37,7 +58,7 @@ export async function FormandoDashboard({ userName, userId }: { userName: string
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 xl:grid-cols-3">
         {kpis.map((kpi) => {
           const Icon = kpi.icon
           return (
@@ -89,7 +110,7 @@ export async function FormandoDashboard({ userName, userId }: { userName: string
 
             <Progress value={curso.progressoGeral} className="h-2 bg-gray-100 [&>*]:bg-teal-400" />
 
-            <div className="grid grid-cols-3 gap-3 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
               {curso.modulos.map((m: any) => (
                 <div key={m.id} className="flex flex-col gap-1.5 rounded-xl bg-gray-50 border border-gray-100 p-3">
                   <span className="text-xs font-semibold text-gray-700 leading-tight">{m.nome}</span>

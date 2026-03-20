@@ -1,0 +1,19 @@
+﻿app/dashboard/calendario/_components/formador-calendario.tsx(124,19): error TS2345: Argument of type 'never[] | { id: string; nome: string; status: StatusPresenca; }[]' is not assignable to parameter of type 'SetStateAction<AlunoPresenca[]>'.
+  Type '{ id: string; nome: string; status: StatusPresenca; }[]' is not assignable to type 'SetStateAction<AlunoPresenca[]>'.
+    Type '{ id: string; nome: string; status: StatusPresenca; }[]' is not assignable to type 'AlunoPresenca[]'.
+      Type '{ id: string; nome: string; status: $Enums.StatusPresenca; }' is not assignable to type 'AlunoPresenca'.
+        Types of property 'status' are incompatible.
+          Type 'StatusPresenca' is not assignable to type '"PRESENTE" | "AUSENTE" | "JUSTIFICADO"'.
+            Type '"PENDENTE"' is not assignable to type '"PRESENTE" | "AUSENTE" | "JUSTIFICADO"'.
+app/dashboard/calendario/_components/formador-calendario.tsx(170,23): error TS2345: Argument of type 'never[] | { id: string; nome: string; status: StatusPresenca; }[]' is not assignable to parameter of type 'SetStateAction<AlunoPresenca[]>'.
+  Type '{ id: string; nome: string; status: StatusPresenca; }[]' is not assignable to type 'SetStateAction<AlunoPresenca[]>'.
+    Type '{ id: string; nome: string; status: StatusPresenca; }[]' is not assignable to type 'AlunoPresenca[]'.
+      Type '{ id: string; nome: string; status: $Enums.StatusPresenca; }' is not assignable to type 'AlunoPresenca'.
+        Types of property 'status' are incompatible.
+          Type 'StatusPresenca' is not assignable to type '"PRESENTE" | "AUSENTE" | "JUSTIFICADO"'.
+            Type '"PENDENTE"' is not assignable to type '"PRESENTE" | "AUSENTE" | "JUSTIFICADO"'.
+app/dashboard/meus-cursos/_components/formandos-meus-cursos.tsx(52,90): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<StatusCurso, string>'.
+app/dashboard/meus-cursos/_components/formandos-meus-cursos.tsx(79,32): error TS7006: Parameter 'mod' implicitly has an 'any' type.
+app/dashboard/reviews/_components/review-lista.tsx(56,29): error TS2322: Type '{ modId: string; star: number; } | null' is not assignable to type 'number | null'.
+  Type '{ modId: string; star: number; }' is not assignable to type 'number'.
+app/dashboard/reviews/_components/review-lista.tsx(107,38): error TS18047: 'hoveredIdx' is possibly 'null'.

@@ -6,7 +6,7 @@ import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, BookOpen, Puzzle, Users, GraduationCap,
   CalendarDays, FileText, LogOut, User, ClipboardList, Mail,
-  CheckCircle2
+  CheckCircle2, Star
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,20 +21,23 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["COORDENADOR", "FORMADOR", "FORMANDO"] },
-  { label: "O Meu Perfil", href: "/dashboard/perfil", icon: User, roles: ["FORMADOR"] },
+  { label: "O Meu Perfil", href: "/dashboard/perfil", icon: User, roles: ["FORMADOR", "FORMANDO"] },
   { label: "Disponibilidades", href: "/dashboard/disponibilidades", icon: CalendarDays, roles: ["FORMADOR"] },
   { label: "Módulos Atribuídos", href: "/dashboard/modulos-atribuidos", icon: BookOpen, roles: ["FORMADOR"] },
   { label: "Notas de Alunos", href: "/dashboard/notas", icon: ClipboardList, roles: ["FORMADOR"] },
   { label: "Documentos", href: "/dashboard/documentos", icon: FileText, roles: ["FORMADOR", "COORDENADOR", "FORMANDO"] },
-  { label: "Convites", href: "/dashboard/convites", icon: Mail, roles: ["FORMADOR"] },
+  { label: "Convites", href: "/dashboard/convites", icon: Mail, roles: ["FORMADOR", "FORMANDO"] },
   { label: "Cursos", href: "/dashboard/cursos", icon: BookOpen, roles: ["COORDENADOR"] },
   { label: "Módulos", href: "/dashboard/modulos", icon: Puzzle, roles: ["COORDENADOR"] },
   { label: "Formadores", href: "/dashboard/formadores", icon: Users, roles: ["COORDENADOR"] },
   { label: "Formandos", href: "/dashboard/formandos", icon: GraduationCap, roles: ["COORDENADOR"] },
   { label: "Calendário", href: "/dashboard/calendario", icon: CalendarDays, roles: ["COORDENADOR", "FORMADOR", "FORMANDO"] },
   { label: "Os Meus Cursos", href: "/dashboard/meus-cursos", icon: BookOpen, roles: ["FORMANDO"] },
-  { label: "Minhas Notas", href: "/dashboard/notas", icon: ClipboardList, roles: ["FORMANDO"] },
+  { label: "Cronograma", href: "/dashboard/cronograma", icon: ClipboardList, roles: ["FORMANDO"] },
+  { label: "Entregar Trabalhos", href: "/dashboard/trabalhos", icon: ClipboardList, roles: ["FORMANDO"] },
+  { label: "Minhas Notas", href: "/dashboard/notas", icon: FileText, roles: ["FORMANDO"] },
   { label: "Minhas Presenças", href: "/dashboard/assiduidade", icon: CheckCircle2, roles: ["FORMANDO"] },
+  { label: "Avaliar Módulos", href: "/dashboard/reviews", icon: Star, roles: ["FORMANDO"] },
 ];
 
 const ROLE_CONFIG: Record<UserRole, { label: string; active: string; logo: string; color: string }> = {
@@ -53,7 +56,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const visible = NAV_ITEMS.filter((item) => item.roles.includes(user.role));
 
   return (
-    <aside className="flex h-screen w-[268px] shrink-0 flex-col border-r border-gray-200 bg-white">
+    <aside className="flex h-full w-[268px] shrink-0 flex-col border-r border-gray-200 bg-white">
       {/* Logo */}
       <div className="flex items-center gap-3 border-b border-gray-200 px-6 py-5">
         <div className={cn("flex h-10 w-10 items-center justify-center rounded-xl text-white", cfg.logo)}>
