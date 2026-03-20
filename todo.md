@@ -2,91 +2,120 @@
 
 coordena-app/
 ├─ app/
-│  ├─ api/
-│  │  ├─ auth/
-│  │  │  └─ [...nextauth]/
-│  │  │      └─ route.ts
-│  │  ├─ cursos/
-│  │  │  └─ route.ts
-│  │  ├─ formadores/
-│  │  │  └─ route.ts
-│  │  └─ notificacoes/
-│  │      └─ route.ts              ✅ NOVO — GET notificações agregadas
-│  │
-│  ├─ dashboard/
-│  │  ├─ _components/
-│  │  │  ├─ coordenador-dashboard.tsx
-│  │  │  ├─ formador-dashboard.tsx
-│  │  │  └─ formando-dashboard.tsx
-│  │  │
-│  │  ├─ _data/
-│  │  │  ├─ coordenador.ts
-│  │  │  ├─ documentos.ts
-│  │  │  ├─ formador.ts
-│  │  │  ├─ formadores.ts
-│  │  │  └─ formando.ts
-│  │  │
-│  │  ├─ assiduidade/
-│  │  │  └─ page.tsx
-│  │  ├─ calendario/
-│  │  │  └─ page.tsx
-│  │  ├─ convites/
-│  │  │  └─ page.tsx
-│  │  ├─ cursos/
-│  │  │  └─ page.tsx
-│  │  ├─ disponibilidades/
-│  │  │  └─ page.tsx
-│  │  ├─ documentos/
-│  │  │  └─ page.tsx
-│  │  ├─ formadores/
-│  │  │  ├─ page.tsx
-│  │  │  ├─ [id]/
-│  │  │  │  └─ page.tsx           ✅ NOVO — perfil do formador
-│  │  │  └─ _components/
-│  │  │      └─ formadores-client.tsx
-│  │  ├─ formandos/
-│  │  │  └─ page.tsx
-│  │  ├─ meus-cursos/
-│  │  │  └─ page.tsx
-│  │  ├─ meus-cursos-formando/
-│  │  │  └─ page.tsx
-│  │  ├─ modulos/
-│  │  │  └─ page.tsx
-│  │  ├─ modulos-atribuidos/
-│  │  │  └─ page.tsx
-│  │  ├─ notas/
-│  │  │  └─ page.tsx
-│  │  ├─ perfil/
-│  │  │  └─ page.tsx
-│  │  ├─ layout.tsx
-│  │  └─ page.tsx
-│  │
-│  └─ login/
-│     └─ [role]/
-│         └─ page.tsx
+│ ├─ api/
+│ │ ├─ auth/
+│ │ │ └─ [...nextauth]/
+│ │ │ └─ route.ts
+│ │ ├─ aulas/
+│ │ │ └─ route.ts
+│ │ ├─ cursos/
+│ │ │ └─ route.ts
+│ │ ├─ formadores/
+│ │ │ └─ route.ts
+│ │ ├─ modulos/
+│ │ │ └─ route.ts
+│ │ └─ notificacoes/
+│ │ └─ route.ts ✅ NOVO
+│ │
+│ ├─ dashboard/
+│ │ ├─ \_components/
+│ │ │ ├─ coordenador-dashboard.tsx
+│ │ │ ├─ formador-dashboard.tsx
+│ │ │ └─ formando-dashboard.tsx
+│ │ │
+│ │ ├─ \_data/
+│ │ │ ├─ coordenador.ts ✅ ATUALIZADO
+│ │ │ ├─ documentos.ts
+│ │ │ ├─ formador.ts
+│ │ │ ├─ formadores.ts
+│ │ │ └─ formando.ts
+│ │ │
+│ │ ├─ assiduidade/
+│ │ │ ├─ \_components/
+│ │ │ │ ├─ formando-assiduidade.tsx
+│ │ │ │ └─ coordenador-assiduidade.tsx ✅ NOVO
+│ │ │ └─ page.tsx ✅ ATUALIZADO
+│ │ │
+│ │ ├─ calendario/
+│ │ │ ├─ \_components/
+│ │ │ │ ├─ coordenador-calendario.tsx ✅ ATUALIZADO
+│ │ │ │ ├─ formador-calendario.tsx
+│ │ │ │ └─ formando-calendario.tsx
+│ │ │ └─ page.tsx
+│ │ │
+│ │ ├─ convites/
+│ │ │ └─ page.tsx
+│ │ │
+│ │ ├─ cursos/
+│ │ │ └─ page.tsx
+│ │ │
+│ │ ├─ disponibilidades/
+│ │ │ ├─ \_components/
+│ │ │ │ ├─ formador-disponibilidades.tsx ✅ NOVO
+│ │ │ │ └─ coordenador-disponibilidades.tsx ✅ NOVO
+│ │ │ └─ page.tsx ✅ ATUALIZADO
+│ │ │
+│ │ ├─ documentos/
+│ │ │ └─ page.tsx
+│ │ │
+│ │ ├─ formadores/
+│ │ │ ├─ \_components/
+│ │ │ │ └─ formadores-client.tsx ✅ ATUALIZADO
+│ │ │ ├─ [id]/
+│ │ │ │ └─ page.tsx ✅ NOVO
+│ │ │ └─ page.tsx
+│ │ │
+│ │ ├─ formandos/
+│ │ │ ├─ formandos-client.tsx ✅ NOVO
+│ │ │ └─ page.tsx ✅ ATUALIZADO
+│ │ │
+│ │ ├─ meus-cursos/
+│ │ │ └─ page.tsx
+│ │ │
+│ │ ├─ meus-cursos-formando/
+│ │ │ └─ page.tsx
+│ │ │
+│ │ ├─ modulos/
+│ │ │ └─ page.tsx
+│ │ │
+│ │ ├─ modulos-atribuidos/
+│ │ │ └─ page.tsx
+│ │ │
+│ │ ├─ notas/
+│ │ │ └─ page.tsx
+│ │ │
+│ │ ├─ perfil/
+│ │ │ └─ page.tsx
+│ │ │
+│ │ ├─ layout.tsx ✅ ATUALIZADO
+│ │ └─ page.tsx
+│ │
+│ └─ login/
+│ └─ [role]/
+│ └─ page.tsx
 │
 ├─ components/
-│  ├─ ui/
-│  │  ├─ alert-dialog.tsx
-│  │  ├─ avatar.tsx
-│  │  ├─ button.tsx
-│  │  ├─ dialog.tsx
-│  │  ├─ dropdown-menu.tsx
-│  │  ├─ input.tsx
-│  │  ├─ label.tsx
-│  │  ├─ progress.tsx
-│  │  └─ textarea.tsx
-│  ├─ app-sidebar.tsx
-│  └─ top-bar.tsx                  ✅ ATUALIZADO — sino de notificações funcional
+│ ├─ ui/
+│ │ ├─ alert-dialog.tsx
+│ │ ├─ avatar.tsx
+│ │ ├─ button.tsx
+│ │ ├─ dialog.tsx
+│ │ ├─ dropdown-menu.tsx
+│ │ ├─ input.tsx
+│ │ ├─ label.tsx
+│ │ ├─ progress.tsx
+│ │ └─ textarea.tsx
+│ ├─ app-sidebar.tsx ✅ ATUALIZADO
+│ └─ top-bar.tsx ✅ ATUALIZADO
 │
 ├─ lib/
-│  ├─ documento-utils.ts
-│  ├─ prisma.ts
-│  └─ utils.ts
+│ ├─ documento-utils.ts
+│ ├─ prisma.ts
+│ └─ utils.ts
 │
 ├─ prisma/
-│  ├─ schema.prisma
-│  └─ prisma.config.ts
+│ ├─ schema.prisma
+│ └─ prisma.config.ts
 │
 ├─ .env
 ├─ package.json

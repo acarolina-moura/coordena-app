@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import type { AssiduidadeFormando } from "../assiduidade/_components/coordenador-assiduidade";
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
 
@@ -130,7 +131,7 @@ export type FormadorComDetalhes = {
 };
 
 export async function getFormadores(): Promise<FormadorComDetalhes[]> {
-  const formadores = await prisma.formador.findMany({
+  return await prisma.formador.findMany({
     select: {
       id: true,
       userId: true,
@@ -147,8 +148,6 @@ export async function getFormadores(): Promise<FormadorComDetalhes[]> {
     },
     orderBy: { user: { nome: "asc" } },
   });
-
-  return formadores;
 }
 
 // ─── Perfil de um Formador (por ID) ──────────────────────────────────────────
@@ -230,6 +229,36 @@ export async function getFormadorById(
       dataExpiracao: d.dataExpiracao,
     })),
   };
+}
+
+// ─── Assiduidade (Coordenador) ────────────────────────────────────────────────
+
+export async function getAssiduidadeCoordenador(): Promise<
+  AssiduidadeFormando[]
+> {
+  const formandos = await prisma.formando.findMany({
+    include: {
+      user: { select: { nome: true } },
+      inscricoes: { include: { curso: { select: { nome: true } } }, take: 1 },
+      presencas: {
+        where: {
+          status: { in: ["PRESENTE", "AUSENTE", "JUSTIFICADO"] },
+        },
+        select: { status: true },
+      },
+    },
+    orderBy: { user: { nome: "asc" } },
+  });
+
+  return formandos.map((f) => ({
+    id: f.id,
+    nome: f.user.nome,
+    curso: f.inscricoes[0]?.curso.nome ?? "Sem curso",
+    total: f.presencas.length,
+    presentes: f.presencas.filter((p) => p.status === "PRESENTE").length,
+    ausentes: f.presencas.filter((p) => p.status === "AUSENTE").length,
+    justificados: f.presencas.filter((p) => p.status === "JUSTIFICADO").length,
+  }));
 }
 
 // ─── Módulos ──────────────────────────────────────────────────────────────────

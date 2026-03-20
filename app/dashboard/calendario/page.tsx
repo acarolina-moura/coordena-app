@@ -1,3 +1,4 @@
+//app/dashboard/calendario/page.tsx
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import FormadorCalendario from "./_components/formador-calendario";
@@ -15,4 +16,4 @@ export default async function CalendarioPage() {
   if (role === "COORDENADOR") return <CoordenadorCalendario />;
 
   redirect("/dashboard");
-}
+}
