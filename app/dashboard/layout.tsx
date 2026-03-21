@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
-import { AppSidebar } from "@/components/app-sidebar";
-import { TopBar } from "@/components/top-bar";
+import { redirect } from 'next/navigation'
+import { auth } from '@/auth'
+import { AppSidebar } from '@/components/app-sidebar'
+import { DashboardShell } from '@/components/dashboard-shell'
 
 export default async function DashboardLayout({
   children,
@@ -19,12 +19,12 @@ export default async function DashboardLayout({
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
-      <AppSidebar user={user} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <TopBar user={user} />
-        <main className="flex-1 overflow-auto p-8">{children}</main>
-      </div>
-    </div>
-  );
+    <DashboardShell
+      user={user}
+      notificationCount={3}
+      sidebar={<AppSidebar user={user} />}
+    >
+      {children}
+    </DashboardShell>
+  )
 }

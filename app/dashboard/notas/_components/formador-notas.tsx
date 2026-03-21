@@ -113,7 +113,8 @@ export default function FormadorNotasPage() {
   }, []);
 
   /**
-   * Quando receber módulos, apenas carregar as notas existentes
+   * Quando receber módulos e templates estiverem prontos,
+   * carregar apenas as notas existentes cujos items ainda estão no template
    * Nota final será calculada apenas ao guardar
    */
   useEffect(() => {
@@ -121,13 +122,22 @@ export default function FormadorNotasPage() {
       const novasNotas: NotasState = {};
 
       for (const modulo of modulos) {
+        // Obter IDs dos items válidos no template atual
+        const templateAtual = templates[modulo.id];
+        const itemsValidos = new Set(
+          templateAtual?.items.map((item) => item.id) || []
+        );
+
         for (const aluno of modulo.alunos) {
           const resultado = await obterNotasParciaisAluno(aluno.id, modulo.id);
 
           if (resultado.notas && resultado.notas.length > 0) {
             novasNotas[aluno.id] = {};
             resultado.notas.forEach((nota: any) => {
-              novasNotas[aluno.id][nota.item.id] = nota.valor;
+              // Só incluir nota se o item ainda existe no template
+              if (itemsValidos.has(nota.item.id)) {
+                novasNotas[aluno.id][nota.item.id] = nota.valor;
+              }
             });
           }
         }
@@ -136,10 +146,11 @@ export default function FormadorNotasPage() {
       setNotas(novasNotas);
     }
 
-    if (modulos.length > 0) {
+    // Só carregar notas quando templates já estão prontos
+    if (modulos.length > 0 && Object.keys(templates).length > 0) {
       carregarNotasExistentes();
     }
-  }, [modulos]);
+  }, [modulos, templates]);
 
   /**
    * Filtrar módulos por busca
@@ -171,14 +182,26 @@ export default function FormadorNotasPage() {
 
     try {
       for (const modulo of modulos) {
+        // Obter template para validar items
+        const template = templates[modulo.id];
+        const itemsValidos = new Set(template?.items.map((item) => item.id) || []);
+
         for (const aluno of modulo.alunos) {
           const notasAluno = notas[aluno.id] || {};
 
-          if (Object.keys(notasAluno).length > 0) {
+          // Filtrar apenas items que existem no template atual
+          const notasValidas = Object.entries(notasAluno)
+            .filter(([itemId]) => itemsValidos.has(itemId))
+            .reduce((acc, [itemId, valor]) => {
+              acc[itemId] = valor;
+              return acc;
+            }, {} as Record<string, number>);
+
+          if (Object.keys(notasValidas).length > 0) {
             const resultado = await salvarNotasParciais(
               modulo.id,
               aluno.id,
-              notasAluno
+              notasValidas
             );
 
             if (!resultado.success) {

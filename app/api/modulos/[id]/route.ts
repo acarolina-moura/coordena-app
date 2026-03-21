@@ -64,25 +64,30 @@ export async function PUT(
       }
     }
 
-    // Gerencia a atribuição de formador
+    // Gerencia o convite para o formador
     if (formadorId) {
-      // Remove todos os formadores atuais
-      await prisma.formadorModulo.deleteMany({
-        where: { moduloId: id },
-      });
-
-      // Adiciona o novo formador
-      await prisma.formadorModulo.create({
-        data: {
+      // Verificar se já existe um convite pendente para este formador
+      const conviteExistente = await prisma.convite.findFirst({
+        where: {
           formadorId,
           moduloId: id,
+          status: 'PENDENTE',
         },
       });
-    } else {
-      // Remove todos os formadores se nenhum foi selecionado
-      await prisma.formadorModulo.deleteMany({
-        where: { moduloId: id },
-      });
+
+      // Se não existe, criar um novo convite
+      if (!conviteExistente) {
+        await prisma.convite.create({
+          data: {
+            id: crypto.randomUUID(),
+            formadorId,
+            moduloId: id,
+            cursoId,
+            descricao: `Convite para lecionar o módulo "${nome}"`,
+            status: 'PENDENTE',
+          },
+        });
+      }
     }
 
     // Atualiza o módulo

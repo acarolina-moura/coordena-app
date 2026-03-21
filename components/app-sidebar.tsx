@@ -17,6 +17,8 @@ import {
   Mail,
   Clock,
   BarChart2,
+  CheckCircle2,
+  Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +38,8 @@ const NAV_ITEMS: NavItem[] = [
     icon: LayoutDashboard,
     roles: ["COORDENADOR", "FORMADOR", "FORMANDO"],
   },
+
+  // ── FORMADOR ──────────────────────────────────────────────────────────────
   {
     label: "O Meu Perfil",
     href: "/dashboard/perfil",
@@ -46,7 +50,7 @@ const NAV_ITEMS: NavItem[] = [
     label: "Disponibilidades",
     href: "/dashboard/disponibilidades",
     icon: Clock,
-    roles: ["FORMADOR", "COORDENADOR"],
+    roles: ["FORMADOR"],
   },
   {
     label: "Módulos Atribuídos",
@@ -64,7 +68,7 @@ const NAV_ITEMS: NavItem[] = [
     label: "Documentos",
     href: "/dashboard/documentos",
     icon: FileText,
-    roles: ["FORMADOR", "COORDENADOR", "FORMANDO"],
+    roles: ["FORMADOR"],
   },
   {
     label: "Convites",
@@ -72,6 +76,14 @@ const NAV_ITEMS: NavItem[] = [
     icon: Mail,
     roles: ["FORMADOR"],
   },
+  {
+    label: "Calendário",
+    href: "/dashboard/calendario",
+    icon: CalendarDays,
+    roles: ["FORMADOR"],
+  },
+
+  // ── COORDENADOR ───────────────────────────────────────────────────────────
   {
     label: "Cursos",
     href: "/dashboard/cursos",
@@ -103,10 +115,30 @@ const NAV_ITEMS: NavItem[] = [
     roles: ["COORDENADOR"],
   },
   {
+    label: "Disponibilidades",
+    href: "/dashboard/disponibilidades",
+    icon: Clock,
+    roles: ["COORDENADOR"],
+  },
+  {
+    label: "Documentos",
+    href: "/dashboard/documentos",
+    icon: FileText,
+    roles: ["COORDENADOR"],
+  },
+  {
     label: "Calendário",
     href: "/dashboard/calendario",
     icon: CalendarDays,
-    roles: ["COORDENADOR", "FORMADOR", "FORMANDO"],
+    roles: ["COORDENADOR"],
+  },
+
+  // ── FORMANDO ──────────────────────────────────────────────────────────────
+  {
+    label: "O Meu Perfil",
+    href: "/dashboard/perfil",
+    icon: User,
+    roles: ["FORMANDO"],
   },
   {
     label: "Os Meus Cursos",
@@ -115,9 +147,51 @@ const NAV_ITEMS: NavItem[] = [
     roles: ["FORMANDO"],
   },
   {
+    label: "Cronograma",
+    href: "/dashboard/cronograma",
+    icon: ClipboardList,
+    roles: ["FORMANDO"],
+  },
+  {
+    label: "Entregar Trabalhos",
+    href: "/dashboard/trabalhos",
+    icon: ClipboardList,
+    roles: ["FORMANDO"],
+  },
+  {
     label: "Minhas Notas",
     href: "/dashboard/notas",
-    icon: ClipboardList,
+    icon: FileText,
+    roles: ["FORMANDO"],
+  },
+  {
+    label: "Minhas Presenças",
+    href: "/dashboard/assiduidade",
+    icon: CheckCircle2,
+    roles: ["FORMANDO"],
+  },
+  {
+    label: "Avaliar Módulos",
+    href: "/dashboard/reviews",
+    icon: Star,
+    roles: ["FORMANDO"],
+  },
+  {
+    label: "Documentos",
+    href: "/dashboard/documentos",
+    icon: FileText,
+    roles: ["FORMANDO"],
+  },
+  {
+    label: "Convites",
+    href: "/dashboard/convites",
+    icon: Mail,
+    roles: ["FORMANDO"],
+  },
+  {
+    label: "Calendário",
+    href: "/dashboard/calendario",
+    icon: CalendarDays,
     roles: ["FORMANDO"],
   },
 ];
@@ -156,7 +230,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const visible = NAV_ITEMS.filter((item) => item.roles.includes(user.role));
 
   return (
-    <aside className="flex h-screen w-[268px] shrink-0 flex-col border-r border-gray-200 bg-white">
+    <aside className="flex h-full w-[268px] shrink-0 flex-col border-r border-gray-200 bg-white">
       {/* Logo */}
       <div className="flex items-center gap-3 border-b border-gray-200 px-6 py-5">
         <div

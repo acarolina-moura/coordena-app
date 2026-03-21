@@ -53,7 +53,6 @@ export async function GET() {
   });
 
   if (avaliacoesNegativas.length > 0) {
-    // Agrupa por formando
     const porFormando = avaliacoesNegativas.reduce<Record<string, Set<string>>>(
       (acc, av) => {
         if (!acc[av.formandoId]) acc[av.formandoId] = new Set();
@@ -86,7 +85,6 @@ export async function GET() {
     }
   }
 
-  // Urgentes primeiro
   notificacoes.sort((a, b) => Number(b.urgente) - Number(a.urgente));
 
   return NextResponse.json(notificacoes);

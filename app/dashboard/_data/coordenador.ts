@@ -356,11 +356,11 @@ export async function getFormandos(): Promise<FormandoComDetalhes[]> {
     const progresso =
       f.avaliacoes.length > 0
         ? Math.round(
-            (f.avaliacoes.reduce((sum, a) => sum + a.nota, 0) /
-              f.avaliacoes.length /
-              20) *
-              100,
-          )
+          (f.avaliacoes.reduce((sum, a) => sum + a.nota, 0) /
+            f.avaliacoes.length /
+            20) *
+          100,
+        )
         : 0;
 
     let status: "ATIVO" | "INATIVO" | "CONCLUÍDO" = "ATIVO";
