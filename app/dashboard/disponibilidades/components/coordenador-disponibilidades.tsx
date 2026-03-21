@@ -5,26 +5,30 @@ import { Search, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { FormadorComDetalhes } from "@/app/dashboard/_data/coordenador";
+import type { FormadorComDisponibilidades } from "@/app/dashboard/_data/coordenador";
 
 const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
-const HORAS = [
-  "09:00",
-  "10:00",
-  "11:00",
-  "12:00",
-  "13:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-];
+const HORAS = [9, 10, 11, 12, 13, 14, 15, 16, 17];
 
-// Grelha read-only de disponibilidade (sem dados reais — DB model não implementado)
-function GrelhaDisponibilidade({ nome }: { nome: string }) {
-  // Sem modelo de DB ainda — mostra grelha vazia com aviso
+function GrelhaDisponibilidade({
+  disponibilidades,
+}: {
+  disponibilidades: { diaSemana: string; hora: number; minuto: number }[];
+}) {
+  // Converte para Set de chaves "hora:minuto-dia"
+  const slots = new Set(
+    disponibilidades.map((d) => `${d.hora}:${d.minuto}-${d.diaSemana}`),
+  );
+
+  const temDados = disponibilidades.length > 0;
+
   return (
     <div className="overflow-x-auto">
+      {!temDados && (
+        <p className="mb-3 text-xs text-gray-400 text-center">
+          Este formador ainda não submeteu disponibilidades
+        </p>
+      )}
       <table className="w-full min-w-[500px] border-separate border-spacing-1">
         <thead>
           <tr>
@@ -42,23 +46,36 @@ function GrelhaDisponibilidade({ nome }: { nome: string }) {
           </tr>
         </thead>
         <tbody>
-          {HORAS.map((hora) => (
-            <tr key={hora}>
-              <td className="text-[11px] text-gray-400 pr-2 align-middle">
-                {hora}
-              </td>
-              {DIAS.map((dia) => (
-                <td key={dia} className="px-0.5">
-                  <div className="h-8 w-full rounded-lg border border-gray-100 bg-gray-50" />
-                </td>
-              ))}
-            </tr>
-          ))}
+          {HORAS.map((hora) =>
+            [0, 30].map((minuto) => {
+              const label = `${String(hora).padStart(2, "0")}:${String(minuto).padStart(2, "0")}`;
+              return (
+                <tr key={`${hora}-${minuto}`}>
+                  <td className="text-[11px] text-gray-400 pr-2 align-middle">
+                    {label}
+                  </td>
+                  {DIAS.map((dia) => {
+                    const key = `${hora}:${minuto}-${dia}`;
+                    const ativo = slots.has(key);
+                    return (
+                      <td key={dia} className="px-0.5">
+                        <div
+                          className={cn(
+                            "h-7 w-full rounded-lg border transition-colors",
+                            ativo
+                              ? "border-purple-300 bg-purple-100"
+                              : "border-gray-100 bg-gray-50",
+                          )}
+                        />
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            }),
+          )}
         </tbody>
       </table>
-      <p className="mt-3 text-xs text-gray-400 text-center">
-        {nome} ainda não submeteu disponibilidades
-      </p>
     </div>
   );
 }
@@ -66,7 +83,7 @@ function GrelhaDisponibilidade({ nome }: { nome: string }) {
 export default function DisponibilidadesCoordenador({
   formadores,
 }: {
-  formadores: FormadorComDetalhes[];
+  formadores: FormadorComDisponibilidades[];
 }) {
   const [search, setSearch] = useState("");
   const [expandido, setExpandido] = useState<string | null>(null);
@@ -117,13 +134,13 @@ export default function DisponibilidadesCoordenador({
               .join("")
               .toUpperCase();
             const isOpen = expandido === f.id;
+            const temDados = f.disponibilidades.length > 0;
 
             return (
               <div
                 key={f.id}
                 className="rounded-2xl border border-gray-200 bg-white overflow-hidden"
               >
-                {/* Row */}
                 <button
                   onClick={() => setExpandido(isOpen ? null : f.id)}
                   className="flex w-full items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors text-left"
@@ -144,8 +161,17 @@ export default function DisponibilidadesCoordenador({
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="rounded-full bg-gray-100 px-3 py-0.5 text-xs text-gray-500">
-                      Sem dados
+                    <span
+                      className={cn(
+                        "rounded-full px-3 py-0.5 text-xs font-medium",
+                        temDados
+                          ? "bg-purple-50 text-purple-600 border border-purple-200"
+                          : "bg-gray-100 text-gray-500",
+                      )}
+                    >
+                      {temDados
+                        ? `${f.disponibilidades.length} slots`
+                        : "Sem dados"}
                     </span>
                     <svg
                       className={cn(
@@ -166,10 +192,11 @@ export default function DisponibilidadesCoordenador({
                   </div>
                 </button>
 
-                {/* Expandido */}
                 {isOpen && (
                   <div className="border-t border-gray-100 px-5 py-5">
-                    <GrelhaDisponibilidade nome={f.user.nome} />
+                    <GrelhaDisponibilidade
+                      disponibilidades={f.disponibilidades}
+                    />
                   </div>
                 )}
               </div>

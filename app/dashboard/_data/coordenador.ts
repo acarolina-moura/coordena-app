@@ -231,6 +231,49 @@ export async function getFormadorById(
   };
 }
 
+// ─── Disponibilidades (Coordenador) ──────────────────────────────────────────
+
+export type SlotDisponibilidade = {
+  diaSemana: string;
+  hora: number;
+  minuto: number;
+};
+
+export type FormadorComDisponibilidades = FormadorComDetalhes & {
+  disponibilidades: SlotDisponibilidade[];
+};
+
+export async function getDisponibilidadesFormadores(): Promise<
+  FormadorComDisponibilidades[]
+> {
+  const formadores = await prisma.formador.findMany({
+    select: {
+      id: true,
+      userId: true,
+      especialidade: true,
+      competencias: true,
+      linkedin: true,
+      github: true,
+      idioma: true,
+      nacionalidade: true,
+      user: { select: { id: true, nome: true, email: true } },
+      modulosLecionados: {
+        include: { modulo: { select: { nome: true } } },
+      },
+      disponibilidades: {
+        where: { disponivel: true },
+        select: { diaSemana: true, hora: true, minuto: true },
+      },
+    },
+    orderBy: { user: { nome: "asc" } },
+  });
+
+  return formadores.map((f) => ({
+    ...f,
+    disponibilidades: f.disponibilidades,
+  }));
+}
+
 // ─── Assiduidade (Coordenador) ────────────────────────────────────────────────
 
 export async function getAssiduidadeCoordenador(): Promise<
@@ -241,9 +284,7 @@ export async function getAssiduidadeCoordenador(): Promise<
       user: { select: { nome: true } },
       inscricoes: { include: { curso: { select: { nome: true } } }, take: 1 },
       presencas: {
-        where: {
-          status: { in: ["PRESENTE", "AUSENTE", "JUSTIFICADO"] },
-        },
+        where: { status: { in: ["PRESENTE", "AUSENTE", "JUSTIFICADO"] } },
         select: { status: true },
       },
     },
@@ -356,11 +397,11 @@ export async function getFormandos(): Promise<FormandoComDetalhes[]> {
     const progresso =
       f.avaliacoes.length > 0
         ? Math.round(
-          (f.avaliacoes.reduce((sum, a) => sum + a.nota, 0) /
-            f.avaliacoes.length /
-            20) *
-          100,
-        )
+            (f.avaliacoes.reduce((sum, a) => sum + a.nota, 0) /
+              f.avaliacoes.length /
+              20) *
+              100,
+          )
         : 0;
 
     let status: "ATIVO" | "INATIVO" | "CONCLUÍDO" = "ATIVO";
