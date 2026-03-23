@@ -12,6 +12,7 @@ model User {
   nome      String
   email     String    @unique
   senha     String?
+  image     String?
   role      Role      @default(FORMANDO)
   createdAt DateTime  @default(now())
   accounts  Account[]
@@ -55,53 +56,53 @@ model VerificationToken {
 }
 
 model Formador {
-  id                String              @id @default(uuid())
-  especialidade     String?
-  competencias      String?
-  linkedin          String?
-  github            String?
-  idioma            String?
-  nacionalidade     String?
-  userId            String              @unique
-  user              User                @relation(fields: [userId], references: [id])
+  id            String  @id @default(uuid())
+  especialidade String?
+  competencias  String?
+  linkedin      String?
+  github        String?
+  idioma        String?
+  nacionalidade String?
+  userId        String  @unique
+  user          User    @relation(fields: [userId], references: [id])
 
-  aulas             Aula[]
-  avaliacoes        Avaliacao[]
-  convites          Convite[]
-  documentos        Documento[]
-  DocumentoFormador DocumentoFormador[]
-  modulosLecionados FormadorModulo[]
-  presencas         Presenca[]
+  aulas              Aula[]
+  avaliacoes         Avaliacao[]
+  convites           Convite[]
+  documentos         Documento[]
+  DocumentoFormador  DocumentoFormador[]
+  modulosLecionados  FormadorModulo[]
+  presencas          Presenca[]
   /// Novos: Templates de avaliação definidos por este formador
   templatesAvaliacao TemplateAvaliacao[]
   /// Disponibilidades do formador
-  disponibilidades  Disponibilidade[]
+  disponibilidades   Disponibilidade[]
 }
 
 /// Disponibilidade: Horários em que o formador está disponível
 /// Estrutura: dia da semana + hora:minuto (30 em 30 min)
 model Disponibilidade {
-  id        String   @id @default(uuid())
+  id         String   @id @default(uuid())
   formadorId String
-  diaSemana String   /// "Segunda", "Terça", "Quarta", "Quinta", "Sexta"
-  hora      Int      /// 9-17
-  minuto    Int      /// 0 ou 30
+  diaSemana  String /// "Segunda", "Terça", "Quarta", "Quinta", "Sexta"
+  hora       Int /// 9-17
+  minuto     Int /// 0 ou 30
   disponivel Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  formador  Formador @relation(fields: [formadorId], references: [id], onDelete: Cascade)
-  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  formador Formador @relation(fields: [formadorId], references: [id], onDelete: Cascade)
+
   /// Garantir apenas um slot por (formadorId, diaSemana, hora, minuto)
   @@unique([formadorId, diaSemana, hora, minuto])
 }
 
 model Formando {
-  id         String      @id @default(uuid())
-  userId     String      @unique
+  id         String              @id @default(uuid())
+  userId     String              @unique
   avaliacoes Avaliacao[]
   documentos Documento[]
-  user       User        @relation(fields: [userId], references: [id])
+  user       User                @relation(fields: [userId], references: [id])
   inscricoes Inscricao[]
   presencas  Presenca[]
   submissoes SubmissaoTrabalho[]
@@ -124,20 +125,20 @@ model Curso {
 }
 
 model Modulo {
-  id           String           @id @default(uuid())
-  nome         String
-  descricao    String?
-  ordem        Int
-  cursoId      String
-  cargaHoraria Int              @default(0)
-  aulas        Aula[]
-  avaliacoes   Avaliacao[]
-  formadores   FormadorModulo[]
+  id                 String              @id @default(uuid())
+  nome               String
+  descricao          String?
+  ordem              Int
+  cursoId            String
+  cargaHoraria       Int                 @default(0)
+  aulas              Aula[]
+  avaliacoes         Avaliacao[]
+  formadores         FormadorModulo[]
   /// Novos: Templates de avaliação para este módulo
   templatesAvaliacao TemplateAvaliacao[]
-  curso        Curso            @relation(fields: [cursoId], references: [id])
-  reviews      ReviewModulo[]
-  convites     Convite[]
+  curso              Curso               @relation(fields: [cursoId], references: [id])
+  reviews            ReviewModulo[]
+  convites           Convite[]
 }
 
 model FormadorModulo {
@@ -173,31 +174,17 @@ model Aula {
 }
 
 model Presenca {
-<<<<<<< HEAD
   id                 String         @id @default(uuid())
   status             StatusPresenca @default(AUSENTE)
-  justificativa      String?        /// Nota final ou aprovação do coordenador
-  comentarioFormando String?        /// Comentário inicial do aluno
-  documentoUrl       String?        /// Nome ou URL do documento enviado
+  justificativa      String?
+  comentarioFormando String?
+  documentoUrl       String?
   aulaId             String
   formandoId         String
   formadorId         String
   aula               Aula           @relation(fields: [aulaId], references: [id])
   formador           Formador       @relation(fields: [formadorId], references: [id])
   formando           Formando       @relation(fields: [formandoId], references: [id])
-=======
-  id                  String         @id @default(uuid())
-  status              StatusPresenca @default(AUSENTE)
-  justificativa       String?
-  comentarioFormando  String?
-  documentoUrl        String?
-  aulaId              String
-  formandoId          String
-  formadorId          String
-  aula                Aula           @relation(fields: [aulaId], references: [id])
-  formador            Formador       @relation(fields: [formadorId], references: [id])
-  formando            Formando       @relation(fields: [formandoId], references: [id])
->>>>>>> 56238e2b0e5f26a79e4271bffc3fe9ccc15ee8e5
 
   @@unique([aulaId, formandoId])
 }
@@ -231,11 +218,7 @@ model Documento {
 }
 
 model Convite {
-<<<<<<< HEAD
   id           String        @id @default(uuid())
-=======
-  id           String        @id
->>>>>>> 56238e2b0e5f26a79e4271bffc3fe9ccc15ee8e5
   formadorId   String?
   formandoId   String?
   cursoId      String?
@@ -245,15 +228,10 @@ model Convite {
   dataEnvio    DateTime      @default(now())
   dataResposta DateTime?
   createdAt    DateTime      @default(now())
-<<<<<<< HEAD
-  
   Formador     Formador?     @relation(fields: [formadorId], references: [id], onDelete: Cascade)
   Formando     Formando?     @relation(fields: [formandoId], references: [id], onDelete: Cascade)
   Curso        Curso?        @relation(fields: [cursoId], references: [id])
   Modulo       Modulo?       @relation(fields: [moduloId], references: [id])
-=======
-  Formador     Formador?     @relation(fields: [formadorId], references: [id], onDelete: Cascade)
->>>>>>> 56238e2b0e5f26a79e4271bffc3fe9ccc15ee8e5
 }
 
 model DocumentoFormador {
@@ -288,16 +266,16 @@ model DocumentoFormador {
 /// Um formador pode ter um template diferente para cada módulo que leciona
 
 model TemplateAvaliacao {
-  id         String                   @id @default(uuid())
+  id         String   @id @default(uuid())
   formadorId String
   moduloId   String
-  createdAt  DateTime                 @default(now())
-  updatedAt  DateTime                 @updatedAt
-  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
   /// Relações
-  formador   Formador                 @relation(fields: [formadorId], references: [id], onDelete: Cascade)
-  modulo     Modulo                   @relation(fields: [moduloId], references: [id], onDelete: Cascade)
-  items      ItemTemplateAvaliacao[]
+  formador      Formador                @relation(fields: [formadorId], references: [id], onDelete: Cascade)
+  modulo        Modulo                  @relation(fields: [moduloId], references: [id], onDelete: Cascade)
+  items         ItemTemplateAvaliacao[]
   notasParciais NotaParcial[]
 
   /// Constraint: Um formador só pode ter um template por módulo
@@ -308,43 +286,37 @@ model TemplateAvaliacao {
 /// O peso deve representar a percentagem da avaliação (máx 80%)
 
 model ItemTemplateAvaliacao {
-  id                 String          @id @default(uuid())
-  templateId         String
-  nome               String          /// Nome do componente: "Ficha", "Projeto", "Teste", etc
-  descricao          String?         /// Instruções ou descrição do trabalho
-  peso               Float           /// Peso em percentagem (máx 80%) - ex: 20.0 para 20%
-  ordem              Int             @default(1) /// Ordem de exibição na tabela
-<<<<<<< HEAD
-  dataLimite         DateTime?       /// Data limite para entrega
-  ficheiroAnexoUrl   String?         /// Arquivo de apoio enviado pelo formador
-=======
-  descricao          String?
-  dataLimite         DateTime?
-  ficheiroAnexoUrl   String?
->>>>>>> 56238e2b0e5f26a79e4271bffc3fe9ccc15ee8e5
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
-  
+  id               String    @id @default(uuid())
+  templateId       String
+  nome             String /// Nome do componente: "Ficha", "Projeto", "Teste", etc
+  descricao        String? /// Instruções ou descrição do trabalho
+  peso             Float /// Peso em percentagem (máx 80%) - ex: 20.0 para 20%
+  ordem            Int       @default(1) /// Ordem de exibição na tabela
+  dataLimite       DateTime?
+  ficheiroAnexoUrl String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
   /// Relações
-  template           TemplateAvaliacao @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  notasParciais      NotaParcial[]
-  submissoes         SubmissaoTrabalho[]
+  template      TemplateAvaliacao   @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  notasParciais NotaParcial[]
+  submissoes    SubmissaoTrabalho[]
 
   @@index([templateId])
 }
 
 /// SubmissaoTrabalho: Submissão de um trabalho por um aluno
 model SubmissaoTrabalho {
-  id                String   @id @default(uuid())
-  itemId            String
-  formandoId        String
-  ficheiroUrl       String   /// URL ou nome do arquivo entregue
-  dataEntrega       DateTime @default(now())
-  comentario        String?  /// Comentário do aluno na entrega
-  
+  id          String   @id @default(uuid())
+  itemId      String
+  formandoId  String
+  ficheiroUrl String /// URL ou nome do arquivo entregue
+  dataEntrega DateTime @default(now())
+  comentario  String? /// Comentário do aluno na entrega
+
   /// Relações
-  item              ItemTemplateAvaliacao @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  formando          Formando              @relation(fields: [formandoId], references: [id], onDelete: Cascade)
+  item     ItemTemplateAvaliacao @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  formando Formando              @relation(fields: [formandoId], references: [id], onDelete: Cascade)
 
   @@unique([itemId, formandoId])
   @@index([formandoId])
@@ -354,34 +326,34 @@ model SubmissaoTrabalho {
 /// Armazena a nota (0-20) que o formador atribui em cada componente
 
 model NotaParcial {
-  id       String  @id @default(uuid())
-  valor    Float   /// Nota entre 0 e 20
+  id         String   @id @default(uuid())
+  valor      Float /// Nota entre 0 e 20
   formandoId String
-  itemId   String
+  itemId     String
   templateId String /// Para queries rápidas
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
   /// Relações
   item     ItemTemplateAvaliacao @relation(fields: [itemId], references: [id], onDelete: Cascade)
   template TemplateAvaliacao     @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  
+
   /// Constraint: Uma nota parcial única por (aluno, item)
   @@unique([formandoId, itemId])
   @@index([templateId, formandoId])
 }
 
 model ReviewModulo {
-  id          String   @id @default(uuid())
-  nota        Int      /// Nota de 1 a 5
-  comentario  String?  @db.Text
-  formandoId  String
-  moduloId    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(uuid())
+  nota       Int /// Nota de 1 a 5
+  comentario String?  @db.Text
+  formandoId String
+  moduloId   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  formando    Formando @relation(fields: [formandoId], references: [id], onDelete: Cascade)
-  modulo      Modulo   @relation(fields: [moduloId], references: [id], onDelete: Cascade)
+  formando Formando @relation(fields: [formandoId], references: [id], onDelete: Cascade)
+  modulo   Modulo   @relation(fields: [moduloId], references: [id], onDelete: Cascade)
 
   @@unique([formandoId, moduloId])
 }
@@ -403,7 +375,6 @@ enum StatusPresenca {
   AUSENTE
   PENDENTE
   JUSTIFICADO
-  PENDENTE
 }
 
 enum StatusDocumento {
@@ -417,34 +388,4 @@ enum StatusConvite {
   PENDENTE
   ACEITE
   RECUSADO
-}
-
-/// ReviewModulo: Avaliações/reviews de módulos (existente na BD)
-model ReviewModulo {
-  id         String   @id @default(uuid())
-  formandoId String
-  moduloId   String
-  rating     Int?
-  nota       Float?
-  comentario String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@unique([formandoId, moduloId])
-}
-
-/// SubmissaoTrabalho: Submissões de trabalhos/tarefas (existente na BD)
-model SubmissaoTrabalho {
-  id         String   @id @default(uuid())
-  itemId     String
-  formandoId String
-  ficheiro   String?
-  comentario String?
-  ficheiroUrl String?
-  dataSubmissao DateTime @default(now())
-  dataEntrega DateTime?
-  createdAt  DateTime @default(now())
-
-  @@unique([itemId, formandoId])
-  @@index([formandoId])
 }

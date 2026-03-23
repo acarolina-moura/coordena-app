@@ -26,11 +26,7 @@ interface Sessao {
 interface AlunoPresenca {
   id: string;
   nome: string;
-<<<<<<< HEAD
   status: StatusPresenca;
-=======
-  status: 'PRESENTE' | 'AUSENTE' | 'JUSTIFICADO' | 'PENDENTE';
->>>>>>> 56238e2b0e5f26a79e4271bffc3fe9ccc15ee8e5
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
