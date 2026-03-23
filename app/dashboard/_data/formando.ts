@@ -79,11 +79,19 @@ export async function getCursoFormando(userId: string) {
         const media = notas.length > 0 ? notas.reduce((s, n) => s + n, 0) / notas.length : null
 
         const totalAulas = m.aulas.length
-        const aulasFuturas = m.aulas.filter(a => new Date(a.dataHora) > hoje).length
+        const aulasPassadas = m.aulas.filter(a => new Date(a.dataHora) <= hoje)
 
-        const progresso = totalAulas > 0
-            ? Math.round(((totalAulas - aulasFuturas) / totalAulas) * 100)
-            : 0
+        let progresso = 0
+        if (m.cargaHoraria > 0) {
+            const minutosRealizados = aulasPassadas.reduce((s, a) => s + a.duracao, 0)
+            const horasRealizadas = minutosRealizados / 60
+            progresso = Math.min(100, Math.round((horasRealizadas / m.cargaHoraria) * 100))
+        } else {
+            const aulasFuturas = m.aulas.filter(a => new Date(a.dataHora) > hoje).length
+            progresso = totalAulas > 0
+                ? Math.round(((totalAulas - aulasFuturas) / totalAulas) * 100)
+                : 0
+        }
 
         return {
             id: m.id,
@@ -93,9 +101,21 @@ export async function getCursoFormando(userId: string) {
         }
     })
 
-    const progressoGeral = modulos.length > 0
-        ? Math.round(modulos.reduce((s, m) => s + m.progresso, 0) / modulos.length)
-        : 0
+    const cargaHorariaTotal = curso.modulos.reduce((total, m) => total + m.cargaHoraria, 0)
+    let progressoGeral = 0
+
+    if (cargaHorariaTotal > 0) {
+        let minutosCompletos = 0
+        curso.modulos.forEach(m => {
+            const aulasP = m.aulas.filter(a => new Date(a.dataHora) <= hoje)
+            minutosCompletos += aulasP.reduce((s, a) => s + a.duracao, 0)
+        })
+        progressoGeral = Math.min(100, Math.round((minutosCompletos / 60 / cargaHorariaTotal) * 100))
+    } else {
+        progressoGeral = modulos.length > 0
+            ? Math.round(modulos.reduce((s, m) => s + m.progresso, 0) / modulos.length)
+            : 0
+    }
 
     return {
         id: curso.id,
@@ -181,11 +201,19 @@ export async function getMeusCursos(userId: string) {
             const media = notas.length > 0 ? notas.reduce((s, n) => s + n, 0) / notas.length : null
 
             const totalAulas = m.aulas.length
-            const aulasFuturas = m.aulas.filter(a => new Date(a.dataHora) > hoje).length
+            const aulasPassadas = m.aulas.filter(a => new Date(a.dataHora) <= hoje)
 
-            const progresso = totalAulas > 0
-                ? Math.round(((totalAulas - aulasFuturas) / totalAulas) * 100)
-                : 0
+            let progresso = 0
+            if (m.cargaHoraria > 0) {
+                const minutosRealizados = aulasPassadas.reduce((s, a) => s + a.duracao, 0)
+                const horasRealizadas = minutosRealizados / 60
+                progresso = Math.min(100, Math.round((horasRealizadas / m.cargaHoraria) * 100))
+            } else {
+                const aulasFuturas = m.aulas.filter(a => new Date(a.dataHora) > hoje).length
+                progresso = totalAulas > 0
+                    ? Math.round(((totalAulas - aulasFuturas) / totalAulas) * 100)
+                    : 0
+            }
 
             return {
                 id: m.id,
@@ -196,9 +224,21 @@ export async function getMeusCursos(userId: string) {
             }
         })
 
-        const progressoGeral = modulos.length > 0
-            ? Math.round(modulos.reduce((s, m) => s + m.progresso, 0) / modulos.length)
-            : 0
+        const cargaHorariaTotal = curso.modulos.reduce((total, m) => total + m.cargaHoraria, 0)
+        let progressoGeral = 0
+
+        if (cargaHorariaTotal > 0) {
+            let minutosCompletos = 0
+            curso.modulos.forEach(m => {
+                const aulasP = m.aulas.filter(a => new Date(a.dataHora) <= hoje)
+                minutosCompletos += aulasP.reduce((s, a) => s + a.duracao, 0)
+            })
+            progressoGeral = Math.min(100, Math.round((minutosCompletos / 60 / cargaHorariaTotal) * 100))
+        } else {
+            progressoGeral = modulos.length > 0
+                ? Math.round(modulos.reduce((s, m) => s + m.progresso, 0) / modulos.length)
+                : 0
+        }
 
         return {
             id: curso.id,
@@ -334,7 +374,6 @@ export async function getMeusTrabalhos(userId: string) {
                     const submissao = item.submissoes?.[0]
 
                     let status: 'PENDENTE' | 'ENTREGUE' | 'EM_FALTA' | 'ATRASADO' = 'PENDENTE'
-
                     if (submissao) {
                         if (item.dataLimite && submissao.dataEntrega && new Date(submissao.dataEntrega) > new Date(item.dataLimite)) {
                             status = 'ATRASADO'
@@ -344,7 +383,6 @@ export async function getMeusTrabalhos(userId: string) {
                     } else if (item.dataLimite && new Date(item.dataLimite) < hoje) {
                         status = 'EM_FALTA'
                     }
-
                     return {
                         moduloId: modulo.id,
                         moduloNome: modulo.nome,
@@ -378,7 +416,7 @@ export async function getModulosParaReview(userId: string) {
                         include: {
                             modulos: {
                                 orderBy: { ordem: 'asc' },
-                                include: { avaliacoes: { where: { formando: { userId } } } },
+                                include: { reviews: { where: { formando: { userId } } } },
                             },
                         },
                     },
@@ -394,9 +432,9 @@ export async function getModulosParaReview(userId: string) {
             id: m.id,
             nome: m.nome,
             cursoNome: insc.curso.nome,
-            hasReview: m.avaliacoes.length > 0,
-            review: m.avaliacoes[0]
-                ? { nota: m.avaliacoes[0].nota, comentario: m.avaliacoes[0].descricao ?? '', data: m.avaliacoes[0].createdAt }
+            hasReview: m.reviews.length > 0,
+            review: m.reviews[0]
+                ? { nota: m.reviews[0].nota, comentario: m.reviews[0].comentario ?? '', data: m.reviews[0].createdAt }
                 : undefined
         }))
     )
