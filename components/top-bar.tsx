@@ -104,7 +104,7 @@ export function TopBar({ user, notificationCount = 0, onMenuClick }: TopBarProps
       <div className="flex-1" />
 
       {/* Theme Toggle */}
-      <ThemeToggle className="cursor-pointer" />
+      <ThemeToggle />
 
       {/* ── Sino de Notificações ─────────────────────────────────── */}
       <div className="relative" ref={dropdownRef}>
