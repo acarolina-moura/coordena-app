@@ -121,12 +121,6 @@ const NAV_ITEMS: NavItem[] = [
     roles: ["COORDENADOR"],
   },
   {
-    label: "Documentos",
-    href: "/dashboard/documentos",
-    icon: FileText,
-    roles: ["COORDENADOR"],
-  },
-  {
     label: "Calendário",
     href: "/dashboard/calendario",
     icon: CalendarDays,

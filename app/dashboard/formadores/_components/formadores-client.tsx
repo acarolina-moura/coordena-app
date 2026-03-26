@@ -19,13 +19,19 @@ import {
 import { Label } from "@/components/ui/label";
 import { FormadorComDetalhes } from "@/app/dashboard/_data/coordenador";
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function getAvatarUrl(email: string) {
+  return `https://i.pravatar.cc/150?u=${email}`;
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface FormadorUI {
   id: string;
   nome: string;
   email: string;
-  avatar?: string;
+  avatar: string;
   tags: string[];
   status: "aceite" | "pendente";
   favorito: boolean;
@@ -44,7 +50,7 @@ function toFormadorUI(f: FormadorComDetalhes): FormadorUI {
     id: f.id,
     nome: f.user.nome,
     email: f.user.email,
-    avatar: undefined,
+    avatar: getAvatarUrl(f.user.email),
     tags: [...especialidadeTag, ...competenciasTags],
     status: "aceite",
     favorito: false,
@@ -299,8 +305,6 @@ function FormadorCard({
         >
           {formador.status === "aceite" ? "Aceite" : "Pendente"}
         </span>
-
-        {/* ← Ver Perfil como Link direto */}
         <Link
           href={`/dashboard/formadores/${formador.id}`}
           className="rounded-full border border-gray-200 px-4 py-1.5 text-sm font-medium text-gray-700 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
@@ -400,7 +404,6 @@ export function FormadoresClient({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-[26px] font-bold text-gray-900">Formadores</h1>
@@ -441,7 +444,6 @@ export function FormadoresClient({
         </div>
       </div>
 
-      {/* Grid */}
       {filtrados.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filtrados.map((formador) => (
