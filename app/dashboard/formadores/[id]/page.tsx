@@ -108,7 +108,7 @@ export default async function FormadorPerfilPage({
       </Link>
 
       {/* Header card */}
-      <div className="flex items-center gap-6 rounded-2xl border border-gray-200 bg-white p-6">
+      <div className="flex items-center gap-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
         <Avatar className="h-20 w-20 border-2 border-gray-100 shrink-0">
           <AvatarFallback className="bg-indigo-100 text-indigo-600 text-2xl font-bold">
             {initials}
@@ -116,7 +116,7 @@ export default async function FormadorPerfilPage({
         </Avatar>
 
         <div className="flex flex-1 flex-col gap-2 min-w-0">
-          <h1 className="text-2xl font-bold text-gray-900">{formador.nome}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{formador.nome}</h1>
 
           <div className="flex flex-wrap gap-x-5 gap-y-1.5">
             <span className="flex items-center gap-1.5 text-sm text-gray-500">
@@ -165,8 +165,8 @@ export default async function FormadorPerfilPage({
       {/* Body grid */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
         {/* Módulos Lecionados */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900">
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+          <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-gray-100">
             <BookOpen className="h-4 w-4 text-indigo-500" />
             Módulos Lecionados
           </h2>
@@ -181,10 +181,10 @@ export default async function FormadorPerfilPage({
                 (mod: FormadorPerfil["modulos"][number]) => (
                   <div
                     key={mod.id}
-                    className="flex items-center justify-between gap-4 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3"
+                    className="flex items-center justify-between gap-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-3"
                   >
                     <div className="flex flex-col gap-0.5 min-w-0">
-                      <span className="truncate text-sm font-semibold text-gray-900">
+                      <span className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
                         {mod.nome}
                       </span>
                       <span className="text-xs text-gray-400">
@@ -205,8 +205,8 @@ export default async function FormadorPerfilPage({
         <div className="flex flex-col gap-6">
           {/* Competências */}
           {competencias.length > 0 && (
-            <div className="rounded-2xl border border-gray-200 bg-white p-5">
-              <h2 className="mb-3 text-base font-semibold text-gray-900">
+            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+              <h2 className="mb-3 text-base font-semibold text-gray-900 dark:text-gray-100">
                 Competências
               </h2>
               <div className="flex flex-wrap gap-2">
@@ -223,8 +223,8 @@ export default async function FormadorPerfilPage({
           )}
 
           {/* Documentos */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-5">
-            <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900">
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+            <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-gray-100">
               <FileText className="h-4 w-4 text-indigo-500" />
               Documentos
             </h2>
@@ -241,7 +241,7 @@ export default async function FormadorPerfilPage({
                       key={doc.id}
                       className="flex items-center justify-between gap-2"
                     >
-                      <span className="text-sm text-gray-700">{doc.tipo}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-200">{doc.tipo}</span>
                       <DocBadge status={doc.status} />
                     </div>
                   ),
@@ -252,13 +252,13 @@ export default async function FormadorPerfilPage({
 
           {/* Info adicional */}
           {formador.nacionalidade && (
-            <div className="rounded-2xl border border-gray-200 bg-white p-5">
-              <h2 className="mb-3 text-base font-semibold text-gray-900">
+            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+              <h2 className="mb-3 text-base font-semibold text-gray-900 dark:text-gray-100">
                 Informação Adicional
               </h2>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-400">Nacionalidade</span>
-                <span className="font-medium text-gray-700">
+                <span className="font-medium text-gray-700 dark:text-gray-300">
                   {formador.nacionalidade}
                 </span>
               </div>

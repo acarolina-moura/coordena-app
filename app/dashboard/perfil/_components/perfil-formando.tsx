@@ -68,8 +68,8 @@ export function PerfilFormando({ formando }: { formando: FormandoData }) {
     <div className="flex flex-col gap-6 max-w-2xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[26px] font-bold text-gray-900">O Meu Perfil</h1>
-          <p className="mt-0.5 text-sm text-gray-500">
+          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">O Meu Perfil</h1>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
             {isEditMode ? 'Edite as suas informações de conta' : 'Veja as suas informações de conta'}
           </p>
         </div>
@@ -84,9 +84,9 @@ export function PerfilFormando({ formando }: { formando: FormandoData }) {
         )}
       </div>
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-8 flex flex-col gap-8 shadow-sm">
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-8 flex flex-col gap-8 shadow-sm">
         {/* Avatar Section */}
-        <div className="flex items-center gap-6 pb-6 border-b border-gray-100">
+        <div className="flex items-center gap-6 pb-6 border-b border-gray-100 dark:border-gray-800">
           <Avatar className="h-24 w-24 border-4 border-teal-50 shadow-sm">
             <AvatarImage src={`https://i.pravatar.cc/150?u=${formando.email}`} />
             <AvatarFallback className="bg-teal-100 text-teal-700 text-2xl font-bold uppercase">
@@ -94,8 +94,8 @@ export function PerfilFormando({ formando }: { formando: FormandoData }) {
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col gap-1">
-            <h2 className="text-xl font-bold text-gray-900">{nome}</h2>
-            <p className="text-sm text-gray-500 flex items-center gap-2">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">{nome}</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
               <Mail className="h-3.5 w-3.5" />
               {email}
             </p>
@@ -108,7 +108,7 @@ export function PerfilFormando({ formando }: { formando: FormandoData }) {
         <div className="grid gap-6">
           {/* Nome Input */}
           <div className="grid gap-2">
-            <Label htmlFor="nome" className="text-sm font-bold text-gray-700 flex items-center gap-2">
+            <Label htmlFor="nome" className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
               <User className="h-4 w-4 text-teal-500" />
               Nome Completo
             </Label>
@@ -123,7 +123,7 @@ export function PerfilFormando({ formando }: { formando: FormandoData }) {
 
           {/* Email Input */}
           <div className="grid gap-2">
-            <Label htmlFor="email" className="text-sm font-bold text-gray-700 flex items-center gap-2">
+            <Label htmlFor="email" className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
               <Mail className="h-4 w-4 text-teal-500" />
               Endereço de Email
             </Label>
@@ -138,12 +138,12 @@ export function PerfilFormando({ formando }: { formando: FormandoData }) {
           </div>
 
           {isEditMode && (
-            <div className="grid gap-6 pt-4 border-t border-gray-100 mt-2">
-              <h3 className="text-sm font-bold text-gray-900 border-l-4 border-teal-500 pl-3">Alterar Senha (Opcional)</h3>
+            <div className="grid gap-6 pt-4 border-t border-gray-100 dark:border-gray-800 mt-2">
+              <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 border-l-4 border-teal-500 pl-3">Alterar Senha (Opcional)</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="novaSenha" className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                  <Label htmlFor="novaSenha" className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
                     <Lock className="h-4 w-4 text-teal-500" />
                     Nova Senha
                   </Label>
@@ -157,7 +157,7 @@ export function PerfilFormando({ formando }: { formando: FormandoData }) {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="confirmarSenha" className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                  <Label htmlFor="confirmarSenha" className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
                     <Lock className="h-4 w-4 text-teal-500" />
                     Confirmar Senha
                   </Label>
@@ -176,7 +176,7 @@ export function PerfilFormando({ formando }: { formando: FormandoData }) {
         </div>
 
         {isEditMode && (
-          <div className="flex gap-3 pt-6 border-t border-gray-100">
+          <div className="flex gap-3 pt-6 border-t border-gray-100 dark:border-gray-800">
             <Button
               onClick={handleSave}
               disabled={loading}

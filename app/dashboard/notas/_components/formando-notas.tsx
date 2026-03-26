@@ -20,8 +20,8 @@ export default function FormandoNotas({ inicial }: { inicial: MinhasNotas }) {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">As Minhas Notas</h1>
-        <p className="text-sm text-slate-500 mt-1">Consulte o seu desempenho acadêmico</p>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-gray-100">As Minhas Notas</h1>
+        <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">Consulte o seu desempenho acadêmico</p>
       </div>
 
       {/* Card de Média Geral */}
@@ -44,19 +44,19 @@ export default function FormandoNotas({ inicial }: { inicial: MinhasNotas }) {
       </motion.div>
 
       {/* Tabela de Notas */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-800 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/50">
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Módulo</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Código</th>
-                <th className="px-6 py-4 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Nota</th>
-                <th className="px-6 py-4 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">Data</th>
-                <th className="px-6 py-4 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado</th>
+              <tr className="border-b border-slate-100 dark:border-gray-800 bg-slate-50/50 dark:bg-gray-800/50">
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Módulo</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider hidden sm:table-cell">Código</th>
+                <th className="px-6 py-4 text-center text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Nota</th>
+                <th className="px-6 py-4 text-center text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Data</th>
+                <th className="px-6 py-4 text-center text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Estado</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-gray-800">
               {notas.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-6 py-8 text-center text-slate-400 text-sm">
@@ -72,13 +72,13 @@ export default function FormandoNotas({ inicial }: { inicial: MinhasNotas }) {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className="hover:bg-slate-50/30 transition-colors"
+                    className="hover:bg-slate-50/30 dark:hover:bg-gray-800/50 transition-colors"
                   >
                     <td className="px-6 py-4">
-                      <p className="text-sm font-semibold text-slate-700">{item.modulo}</p>
+                      <p className="text-sm font-semibold text-slate-700 dark:text-gray-200">{item.modulo}</p>
                     </td>
                     <td className="px-6 py-4 hidden sm:table-cell">
-                      <span className="text-xs font-mono bg-slate-100 px-2 py-1 rounded text-slate-600">
+                      <span className="text-xs font-mono bg-slate-100 dark:bg-gray-800 px-2 py-1 rounded text-slate-600 dark:text-gray-400">
                         {item.codigo}
                       </span>
                     </td>
@@ -90,7 +90,7 @@ export default function FormandoNotas({ inicial }: { inicial: MinhasNotas }) {
                         <span className="text-[10px] text-slate-400 uppercase">Valores</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center text-sm text-slate-600 hidden md:table-cell">
+                    <td className="px-6 py-4 text-center text-sm text-slate-600 dark:text-gray-300 hidden md:table-cell">
                       {new Date(item.createdAt).toLocaleDateString("pt-PT")}
                     </td>
                     <td className="px-6 py-4 text-center">

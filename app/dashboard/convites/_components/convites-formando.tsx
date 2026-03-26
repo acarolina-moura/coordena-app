@@ -38,14 +38,14 @@ export function ConvitesFormando({ initialConvites }: ConvitesFormandoProps) {
                     <div className="h-8 w-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600">
                         <Mail className="h-4 w-4" />
                     </div>
-                    <h2 className="text-lg font-bold text-gray-900">Convites Pendentes ({pendentes.length})</h2>
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Convites Pendentes ({pendentes.length})</h2>
                 </div>
 
                 {pendentes.length === 0 ? (
                     <motion.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="bg-gray-50 border border-dashed border-gray-200 rounded-2xl p-12 text-center"
+                        className="bg-gray-50 dark:bg-gray-800/50 border border-dashed border-gray-200 dark:border-gray-700 rounded-2xl p-12 text-center"
                     >
                         <Mail className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                         <p className="text-gray-500 font-medium">Não tens nenhum convite pendente de momento.</p>
@@ -62,7 +62,7 @@ export function ConvitesFormando({ initialConvites }: ConvitesFormandoProps) {
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                     exit={{ opacity: 0, scale: 0.8, y: -20 }}
                                     transition={{ duration: 0.3, delay: i * 0.05 }}
-                                    className="group relative bg-white border border-gray-100 rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all duration-300"
+                                    className="group relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all duration-300"
                                 >
                                     <div className="absolute top-4 right-4 h-8 w-8 rounded-full bg-teal-50 flex items-center justify-center text-teal-500 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <Sparkles className="h-4 w-4" />
@@ -74,7 +74,7 @@ export function ConvitesFormando({ initialConvites }: ConvitesFormandoProps) {
                                                 <BookOpen className="h-6 w-6" />
                                             </div>
                                             <div className="min-w-0">
-                                                <h3 className="font-bold text-gray-900 truncate pr-6">{convite.Curso?.nome || 'Novo Curso'}</h3>
+                                                <h3 className="font-bold text-gray-900 dark:text-gray-100 truncate pr-6">{convite.Curso?.nome || 'Novo Curso'}</h3>
                                                 <p className="text-[10px] font-bold text-teal-600 uppercase tracking-widest leading-none mt-1">Convite Aberto</p>
                                             </div>
                                         </div>
@@ -85,7 +85,7 @@ export function ConvitesFormando({ initialConvites }: ConvitesFormandoProps) {
                                                 <span>Envio: {new Date(convite.dataEnvio).toLocaleDateString()}</span>
                                             </div>
                                             {convite.descricao && (
-                                                <div className="bg-gray-50 rounded-xl p-3 text-xs text-gray-600 italic">
+                                                <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 text-xs text-gray-600 dark:text-gray-300 italic">
                                                     "{convite.descricao}"
                                                 </div>
                                             )}
@@ -135,20 +135,20 @@ export function ConvitesFormando({ initialConvites }: ConvitesFormandoProps) {
                         <h2 className="text-sm font-bold uppercase tracking-widest">Histórico de Convites</h2>
                     </div>
 
-                    <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden">
+                    <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 overflow-hidden">
                         <table className="w-full text-left text-sm">
                             <thead>
-                                <tr className="bg-gray-50/50 border-b border-gray-100">
-                                    <th className="px-6 py-4 font-bold text-gray-900">Curso</th>
-                                    <th className="px-6 py-4 font-bold text-gray-900">Data</th>
-                                    <th className="px-6 py-4 font-bold text-gray-900">Status</th>
-                                    <th className="px-6 py-4 font-bold text-gray-900">Resposta</th>
+                                <tr className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
+                                    <th className="px-6 py-4 font-bold text-gray-900 dark:text-gray-100">Curso</th>
+                                    <th className="px-6 py-4 font-bold text-gray-900 dark:text-gray-100">Data</th>
+                                    <th className="px-6 py-4 font-bold text-gray-900 dark:text-gray-100">Status</th>
+                                    <th className="px-6 py-4 font-bold text-gray-900 dark:text-gray-100">Resposta</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-50">
+                            <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                                 {historico.map((convite: any) => (
-                                    <tr key={convite.id} className="hover:bg-gray-50/30 transition-colors">
-                                        <td className="px-6 py-4 font-semibold text-gray-700">
+                                    <tr key={convite.id} className="hover:bg-gray-50/30 dark:hover:bg-gray-800/40 transition-colors">
+                                        <td className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200">
                                             {convite.Curso?.nome || 'Curso Removido'}
                                         </td>
                                         <td className="px-6 py-4 text-gray-500">

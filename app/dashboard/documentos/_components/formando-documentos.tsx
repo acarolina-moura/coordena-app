@@ -64,14 +64,14 @@ function DocCard({
   };
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 hover:border-teal-200 hover:shadow-sm transition-all">
+    <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 hover:border-teal-200 transition-all hover:shadow-sm">
       {/* Header */}
       <div className="flex items-start gap-3">
         <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", cfg.bgClass)}>
           <Icon className={cn("h-5 w-5", cfg.iconClass)} />
         </div>
         <div className="flex flex-col gap-0.5 min-w-0">
-          <span className="text-base font-bold text-gray-900 truncate">{doc.nome}</span>
+          <span className="text-base font-bold text-gray-900 dark:text-gray-100 truncate">{doc.nome}</span>
           <span className={cn("text-sm font-semibold", cfg.textClass)}>{cfg.label}</span>
         </div>
       </div>
@@ -85,7 +85,7 @@ function DocCard({
               type="date"
               value={validadeInput}
               onChange={(e) => setValidadeInput(e.target.value)}
-              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-teal-400 focus:outline-none focus:ring-1 focus:ring-teal-400"
+              className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 dark:text-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-400 focus:outline-none focus:ring-1 focus:ring-teal-400"
             />
           </div>
         )}
@@ -109,7 +109,7 @@ function DocCard({
       <button 
         disabled={isUploading}
         onClick={() => fileInputRef.current?.click()}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-2.5 text-sm font-medium text-gray-600 hover:border-teal-300 hover:text-teal-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:border-teal-300 hover:text-teal-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {isUploading ? (
           <Loader2 className="h-4 w-4 animate-spin text-teal-500" />
@@ -177,12 +177,12 @@ export function FormandoDocumentos({ documentos: documentosIniciais, userId }: {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-[26px] font-bold text-gray-900">Os Meus Documentos</h1>
-          <p className="mt-0.5 text-sm text-gray-500">Mantém a tua documentação em dia para evitar suspensões</p>
+          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">Os Meus Documentos</h1>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Mantém a tua documentação em dia para evitar suspensões</p>
         </div>
-        <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 shadow-sm">
+        <div className="flex items-center gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2 shadow-sm">
           <FileText className="h-4 w-4 text-teal-500" />
-          <span className="text-sm font-bold text-gray-900">{docs.length - emFalta}/{docs.length}</span>
+          <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{docs.length - emFalta}/{docs.length}</span>
           <span className="text-xs text-gray-400 font-medium">concluídos</span>
         </div>
       </div>

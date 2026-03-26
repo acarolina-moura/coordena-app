@@ -37,7 +37,7 @@ export function DashboardShell({ sidebar, user, notificationCount = 0, children 
   }, [isSidebarOpen]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50 uppercase-none">
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950 uppercase-none">
       {/* Sidebar Desktop */}
       <div className="hidden lg:flex lg:shrink-0">
         {sidebar}
@@ -55,14 +55,14 @@ export function DashboardShell({ sidebar, user, notificationCount = 0, children 
       {/* Sidebar Mobile Drawer */}
       <div 
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-[280px] bg-white shadow-2xl lg:hidden transform transition-transform duration-300 ease-in-out",
+          "fixed inset-y-0 left-0 z-50 w-[280px] bg-white dark:bg-gray-950 shadow-2xl lg:hidden transform transition-transform duration-300 ease-in-out",
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="absolute top-4 right-4 lg:hidden">
             <button 
                 onClick={() => setIsSidebarOpen(false)}
-                className="p-2 rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-900 transition-all"
+                className="p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 transition-all"
             >
                 <X className="h-6 w-6" />
             </button>

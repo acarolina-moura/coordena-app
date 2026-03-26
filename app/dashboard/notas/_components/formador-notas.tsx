@@ -268,8 +268,8 @@ export default function FormadorNotasPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-[26px] font-bold text-gray-900">Avaliações e Notas</h1>
-          <p className="mt-0.5 text-sm text-gray-500">
+          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">Avaliações e Notas</h1>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
             Gerencie templates de avaliação e registre notas de alunos
           </p>
         </div>
@@ -280,7 +280,7 @@ export default function FormadorNotasPage() {
               placeholder="Pesquisar aluno ou módulo..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 bg-white border-gray-200 text-sm rounded-xl"
+              className="pl-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-sm rounded-xl dark:text-gray-200"
             />
           </div>
           <Button
@@ -296,7 +296,7 @@ export default function FormadorNotasPage() {
       {/* Módulos */}
       <div className="space-y-4">
         {modulosFiltrados.length === 0 ? (
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-500">
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 text-center text-gray-500 dark:text-gray-400">
             <p>Nenhum módulo encontrado.</p>
           </div>
         ) : (
@@ -311,13 +311,13 @@ export default function FormadorNotasPage() {
             return (
               <div
                 key={modulo.id}
-                className="rounded-2xl border border-gray-200 bg-white overflow-hidden"
+                className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden"
               >
                 {/* Header do módulo */}
-                <div className="border-b border-gray-100 px-6 py-4 flex items-center justify-between bg-gray-50">
+                <div className="border-b border-gray-100 dark:border-gray-800 px-6 py-4 flex items-center justify-between bg-gray-50 dark:bg-gray-800/50">
                   <div>
-                    <h2 className="text-sm font-bold text-gray-900">{modulo.nome}</h2>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">{modulo.nome}</h2>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                       {modulo.alunos.length} aluno{modulo.alunos.length !== 1 ? 's' : ''}
                     </p>
                   </div>
@@ -336,14 +336,14 @@ export default function FormadorNotasPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-gray-100 bg-gray-50">
-                        <th className="text-left text-xs font-semibold text-gray-600 px-6 py-3">
+                      <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                        <th className="text-left text-xs font-semibold text-gray-600 dark:text-gray-400 px-6 py-3">
                           Aluno
                         </th>
-                        <th className="text-center text-xs font-semibold text-gray-600 px-4 py-3">
+                        <th className="text-center text-xs font-semibold text-gray-600 dark:text-gray-400 px-4 py-3">
                           Presenças
                         </th>
-                        <th className="text-center text-xs font-semibold text-gray-600 px-4 py-3">
+                        <th className="text-center text-xs font-semibold text-gray-600 dark:text-gray-400 px-4 py-3">
                           % Assiduidade
                         </th>
 
@@ -353,7 +353,7 @@ export default function FormadorNotasPage() {
                           .map((item) => (
                             <th
                               key={item.id}
-                              className="text-center text-xs font-semibold text-gray-600 px-4 py-3"
+                              className="text-center text-xs font-semibold text-gray-600 dark:text-gray-400 px-4 py-3"
                             >
                               {item.nome}
                               <br />
@@ -361,26 +361,26 @@ export default function FormadorNotasPage() {
                             </th>
                           ))}
 
-                        <th className="text-center text-xs font-semibold text-gray-600 px-6 py-3">
+                        <th className="text-center text-xs font-semibold text-gray-600 dark:text-gray-400 px-6 py-3">
                           Nota Final
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                       {alunosFiltrados.map((aluno) => {
                         const assiduidade = Math.round(
                           (aluno.presencas / aluno.totalSessoes) * 100
                         );
 
                         return (
-                          <tr key={aluno.id} className="hover:bg-gray-50 transition-colors">
+                          <tr key={aluno.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
                             {/* Nome do aluno */}
-                            <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                            <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
                               {aluno.nome}
                             </td>
 
                             {/* Presenças */}
-                            <td className="px-4 py-4 text-center text-sm text-gray-700">
+                            <td className="px-4 py-4 text-center text-sm text-gray-700 dark:text-gray-300">
                               <span className="font-medium">
                                 {aluno.presencas}/{aluno.totalSessoes}
                               </span>
@@ -426,7 +426,7 @@ export default function FormadorNotasPage() {
                                         )
                                       }
                                       placeholder="—"
-                                      className="w-16 text-center text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    className="w-16 text-center text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-purple-500"
                                     />
                                   </td>
                                 );

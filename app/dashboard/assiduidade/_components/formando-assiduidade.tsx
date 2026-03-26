@@ -74,8 +74,8 @@ function KPI({ label, value, icon: Icon, bg, iconBg, iconColor }: any) {
     return (
         <div className={cn('flex items-center justify-between rounded-2xl p-5', bg)}>
             <div className="flex flex-col gap-1">
-                <span className="text-[11px] font-semibold tracking-widest text-gray-500 uppercase">{label}</span>
-                <span className="text-4xl font-bold text-gray-900">{value}</span>
+                <span className="text-[11px] font-semibold tracking-widest text-gray-500 dark:text-gray-400 uppercase">{label}</span>
+                <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">{value}</span>
             </div>
             <div className={cn('flex h-12 w-12 items-center justify-center rounded-xl', iconBg)}>
                 <Icon className={cn('h-6 w-6', iconColor)} />
@@ -413,7 +413,7 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                 >
-                    <h1 className="text-[26px] font-bold text-gray-900">
+                    <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">
                         Minha Assiduidade
                     </h1>
                     <p className="mt-1 text-sm text-gray-400">Acompanha o teu registo de presenças e faltas</p>
@@ -435,32 +435,32 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                     label="TAXA GLOBAL"
                     value={`${percentagem}%`}
                     icon={Activity}
-                    bg="bg-teal-50"
-                    iconBg="bg-teal-100"
+                    bg="bg-teal-50 dark:bg-teal-950/50"
+                    iconBg="bg-teal-100 dark:bg-teal-900/50"
                     iconColor="text-teal-500"
                 />
                 <KPI
                     label="PRESENÇAS"
                     value={totalPresencas}
                     icon={UserCheck}
-                    bg="bg-blue-50"
-                    iconBg="bg-blue-100"
+                    bg="bg-blue-50 dark:bg-blue-950/50"
+                    iconBg="bg-blue-100 dark:bg-blue-900/50"
                     iconColor="text-blue-500"
                 />
                 <KPI
                     label="FALTAS"
                     value={totalFaltas}
                     icon={XCircle}
-                    bg="bg-rose-50"
-                    iconBg="bg-rose-100"
+                    bg="bg-rose-50 dark:bg-rose-950/50"
+                    iconBg="bg-rose-100 dark:bg-rose-900/50"
                     iconColor="text-rose-500"
                 />
                 <KPI
                     label="JUSTIFICADAS"
                     value={totalJustificadas}
                     icon={CheckCircle2}
-                    bg="bg-emerald-50"
-                    iconBg="bg-emerald-100"
+                    bg="bg-emerald-50 dark:bg-emerald-950/50"
+                    iconBg="bg-emerald-100 dark:bg-emerald-900/50"
                     iconColor="text-emerald-500"
                 />
             </div>
@@ -487,24 +487,24 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                 {/* Histórico - Tabela */}
-                <div className="lg:col-span-8 rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-                    <div className="p-6 border-b border-gray-100">
-                        <h2 className="flex items-center gap-2 text-base font-semibold text-gray-900">
+                <div className="lg:col-span-8 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm overflow-hidden">
+                    <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                        <h2 className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-gray-100">
                             <BookOpen className="h-4 w-4 text-teal-400" />
                             Histórico de Aulas
                         </h2>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-slate-50/50">
+                            <thead className="bg-slate-50/50 dark:bg-gray-800/50">
                                 <tr>
-                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Data e Hora</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Módulo / Aula</th>
-                                    <th className="px-6 py-4 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">Justificativa</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Data e Hora</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Módulo / Aula</th>
+                                    <th className="px-6 py-4 text-center text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Estado</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Justificativa</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-slate-100 dark:divide-gray-800">
                                 {presencas.length === 0 ? (
                                     <tr>
                                         <td colSpan={4} className="px-6 py-12 text-center text-slate-400 text-sm italic">
@@ -520,11 +520,11 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                                                 initial={{ opacity: 0, x: -10 }}
                                                 animate={{ opacity: 1, x: 0 }}
                                                 transition={{ delay: i * 0.05 }}
-                                                className="hover:bg-slate-50/50 transition-colors"
+                                                className="hover:bg-slate-50/50 dark:hover:bg-gray-800/40 transition-colors"
                                             >
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="flex flex-col">
-                                                        <span className="text-sm font-semibold text-slate-700">{data.toLocaleDateString("pt-PT")}</span>
+                                                        <span className="text-sm font-semibold text-slate-700 dark:text-gray-200">{data.toLocaleDateString("pt-PT")}</span>
                                                         <span className="text-xs text-slate-400">
                                                             {data.toLocaleTimeString("pt-PT", { hour: '2-digit', minute: '2-digit' })}
                                                         </span>
@@ -533,7 +533,7 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                                                 <td className="px-6 py-4">
                                                     <div className="flex flex-col">
                                                         <span className="text-[10px] font-bold text-teal-500 uppercase tracking-widest leading-none mb-1">{p.modulo}</span>
-                                                        <span className="text-sm font-semibold text-slate-600 line-clamp-1">{p.aula}</span>
+                                                        <span className="text-sm font-semibold text-slate-600 dark:text-gray-300 line-clamp-1">{p.aula}</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
@@ -568,8 +568,8 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                 {/* Sidebar - Resumo Mês & Regras */}
                 <div className="lg:col-span-4 flex flex-col gap-6">
                     {/* Tendência Mensal */}
-                    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                        <h2 className="flex items-center gap-2 text-base font-semibold text-gray-900 mb-6">
+                    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
+                        <h2 className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-gray-100 mb-6">
                             <BarChart3 className="h-4 w-4 text-teal-400" />
                             Tendência Mensal
                         </h2>

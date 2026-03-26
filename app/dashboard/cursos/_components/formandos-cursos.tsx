@@ -169,11 +169,11 @@ function DetalhesDialog({ curso, onClose }: { curso: Curso; onClose: () => void 
 
 function CursoRow({ curso, onVerDetalhes }: { curso: Curso; onVerDetalhes: () => void }) {
   return (
-    <div className="flex items-center justify-between gap-6 rounded-2xl border border-gray-200 bg-white px-6 py-5 hover:border-indigo-200 hover:shadow-sm transition-all">
+    <div className="flex items-center justify-between gap-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-5 hover:border-indigo-200 dark:hover:border-indigo-800 hover:shadow-sm transition-all">
       
       <div className="flex flex-col gap-3">
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <h3 className="text-base font-bold text-gray-900 truncate">{curso.nome}</h3>
+            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 truncate">{curso.nome}</h3>
             <span className={cn(
               "shrink-0 rounded-full border px-3 py-0.5 text-xs font-semibold",
               STATUS_CONFIG[curso.status]
@@ -182,7 +182,7 @@ function CursoRow({ curso, onVerDetalhes }: { curso: Curso; onVerDetalhes: () =>
             </span>
           </div>
 
-          <div className="flex gap-5 text-sm text-gray-500 shrink-0">
+          <div className="flex gap-5 text-sm text-gray-500 dark:text-gray-400 shrink-0">
             
             <span className="flex items-center gap-1.5">
               <CalendarDays className="h-4 w-4 text-gray-400" />
@@ -208,7 +208,7 @@ function CursoRow({ curso, onVerDetalhes }: { curso: Curso; onVerDetalhes: () =>
             variant="outline"
             size="sm"
             onClick={onVerDetalhes}
-            className="shrink-0 rounded-xl border-gray-200 text-gray-700 hover:border-indigo-300 hover:text-indigo-600 text-sm px-4"
+            className="shrink-0 rounded-xl border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-indigo-300 hover:text-indigo-600 text-sm px-4"
           >
             Ver Detalhes
           </Button>
@@ -231,8 +231,8 @@ export default function CursosPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-[26px] font-bold text-gray-900">Cursos</h1>
-          <p className="mt-0.5 text-sm text-gray-500">{cursosData.length} cursos registados</p>
+          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">Cursos</h1>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{cursosData.length} cursos registados</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative w-64">
@@ -241,7 +241,7 @@ export default function CursosPage() {
               placeholder="Pesquisar cursos..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 bg-white border-gray-200 text-sm rounded-xl"
+              className="pl-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-sm rounded-xl dark:text-gray-200"
             />
           </div>
         </div>
@@ -252,7 +252,7 @@ export default function CursosPage() {
           <CursoRow key={curso.id} curso={curso} onVerDetalhes={() => setSelectedCurso(curso)} />
         ))}
         {filtrados.length === 0 && (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white py-16 text-center">
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 py-16 text-center">
             <GraduationCap className="h-10 w-10 text-gray-300 mb-3" />
             <p className="text-sm font-medium text-gray-500">Nenhum curso encontrado</p>
           </div>

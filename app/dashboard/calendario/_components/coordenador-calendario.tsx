@@ -425,8 +425,8 @@ export default function CoordenadorCalendario() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[26px] font-bold text-gray-900">Calendário</h1>
-          <p className="mt-0.5 text-sm text-gray-500">
+          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">Calendário</h1>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
             {aulasMes.length} sessão(ões) este mês
           </p>
         </div>
@@ -439,20 +439,20 @@ export default function CoordenadorCalendario() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_380px]">
         {/* Calendar grid */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-6">
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
           <div className="flex items-center justify-between mb-6">
             <button
               onClick={prevMonth}
-              className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <ChevronLeft className="h-4 w-4 text-gray-600" />
             </button>
-            <h2 className="text-base font-bold text-gray-900">
+            <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
               {MONTHS[viewMonth]} {viewYear}
             </h2>
             <button
               onClick={nextMonth}
-              className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <ChevronRight className="h-4 w-4 text-gray-600" />
             </button>
@@ -489,10 +489,10 @@ export default function CoordenadorCalendario() {
                     isSelected
                       ? "bg-indigo-600 text-white shadow-sm"
                       : isToday
-                        ? "bg-indigo-50 text-indigo-700 font-bold"
+                        ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 font-bold"
                         : isPast
-                          ? "text-gray-300"
-                          : "text-gray-700 hover:bg-gray-100",
+                          ? "text-gray-300 dark:text-gray-600"
+                          : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800",
                   )}
                 >
                   {day}
@@ -513,8 +513,8 @@ export default function CoordenadorCalendario() {
         {/* Right panel */}
         <div className="flex flex-col gap-4">
           {/* Sessões do dia */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-5">
-            <h3 className="text-sm font-bold text-gray-900 mb-1 capitalize">
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-1 capitalize">
               {selectedLabel ?? "Seleciona um dia"}
             </h3>
             <p className="text-xs text-gray-400 mb-4">
@@ -583,8 +583,8 @@ export default function CoordenadorCalendario() {
           </div>
 
           {/* Próximas sessões */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-5">
-            <h3 className="text-sm font-bold text-gray-900 mb-4">
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4">
               Próximas Sessões
             </h3>
             {proximas.length === 0 ? (
@@ -599,18 +599,18 @@ export default function CoordenadorCalendario() {
                     <button
                       key={aula.id}
                       onClick={() => setSelectedDate(aulaDateISO(aula))}
-                      className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5 text-left hover:border-indigo-200 hover:bg-indigo-50/40 transition-colors"
+                      className="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2.5 text-left hover:border-indigo-200 hover:bg-indigo-50/40 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/20 transition-colors"
                     >
                       <div className="flex w-10 shrink-0 flex-col items-center rounded-lg bg-indigo-100 py-1.5">
                         <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-500">
                           {MONTHS[parseInt(month) - 1].slice(0, 3)}
                         </span>
-                        <span className="text-sm font-bold leading-tight text-indigo-700">
+                        <span className="text-sm font-bold leading-tight text-indigo-700 dark:text-indigo-400">
                           {day}
                         </span>
                       </div>
                       <div className="flex flex-col gap-0.5 min-w-0">
-                        <span className="text-xs font-semibold text-gray-800 truncate">
+                        <span className="text-xs font-semibold text-gray-800 dark:text-gray-100 truncate">
                           {aula.titulo}
                         </span>
                         <span className="text-[11px] text-gray-400">

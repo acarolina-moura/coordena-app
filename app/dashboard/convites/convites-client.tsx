@@ -86,14 +86,14 @@ export function ConvitesClient({ convitesIniciais }: { convitesIniciais: Convite
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-[26px] font-bold text-gray-900">Convites</h1>
-        <p className="mt-0.5 text-sm text-gray-500">Convites para módulos enviados pelo coordenador</p>
+        <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">Convites</h1>
+        <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Convites para módulos enviados pelo coordenador</p>
       </div>
 
       {/* SEÇÃO: CONVITES PENDENTES */}
       <div className="flex flex-col gap-3">
         {/* Cabeçalho com contador */}
-        <h2 className="text-sm font-semibold text-gray-700">
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
           Pendentes{" "}
           {pendentes.length > 0 && (
             <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700">
@@ -104,7 +104,7 @@ export function ConvitesClient({ convitesIniciais }: { convitesIniciais: Convite
 
         {/* Se não há convites pendentes, mostrar mensagem vazia */}
         {pendentes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white py-12 text-center">
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 py-12 text-center">
             <Mail className="h-8 w-8 text-gray-300 mb-2" />
             <p className="text-sm text-gray-400">Sem convites pendentes</p>
           </div>
@@ -113,7 +113,7 @@ export function ConvitesClient({ convitesIniciais }: { convitesIniciais: Convite
 
           pendentes.map((convite) => (
             /* Card do convite com informações e botões de acção */
-            <div key={convite.id} className="flex items-start gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+            <div key={convite.id} className="flex items-start gap-4 rounded-2xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/50 p-5">
               {/* Ícone do convite */}
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100">
                 <Mail className="h-5 w-5 text-amber-600" />
@@ -121,7 +121,7 @@ export function ConvitesClient({ convitesIniciais }: { convitesIniciais: Convite
               {/* Informações do convite */}
               <div className="flex flex-1 flex-col gap-1 min-w-0">
                 {/* Nome do módulo */}
-                <span className="text-sm font-bold text-gray-900">{convite.modulo}</span>
+                <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{convite.modulo}</span>
                 {/* Código/ID do módulo */}
                 <span className="text-xs text-purple-600 font-medium">{convite.codigo}</span>
                 {/* Detalhes adicionais: curso, coordenador, data */}
@@ -162,7 +162,7 @@ export function ConvitesClient({ convitesIniciais }: { convitesIniciais: Convite
       {historico.length > 0 && (
         <div className="flex flex-col gap-3">
           {/* Cabeçalho */}
-          <h2 className="text-sm font-semibold text-gray-700">Histórico</h2>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Histórico</h2>
           {/* Listar cada convite respondido */}
           {historico.map((convite) => {
             // Buscar configuração visual do status
@@ -170,7 +170,7 @@ export function ConvitesClient({ convitesIniciais }: { convitesIniciais: Convite
             const Icon = cfg.icon; // Ícone correspondente ao status
             return (
               /* Card do convite no histórico (sem botões de ação) */
-              <div key={convite.id} className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5">
+              <div key={convite.id} className="flex items-center gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
                 {/* Ícone */}
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100">
                   <Mail className="h-5 w-5 text-gray-400" />
@@ -178,7 +178,7 @@ export function ConvitesClient({ convitesIniciais }: { convitesIniciais: Convite
                 {/* Informações do convite */}
                 <div className="flex flex-1 flex-col gap-0.5 min-w-0">
                   {/* Nome do módulo */}
-                  <span className="text-sm font-semibold text-gray-800">{convite.modulo}</span>
+                  <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">{convite.modulo}</span>
                   {/* Detalhes: código, curso, data */}
                   <div className="flex flex-wrap gap-3 text-xs text-gray-400">
                     <span>{convite.codigo}</span>

@@ -28,10 +28,10 @@ export default function FormandoCronograma({ dados }: Props) {
 
     if (!curso) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
+            <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-gray-900 rounded-3xl border border-dashed border-slate-200 dark:border-gray-700">
                 <CalendarDays className="w-12 h-12 text-slate-200 mb-4" />
-                <h3 className="text-lg font-bold text-slate-900">Nenhum cronograma disponível</h3>
-                <p className="text-sm text-slate-500">Não estás inscrito em nenhum curso com sessões agendadas.</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-gray-100">Nenhum cronograma disponível</h3>
+                <p className="text-sm text-slate-500 dark:text-gray-400">Não estás inscrito em nenhum curso com sessões agendadas.</p>
             </div>
         );
     }
@@ -45,15 +45,15 @@ export default function FormandoCronograma({ dados }: Props) {
                         <CalendarDays className="w-5 h-5" />
                         <span className="text-sm font-black uppercase tracking-widest">{curso.cursoNome}</span>
                     </div>
-                    <h1 className="text-[28px] font-black text-slate-900 tracking-tight leading-tight">Cronograma do Curso</h1>
-                    <p className="text-slate-500 font-medium italic">Acompanha o teu percurso nesta formação</p>
+                    <h1 className="text-[28px] font-black text-slate-900 dark:text-gray-100 tracking-tight leading-tight">Cronograma do Curso</h1>
+                    <p className="text-slate-500 dark:text-gray-400 font-medium italic">Acompanha o teu percurso nesta formação</p>
                 </div>
 
                 {dados.length > 1 && (
                     <select 
                         value={cursoSelecionado} 
                         onChange={(e) => setCursoSelecionado(e.target.value)}
-                        className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500 transition-all shadow-sm"
+                        className="bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 dark:text-gray-200 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500 transition-all shadow-sm"
                     >
                         {dados.map(c => (
                             <option key={c.cursoId} value={c.cursoId}>{c.cursoNome}</option>
@@ -88,8 +88,8 @@ export default function FormandoCronograma({ dados }: Props) {
                                 <div className={cn(
                                     "h-11 w-11 rounded-2xl flex items-center justify-center shadow-lg transition-all border-2",
                                     isCompleto ? "bg-teal-500 border-teal-400 text-white" :
-                                    isAtivo ? "bg-white border-teal-500 text-teal-600 ring-4 ring-teal-500/10" :
-                                    "bg-white border-slate-200 text-slate-400"
+                                    isAtivo ? "bg-white dark:bg-gray-800 border-teal-500 text-teal-600 ring-4 ring-teal-500/10" :
+                                    "bg-white dark:bg-gray-800 border-slate-200 dark:border-gray-700 text-slate-400"
                                 )}>
                                     {isCompleto ? <CheckCircle2 className="w-6 h-6" /> : <BookOpen className="w-5 h-5" />}
                                 </div>
@@ -102,7 +102,7 @@ export default function FormandoCronograma({ dados }: Props) {
                                     <div className="flex items-center gap-3">
                                         <h2 className={cn(
                                             "text-xl font-black tracking-tight",
-                                            isCompleto ? "text-slate-400" : "text-slate-900"
+                                            isCompleto ? "text-slate-400" : "text-slate-900 dark:text-gray-100"
                                         )}>
                                             {modulo.nome}
                                         </h2>
@@ -130,9 +130,9 @@ export default function FormandoCronograma({ dados }: Props) {
                                                 key={aula.id}
                                                 className={cn(
                                                     "group p-4 rounded-2xl border transition-all flex flex-col gap-3 relative overflow-hidden",
-                                                    isHoje ? "bg-teal-50/50 border-teal-200 shadow-sm" :
-                                                    isPassada ? "bg-white border-slate-100 opacity-60" :
-                                                    "bg-white border-slate-200 hover:border-teal-300 hover:shadow-md"
+                                                    isHoje ? "bg-teal-50/50 dark:bg-teal-900/20 border-teal-200 dark:border-teal-800 shadow-sm" :
+                                                    isPassada ? "bg-white dark:bg-gray-900 border-slate-100 dark:border-gray-800 opacity-60" :
+                                                    "bg-white dark:bg-gray-900 border-slate-200 dark:border-gray-700 hover:border-teal-300 hover:shadow-md"
                                                 )}
                                             >
                                                 {isHoje && (
@@ -144,7 +144,7 @@ export default function FormandoCronograma({ dados }: Props) {
                                                 <div className="flex items-start justify-between">
                                                     <div className="flex flex-col gap-0.5">
                                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Sessão {aIdx + 1}</span>
-                                                        <span className="text-[13px] font-bold text-slate-800 leading-tight group-hover:text-teal-700 transition-colors">
+                                                        <span className="text-[13px] font-bold text-slate-800 dark:text-gray-200 leading-tight group-hover:text-teal-700 transition-colors">
                                                             {aula.titulo}
                                                         </span>
                                                     </div>
@@ -156,7 +156,7 @@ export default function FormandoCronograma({ dados }: Props) {
                                                 </div>
 
                                                 <div className="flex items-center justify-between mt-auto">
-                                                    <div className="flex items-center gap-2 text-[11px] font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded-lg">
+                                                    <div className="flex items-center gap-2 text-[11px] font-bold text-slate-500 bg-slate-50 dark:bg-gray-800 px-2 py-1 rounded-lg">
                                                         <Calendar className="w-3 h-3 text-slate-400" />
                                                         {dataAula.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' })}
                                                     </div>

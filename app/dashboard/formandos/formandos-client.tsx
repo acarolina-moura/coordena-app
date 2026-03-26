@@ -18,7 +18,7 @@ function FormandoCard({ formando }: { formando: FormandoComDetalhes }) {
     .toUpperCase();
 
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 hover:border-indigo-200 hover:shadow-sm transition-all">
+    <div className="flex items-center gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 hover:border-indigo-200 dark:hover:border-indigo-800 hover:shadow-sm transition-all">
       <Avatar className="h-11 w-11 border-2 border-gray-100 shrink-0">
         <AvatarFallback className="bg-indigo-100 text-indigo-600 font-semibold text-sm">
           {initials}
@@ -26,7 +26,7 @@ function FormandoCard({ formando }: { formando: FormandoComDetalhes }) {
       </Avatar>
 
       <div className="flex flex-1 flex-col gap-0.5 min-w-0">
-        <span className="truncate text-sm font-semibold text-gray-900">
+        <span className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
           {formando.nome}
         </span>
         <span className="truncate text-xs text-gray-400">{formando.curso}</span>
@@ -35,7 +35,7 @@ function FormandoCard({ formando }: { formando: FormandoComDetalhes }) {
       {/* Progresso */}
       <div className="hidden sm:flex flex-col items-end gap-1 shrink-0">
         <span className="text-xs text-gray-400">{formando.progresso}%</span>
-        <div className="h-1.5 w-20 rounded-full bg-gray-100">
+        <div className="h-1.5 w-20 rounded-full bg-gray-100 dark:bg-gray-700">
           <div
             className="h-1.5 rounded-full bg-indigo-500"
             style={{ width: `${formando.progresso}%` }}
@@ -48,10 +48,10 @@ function FormandoCard({ formando }: { formando: FormandoComDetalhes }) {
         className={cn(
           "shrink-0 rounded-full border px-3 py-0.5 text-xs font-medium",
           formando.status === "ATIVO"
-            ? "border-green-200 bg-green-50 text-green-600"
+            ? "border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800 text-green-600 dark:text-green-400"
             : formando.status === "CONCLUÍDO"
-              ? "border-blue-200 bg-blue-50 text-blue-600"
-              : "border-gray-200 bg-gray-50 text-gray-500",
+              ? "border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800 text-blue-600 dark:text-blue-400"
+              : "border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-500 dark:text-gray-400",
         )}
       >
         {formando.status}
@@ -59,7 +59,7 @@ function FormandoCard({ formando }: { formando: FormandoComDetalhes }) {
 
       {/* Negativos */}
       {formando.negativos > 0 && (
-        <span className="shrink-0 flex items-center gap-1 rounded-lg bg-red-50 px-2.5 py-1 text-xs font-bold text-red-600">
+        <span className="shrink-0 flex items-center gap-1 rounded-lg bg-red-50 dark:bg-red-950 px-2.5 py-1 text-xs font-bold text-red-600 dark:text-red-400">
           <AlertTriangle className="h-3 w-3" />
           {formando.negativos}
         </span>
@@ -94,8 +94,8 @@ export function FormandosClient({
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-[26px] font-bold text-gray-900">Formandos</h1>
-          <p className="mt-0.5 text-sm text-gray-500">
+          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">Formandos</h1>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
             {initialFormandos.length} formandos registados
           </p>
         </div>
@@ -108,7 +108,7 @@ export function FormandosClient({
               placeholder="Pesquisar..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 bg-white border-gray-200 text-sm rounded-xl"
+              className="pl-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-sm rounded-xl dark:text-gray-200"
             />
           </div>
 
@@ -121,8 +121,8 @@ export function FormandosClient({
                 className={cn(
                   "rounded-xl border px-3 py-1.5 text-xs font-medium transition-all",
                   filtroStatus === s
-                    ? "border-indigo-300 bg-indigo-50 text-indigo-600"
-                    : "border-gray-200 bg-white text-gray-500 hover:border-gray-300",
+                    ? "border-indigo-300 bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400"
+                    : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:border-gray-300",
                 )}
               >
                 {s}
@@ -140,7 +140,7 @@ export function FormandosClient({
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white py-16 text-center">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 py-16 text-center">
           <GraduationCap className="h-10 w-10 text-gray-300 mb-3" />
           <p className="text-sm font-medium text-gray-500">
             {search || filtroStatus !== "TODOS"

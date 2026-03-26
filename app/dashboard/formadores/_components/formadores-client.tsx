@@ -215,7 +215,7 @@ function FormadorCard({
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 hover:border-indigo-200 hover:shadow-sm transition-all">
+    <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 hover:border-indigo-200 dark:hover:border-indigo-800 hover:shadow-sm transition-all">
       {/* Header */}
       <div className="flex items-start gap-4">
         <Avatar className="h-14 w-14 border-2 border-gray-100 shrink-0">
@@ -227,7 +227,7 @@ function FormadorCard({
 
         <div className="flex flex-1 flex-col gap-0.5 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-base font-bold text-gray-900 leading-tight">
+            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 leading-tight">
               {formador.nome}
             </h3>
             <div className="flex gap-2">
@@ -241,7 +241,7 @@ function FormadorCard({
                     "h-5 w-5 transition-colors",
                     formador.favorito
                       ? "fill-amber-400 text-amber-400"
-                      : "text-gray-300 hover:text-amber-300",
+                      : "text-gray-300 dark:text-gray-600 hover:text-amber-300",
                   )}
                 />
               </button>
@@ -283,8 +283,8 @@ function FormadorCard({
               className={cn(
                 "flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-medium transition-colors",
                 tag === formador.tags[0]
-                  ? "border-indigo-100 bg-indigo-50 text-indigo-600 font-bold"
-                  : "border-gray-100 bg-gray-50 text-gray-500 hover:bg-gray-100",
+                  ? "border-indigo-100 dark:border-indigo-900 bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 font-bold"
+                  : "border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100",
               )}
             >
               {tag}
@@ -294,20 +294,20 @@ function FormadorCard({
       )}
 
       {/* Footer */}
-      <div className="flex items-center justify-between gap-3 border-t border-gray-100 pt-3">
+      <div className="flex items-center justify-between gap-3 border-t border-gray-100 dark:border-gray-800 pt-3">
         <span
           className={cn(
             "rounded-full border px-4 py-1 text-sm font-medium",
             formador.status === "aceite"
-              ? "border-green-200 bg-green-50 text-green-600"
-              : "border-amber-200 bg-amber-50 text-amber-600",
+              ? "border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800 text-green-600 dark:text-green-400"
+              : "border-amber-200 bg-amber-50 dark:bg-amber-950 dark:border-amber-800 text-amber-600 dark:text-amber-400",
           )}
         >
           {formador.status === "aceite" ? "Aceite" : "Pendente"}
         </span>
         <Link
           href={`/dashboard/formadores/${formador.id}`}
-          className="rounded-full border border-gray-200 px-4 py-1.5 text-sm font-medium text-gray-700 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
+          className="rounded-full border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
         >
           Ver Perfil
         </Link>
@@ -316,11 +316,11 @@ function FormadorCard({
       {/* Confirmação de eliminação */}
       {showConfirm && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/20">
-          <div className="bg-white border border-red-200 rounded-2xl shadow-xl p-6 flex flex-col items-center gap-4 max-w-sm mx-4">
+          <div className="bg-white dark:bg-gray-900 border border-red-200 dark:border-red-900 rounded-2xl shadow-xl p-6 flex flex-col items-center gap-4 max-w-sm mx-4">
             <span className="text-red-600 text-lg font-bold">
               Eliminar formador?
             </span>
-            <span className="text-sm text-gray-600 text-center">
+            <span className="text-sm text-gray-600 dark:text-gray-300 text-center">
               Esta ação não pode ser desfeita. O formador perderá acesso à
               plataforma.
             </span>
@@ -406,10 +406,8 @@ export function FormadoresClient({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-[26px] font-bold text-gray-900">Formadores</h1>
-          <p className="mt-0.5 text-sm text-gray-500">
-            {formadores.length} formadores registados
-          </p>
+          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">Formadores</h1>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{formadores.length} formadores registados</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative w-56">
@@ -418,7 +416,7 @@ export function FormadoresClient({
               placeholder="Pesquisar..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 bg-white border-gray-200 text-sm rounded-xl"
+              className="pl-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-sm rounded-xl dark:text-gray-200"
             />
           </div>
           <button
@@ -426,8 +424,8 @@ export function FormadoresClient({
             className={cn(
               "flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-all",
               apenasFavoritos
-                ? "border-amber-300 bg-amber-50 text-amber-600"
-                : "border-gray-200 bg-white text-gray-600 hover:border-amber-200 hover:text-amber-500",
+                ? "border-amber-300 bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400"
+                : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:border-amber-200 hover:text-amber-500",
             )}
           >
             <Star
@@ -456,7 +454,7 @@ export function FormadoresClient({
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white py-16 text-center">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 py-16 text-center">
           <Users className="h-10 w-10 text-gray-300 mb-3" />
           <p className="text-sm font-medium text-gray-500">
             {search || apenasFavoritos

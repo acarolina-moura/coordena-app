@@ -221,13 +221,13 @@ function NovoModuloDialog({ cursos, formadores }: { cursos: CursoComDetalhes[]; 
 
 function ModuloCard({ modulo, onEditar, onExcluir }: { modulo: ModuloComDetalhes; onEditar: () => void; onExcluir: () => void }) {
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 hover:border-indigo-200 hover:shadow-sm transition-all">
+    <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 hover:border-indigo-200 hover:shadow-sm transition-all">
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-col gap-0.5 flex-1">
-          <h3 className="text-base font-bold text-gray-900">{modulo.nome}</h3>
+          <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">{modulo.nome}</h3>
           {modulo.curso && (
-            <span className="text-sm text-gray-500">{modulo.curso.nome}</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{modulo.curso.nome}</span>
           )}
         </div>
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50">
@@ -236,7 +236,7 @@ function ModuloCard({ modulo, onEditar, onExcluir }: { modulo: ModuloComDetalhes
       </div>
 
       {/* Info */}
-      <div className="flex gap-4 text-sm text-gray-500 border-t border-gray-100 pt-3">
+      <div className="flex gap-4 text-sm text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-3">
         <span className="font-medium">Ordem: {modulo.ordem}</span>
         <span className="font-medium">{modulo.cargaHoraria}h</span>
       </div>
@@ -245,7 +245,7 @@ function ModuloCard({ modulo, onEditar, onExcluir }: { modulo: ModuloComDetalhes
       <div className="flex items-center gap-2">
         <Users className="h-4 w-4 text-gray-400 shrink-0" />
         {modulo.formadores && modulo.formadores.length > 0 ? (
-          <span className="text-sm text-gray-600">{modulo.formadores.map(f => f.user.nome).join(", ")}</span>
+          <span className="text-sm text-gray-600 dark:text-gray-300">{modulo.formadores.map(f => f.user.nome).join(", ")}</span>
         ) : (
           <span className="text-sm font-medium text-amber-500">Sem formador</span>
         )}
@@ -549,8 +549,8 @@ export function ModulosContent({ modulos, cursos, formadores }: { modulos: Modul
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-[26px] font-bold text-gray-900">Módulos</h1>
-          <p className="mt-0.5 text-sm text-gray-500">
+          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">Módulos</h1>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
             {modulos.length} módulos registados
           </p>
         </div>
@@ -563,7 +563,7 @@ export function ModulosContent({ modulos, cursos, formadores }: { modulos: Modul
               placeholder="Pesquisar módulos..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 bg-white border-gray-200 text-sm rounded-xl"
+              className="pl-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-sm rounded-xl dark:text-gray-200"
             />
           </div>
           <NovoModuloDialog cursos={cursos} formadores={formadores} />
@@ -582,7 +582,7 @@ export function ModulosContent({ modulos, cursos, formadores }: { modulos: Modul
             />
           ))
         ) : (
-          <div className="col-span-full flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white py-16 text-center">
+          <div className="col-span-full flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 py-16 text-center">
             <Puzzle className="h-10 w-10 text-gray-300 mb-3" />
             <p className="text-sm font-medium text-gray-500">Nenhum módulo encontrado</p>
           </div>

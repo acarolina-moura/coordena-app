@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Plus,
   Search,
@@ -50,6 +50,7 @@ function NovoCursoDialog() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
   const [formData, setFormData] = useState({
     nome: "",
     descricao: "",
@@ -68,7 +69,6 @@ function NovoCursoDialog() {
     setError("");
     setSuccess(false);
 
-    // ── Validação completa de todos os campos ──────────────────────────────
     if (!formData.nome.trim()) {
       setError("O nome do curso é obrigatório.");
       return;
@@ -95,6 +95,7 @@ function NovoCursoDialog() {
     }
 
     setLoading(true);
+
     try {
       const response = await fetch("/api/cursos", {
         method: "POST",
@@ -108,6 +109,7 @@ function NovoCursoDialog() {
       }
 
       setSuccess(true);
+
       setFormData({
         nome: "",
         descricao: "",
@@ -135,6 +137,7 @@ function NovoCursoDialog() {
           <Plus className="h-4 w-4" /> Novo Curso
         </Button>
       </DialogTrigger>
+
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Criar Novo Curso</DialogTitle>
@@ -170,6 +173,7 @@ function NovoCursoDialog() {
               disabled={loading}
             />
           </div>
+
           <div className="flex flex-col gap-1.5">
             <Label>
               Descrição <span className="text-red-500">*</span>
@@ -182,6 +186,7 @@ function NovoCursoDialog() {
               disabled={loading}
             />
           </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <Label>
@@ -195,6 +200,7 @@ function NovoCursoDialog() {
                 disabled={loading}
               />
             </div>
+
             <div className="flex flex-col gap-1.5">
               <Label>
                 Data de fim <span className="text-red-500">*</span>
@@ -208,6 +214,7 @@ function NovoCursoDialog() {
               />
             </div>
           </div>
+
           <div className="flex flex-col gap-1.5">
             <Label>
               Carga horária (horas) <span className="text-red-500">*</span>
@@ -232,6 +239,7 @@ function NovoCursoDialog() {
           >
             Cancelar
           </Button>
+
           <Button
             className="bg-indigo-600 hover:bg-indigo-700 text-white"
             onClick={handleSubmit}
@@ -259,9 +267,10 @@ function DetalhesDialog({
       <DialogContent className="sm:max-w-lg p-0 overflow-hidden gap-0 [&>button]:hidden">
         <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4">
           <div className="flex items-center gap-3 flex-wrap">
-            <DialogTitle className="text-lg font-bold text-gray-900">
+            <DialogTitle className="text-lg font-bold text-gray-900 dark:text-gray-100">
               {curso.nome}
             </DialogTitle>
+
             <span
               className={cn(
                 "rounded-full border px-3 py-0.5 text-xs font-semibold",
@@ -271,9 +280,10 @@ function DetalhesDialog({
               {STATUS_LABELS[curso.status]}
             </span>
           </div>
+
           <button
             onClick={onClose}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-100 transition-colors"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
@@ -287,9 +297,9 @@ function DetalhesDialog({
           ].map((stat) => (
             <div
               key={stat.label}
-              className="flex flex-col items-center justify-center rounded-xl bg-gray-50 border border-gray-100 py-4 gap-1"
+              className="flex flex-col items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-4 gap-1"
             >
-              <span className="text-2xl font-bold text-gray-900">
+              <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {stat.value}
               </span>
               <span className="text-xs text-gray-400">{stat.label}</span>
@@ -298,9 +308,10 @@ function DetalhesDialog({
         </div>
 
         <div className="px-6 pb-6">
-          <h3 className="text-sm font-bold text-gray-900 mb-3">
+          <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
             Módulos ({curso.modulos.length})
           </h3>
+
           <div className="flex flex-col gap-2">
             {curso.modulos.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-4">
@@ -310,10 +321,10 @@ function DetalhesDialog({
               curso.modulos.map((mod) => (
                 <div
                   key={mod.id}
-                  className="flex items-center justify-between gap-4 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3"
+                  className="flex items-center justify-between gap-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 px-4 py-3"
                 >
                   <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="text-sm font-semibold text-gray-800">
+                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                       {mod.nome}
                     </span>
                     <span className="text-xs text-gray-400">
@@ -348,6 +359,7 @@ function CursoRow({
         year: "numeric",
       })
     : "—";
+
   const dataFim = curso.dataFim
     ? new Date(curso.dataFim).toLocaleDateString("pt-PT", {
         day: "2-digit",
@@ -357,12 +369,13 @@ function CursoRow({
     : "—";
 
   return (
-    <div className="flex items-center justify-between gap-6 rounded-2xl border border-gray-200 bg-white px-6 py-5 hover:border-indigo-200 hover:shadow-sm transition-all">
+    <div className="flex items-center justify-between gap-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-5 hover:border-indigo-200 dark:hover:border-indigo-800 hover:shadow-sm transition-all">
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <h3 className="text-base font-bold text-gray-900 truncate">
+          <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 truncate">
             {curso.nome}
           </h3>
+
           <span
             className={cn(
               "shrink-0 rounded-full border px-3 py-0.5 text-xs font-semibold",
@@ -372,19 +385,23 @@ function CursoRow({
             {STATUS_LABELS[curso.status]}
           </span>
         </div>
-        <div className="flex gap-5 text-sm text-gray-500 shrink-0 flex-wrap">
+
+        <div className="flex gap-5 text-sm text-gray-500 dark:text-gray-400 shrink-0 flex-wrap">
           <span className="flex items-center gap-1.5">
             <CalendarDays className="h-4 w-4 text-gray-400" />
             {dataInicio} — {dataFim}
           </span>
+
           <span className="flex items-center gap-1.5">
             <Clock className="h-4 w-4 text-gray-400" />
             {curso.cargaHoraria}h
           </span>
+
           <span className="flex items-center gap-1.5">
             <Puzzle className="h-4 w-4 text-gray-400" />
             {curso.modulos.length} módulo{curso.modulos.length !== 1 ? "s" : ""}
           </span>
+
           <span className="flex items-center gap-1.5">
             <GraduationCap className="h-4 w-4 text-gray-400" />
             {curso.formandos} formando{curso.formandos !== 1 ? "s" : ""}
@@ -397,15 +414,16 @@ function CursoRow({
           variant="outline"
           size="sm"
           onClick={onVerDetalhes}
-          className="shrink-0 rounded-xl border-gray-200 text-gray-700 hover:border-indigo-300 hover:text-indigo-600 text-sm px-4"
+          className="shrink-0 rounded-xl border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-indigo-300 hover:text-indigo-600 text-sm px-4"
         >
           Ver Detalhes
         </Button>
+
         <Button
           variant="outline"
           size="sm"
           onClick={onExcluir}
-          className="rounded-xl border-red-100 text-red-500 hover:border-red-200 hover:bg-red-50 h-9 w-9 p-0 flex items-center justify-center"
+          className="rounded-xl border-red-100 dark:border-red-900 text-red-500 hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-950/30 h-9 w-9 p-0 flex items-center justify-center"
         >
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -431,6 +449,7 @@ function ExcluirCursoDialog({
   async function handleExcluir() {
     setLoading(true);
     setError("");
+
     try {
       await onConfirm();
       onClose();
@@ -447,10 +466,13 @@ function ExcluirCursoDialog({
           <DialogTitle className="flex items-center gap-2 text-red-600">
             <AlertCircle className="h-5 w-5" /> Excluir Curso
           </DialogTitle>
+
           <DialogDescription>
             Tens a certeza que pretendes excluir o curso{" "}
-            <span className="font-bold text-gray-900">"{curso.nome}"</span>?
-            Esta ação não pode ser desfeita e removerá também todos os módulos
+            <span className="font-bold text-gray-900 dark:text-gray-100">
+              "{curso.nome}"
+            </span>
+            ? Esta ação não pode ser desfeita e removerá também todos os módulos
             associados. A ação falhará se existirem formandos inscritos.
           </DialogDescription>
         </DialogHeader>
@@ -470,6 +492,7 @@ function ExcluirCursoDialog({
           >
             Cancelar
           </Button>
+
           <Button
             variant="destructive"
             onClick={handleExcluir}
@@ -506,13 +529,16 @@ export function CursosContent({ cursos }: { cursos: CursoComDetalhes[] }) {
 
   async function handleConfirmExcluir() {
     if (!cursoParaExcluir) return;
+
     const response = await fetch(`/api/cursos/${cursoParaExcluir.id}`, {
       method: "DELETE",
     });
+
     if (!response.ok) {
       const data = await response.json();
       throw new Error(data.error || "Erro ao excluir curso");
     }
+
     window.location.reload();
   }
 
@@ -520,11 +546,14 @@ export function CursosContent({ cursos }: { cursos: CursoComDetalhes[] }) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-[26px] font-bold text-gray-900">Cursos</h1>
-          <p className="mt-0.5 text-sm text-gray-500">
+          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">
+            Cursos
+          </h1>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
             {cursos.length} cursos registados
           </p>
         </div>
+
         <div className="flex items-center gap-3">
           <div className="relative w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -532,9 +561,10 @@ export function CursosContent({ cursos }: { cursos: CursoComDetalhes[] }) {
               placeholder="Pesquisar cursos..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 bg-white border-gray-200 text-sm rounded-xl"
+              className="pl-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-sm rounded-xl dark:text-gray-200"
             />
           </div>
+
           <NovoCursoDialog />
         </div>
       </div>
@@ -548,10 +578,11 @@ export function CursosContent({ cursos }: { cursos: CursoComDetalhes[] }) {
             onExcluir={() => setCursoParaExcluir(curso)}
           />
         ))}
+
         {filtrados.length === 0 && (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white py-16 text-center">
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 py-16 text-center">
             <GraduationCap className="h-10 w-10 text-gray-300 mb-3" />
-            <p className="text-sm font-medium text-gray-500">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
               Nenhum curso encontrado
             </p>
           </div>
@@ -564,6 +595,7 @@ export function CursosContent({ cursos }: { cursos: CursoComDetalhes[] }) {
           onClose={() => setSelectedCurso(null)}
         />
       )}
+
       {cursoParaExcluir && (
         <ExcluirCursoDialog
           curso={cursoParaExcluir}

@@ -98,20 +98,20 @@ export default function CalendarioFormandoPage() {
     <div className="flex flex-col gap-6">
       {/* Header */}
       <div>
-        <h1 className="text-[26px] font-bold text-gray-900">O Meu Calendário</h1>
-        <p className="mt-0.5 text-sm text-gray-500">{sessoesMes.length} sessões este mês</p>
+        <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">O Meu Calendário</h1>
+        <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{sessoesMes.length} sessões este mês</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_380px]">
         {/* Calendar */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-6">
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
           {/* Nav */}
           <div className="flex items-center justify-between mb-6">
-            <button onClick={prevMonth} className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 transition-colors">
+            <button onClick={prevMonth} className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
               <ChevronLeft className="h-4 w-4 text-gray-600" />
             </button>
-            <h2 className="text-base font-bold text-gray-900">{MONTHS[viewMonth]} {viewYear}</h2>
-            <button onClick={nextMonth} className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 transition-colors">
+            <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">{MONTHS[viewMonth]} {viewYear}</h2>
+            <button onClick={nextMonth} className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
               <ChevronRight className="h-4 w-4 text-gray-600" />
             </button>
           </div>
@@ -139,8 +139,8 @@ export default function CalendarioFormandoPage() {
                   className={cn(
                     "relative flex flex-col items-center justify-center rounded-xl py-2 text-sm font-medium transition-all",
                     isSelected ? "bg-teal-500 text-white shadow-sm"
-                    : isToday  ? "bg-teal-50 text-teal-700 font-bold"
-                    :            "text-gray-700 hover:bg-gray-100"
+                    : isToday  ? "bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 font-bold"
+                    :            "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                   )}
                 >
                   {day}
@@ -156,8 +156,8 @@ export default function CalendarioFormandoPage() {
         {/* Right panel */}
         <div className="flex flex-col gap-4">
           {/* Sessions for selected day */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-5">
-            <h3 className="text-sm font-bold text-gray-900 mb-1 capitalize">{selectedLabel ?? "Seleciona um dia"}</h3>
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-1 capitalize">{selectedLabel ?? "Seleciona um dia"}</h3>
             <p className="text-xs text-gray-400 mb-4">
               {sessoesDia.length > 0 ? `${sessoesDia.length} sessão(ões)` : "Sem sessões"}
             </p>
@@ -185,21 +185,21 @@ export default function CalendarioFormandoPage() {
           </div>
 
           {/* Próximas */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-5">
-            <h3 className="text-sm font-bold text-gray-900 mb-4">Próximas Sessões</h3>
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4">Próximas Sessões</h3>
             <div className="flex flex-col gap-2">
               {proximas.map(s => {
                 const [, month, day] = s.data.split("-");
                 return (
                   <button key={s.id} onClick={() => setSelected(s.data)}
-                    className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5 text-left hover:border-teal-200 hover:bg-teal-50/30 transition-colors"
+                    className="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2.5 text-left hover:border-teal-200 hover:bg-teal-50/30 dark:hover:border-teal-800 dark:hover:bg-teal-900/20 transition-colors"
                   >
                     <div className="flex w-10 shrink-0 flex-col items-center rounded-lg bg-teal-100 py-1.5">
                       <span className="text-[9px] font-bold uppercase tracking-wider text-teal-500">{MONTHS[parseInt(month) - 1].slice(0, 3)}</span>
-                      <span className="text-sm font-bold leading-tight text-teal-700">{day}</span>
+                      <span className="text-sm font-bold leading-tight text-teal-700 dark:text-teal-400">{day}</span>
                     </div>
                     <div className="flex flex-col gap-0.5 min-w-0">
-                      <span className="text-xs font-semibold text-gray-800 truncate">{s.titulo}</span>
+                      <span className="text-xs font-semibold text-gray-800 dark:text-gray-100 truncate">{s.titulo}</span>
                       <span className="text-[11px] text-gray-400">{s.horaInicio} · {s.duracao} · {s.formador}</span>
                     </div>
                   </button>
