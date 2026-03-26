@@ -15,14 +15,14 @@ export async function GET(req: NextRequest) {
 
   const disponibilidades = await prisma.disponibilidade.findMany({
     where: { formadorId: formador.id, disponivel: true },
-    select: { diaSemana: true, hora: true, minuto: true },
+    select: { diaSemana: true, hora: true, minuto: true, tipo: true },
   });
 
   return NextResponse.json(disponibilidades);
 }
 
 // POST /api/disponibilidades
-// Body: { userId: string, slots: { hora, minuto, diaSemana }[] }
+// Body: { userId: string, slots: { hora, minuto, diaSemana, tipo }[] }
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user)
@@ -47,12 +47,13 @@ export async function POST(req: NextRequest) {
   if (Array.isArray(slots) && slots.length > 0) {
     await prisma.disponibilidade.createMany({
       data: slots.map(
-        (s: { hora: number; minuto: number; diaSemana: string }) => ({
+        (s: { hora: number; minuto: number; diaSemana: string; tipo?: string }) => ({
           formadorId: formador.id,
           diaSemana: s.diaSemana,
           hora: s.hora,
           minuto: s.minuto,
-          disponivel: true,
+          disponivel: !!s.tipo, // true se tem tipo (TOTAL ou PARCIAL)
+          tipo: s.tipo || null,
         }),
       ),
     });

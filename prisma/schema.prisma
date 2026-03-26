@@ -16,6 +16,11 @@ enum Role {
   FORMANDO
 }
 
+enum TipoDisponibilidade {
+  TOTAL
+  PARCIAL
+}
+
 enum StatusCurso {
   ATIVO
   PAUSADO
@@ -127,6 +132,7 @@ model Disponibilidade {
   hora       Int /// 9-17
   minuto     Int /// 0 ou 30
   disponivel Boolean  @default(true)
+  tipo       String?  /// "TOTAL" ou "PARCIAL"
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
