@@ -180,6 +180,13 @@ const NAV_ITEMS: NavItem[] = [
     roles: ["FORMADOR", "FORMANDO"],
     group: "RECURSOS",
   },
+  {
+    label: "Materiais de Apoio",
+    href: "/dashboard/materiais",
+    icon: BookOpen,
+    roles: ["FORMADOR", "FORMANDO"],
+    group: "RECURSOS",
+  },
 
   // CONTA
   {

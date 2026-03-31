@@ -211,29 +211,29 @@ export default function FormadorCalendarioPage() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-[26px] font-bold text-gray-900">Calendário</h1>
-              <p className="mt-0.5 text-sm text-gray-500">{sessoesDoMes.length} sessões este mês</p>
+              <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">Calendário</h1>
+              <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{sessoesDoMes.length} sessões este mês</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_380px]">
             {/* Calendar grid */}
-            <div className="rounded-2xl border border-gray-200 bg-white p-6">
+            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
               <div className="flex items-center justify-between mb-6">
-                <button onClick={prevMonth} className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 transition-colors">
-                  <ChevronLeft className="h-4 w-4 text-gray-600" />
+                <button onClick={prevMonth} className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                  <ChevronLeft className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                 </button>
-                <h2 className="text-base font-bold text-gray-900">
+                <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
                   {MONTHS[viewMonth]} {viewYear}
                 </h2>
-                <button onClick={nextMonth} className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 transition-colors">
-                  <ChevronRight className="h-4 w-4 text-gray-600" />
+                <button onClick={nextMonth} className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                  <ChevronRight className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                 </button>
               </div>
 
               <div className="grid grid-cols-7 mb-2">
                 {DAYS_SHORT.map((d) => (
-                  <div key={d} className="text-center text-xs font-semibold text-gray-400 py-1">{d}</div>
+                  <div key={d} className="text-center text-xs font-semibold text-gray-400 dark:text-gray-500 py-1">{d}</div>
                 ))}
               </div>
 
@@ -255,8 +255,8 @@ export default function FormadorCalendarioPage() {
                       className={cn(
                         "relative flex flex-col items-center justify-center rounded-xl py-2 text-sm font-medium transition-all",
                         isSelected ? "bg-indigo-600 text-white shadow-sm" :
-                          isToday ? "bg-indigo-50 text-indigo-700 font-bold" :
-                            "text-gray-700 hover:bg-gray-100"
+                          isToday ? "bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400 font-bold" :
+                            "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                       )}
                     >
                       {day}
@@ -271,11 +271,11 @@ export default function FormadorCalendarioPage() {
 
             {/* Session list for selected day */}
             <div className="flex flex-col gap-4">
-              <div className="rounded-2xl border border-gray-200 bg-white p-5">
-                <h3 className="text-sm font-bold text-gray-900 mb-1 capitalize">
+              <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-1 capitalize">
                   {selectedDateLabel ?? "Seleciona um dia"}
                 </h3>
-                <p className="text-xs text-gray-400 mb-4">
+                <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
                   {sessoesDoDia.length > 0 ? `${sessoesDoDia.length} sessão(ões)` : "Sem sessões"}
                 </p>
 
@@ -300,15 +300,15 @@ export default function FormadorCalendarioPage() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <Clock className="h-8 w-8 text-gray-200 mb-2" />
-                    <p className="text-xs text-gray-400">Nenhuma sessão neste dia</p>
+                    <Clock className="h-8 w-8 text-gray-200 dark:text-gray-800 mb-2" />
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Nenhuma sessão neste dia</p>
                   </div>
                 )}
               </div>
 
               {/* Próximas sessões */}
-              <div className="rounded-2xl border border-gray-200 bg-white p-5">
-                <h3 className="text-sm font-bold text-gray-900 mb-4">Próximas Sessões</h3>
+              <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4">Próximas Sessões</h3>
                 <div className="flex flex-col gap-3">
                   {sessoes
                     .filter((s) => s.data >= todayISO)
@@ -317,17 +317,17 @@ export default function FormadorCalendarioPage() {
                     .map((sessao) => {
                       const [, month, day] = sessao.data.split("-");
                       return (
-                        <div key={sessao.id} className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5 text-left">
+                        <div key={sessao.id} className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/40 px-3 py-2.5 text-left transition-colors">
                           <div className="flex items-center gap-3 min-w-0 flex-1">
-                            <div className="flex w-10 shrink-0 flex-col items-center rounded-lg bg-indigo-100 py-1.5">
-                              <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-500">
+                            <div className="flex w-10 shrink-0 flex-col items-center rounded-lg bg-indigo-100 dark:bg-indigo-900/40 py-1.5">
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-500 dark:text-indigo-400">
                                 {MONTHS[parseInt(month) - 1].slice(0, 3)}
                               </span>
-                              <span className="text-sm font-bold leading-tight text-indigo-700">{day}</span>
+                              <span className="text-sm font-bold leading-tight text-indigo-700 dark:text-indigo-300">{day}</span>
                             </div>
                             <div className="flex flex-col gap-0.5 min-w-0">
-                              <span className="text-xs font-semibold text-gray-800 truncate">{sessao.titulo}</span>
-                              <span className="text-[11px] text-gray-400">{sessao.horaInicio} · {sessao.duracao} · {sessao.formador}</span>
+                              <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">{sessao.titulo}</span>
+                              <span className="text-[11px] text-gray-400 dark:text-gray-500">{sessao.horaInicio} · {sessao.duracao} · {sessao.formador}</span>
                             </div>
                           </div>
                         </div>
@@ -338,10 +338,10 @@ export default function FormadorCalendarioPage() {
 
               {/* Marcar Presença */}
               {aulaAberta && (
-                <div className="rounded-2xl border border-gray-200 bg-white p-6">
+                <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-base font-bold text-gray-900">Registar Presença</h3>
-                    <Button variant="outline" size="sm" onClick={fecharAula}>Fechar</Button>
+                    <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">Registar Presença</h3>
+                    <Button variant="outline" size="sm" onClick={fecharAula} className="rounded-xl">Fechar</Button>
                   </div>
 
                   {loadingPresenca ? (
@@ -354,8 +354,8 @@ export default function FormadorCalendarioPage() {
                         {alunos.map((aluno) => {
                           const statusAtual = presencasAlteradas[aluno.id] ?? aluno.status;
                           return (
-                            <div key={aluno.id} className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
-                              <span className="text-sm font-medium text-gray-900">{aluno.nome}</span>
+                            <div key={aluno.id} className="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{aluno.nome}</span>
                               <div className="flex gap-2">
                                 <Button
                                   size="sm"
@@ -385,7 +385,7 @@ export default function FormadorCalendarioPage() {
                       )}
                     </>
                   ) : (
-                    <p className="text-sm text-gray-400 py-4">Nenhum aluno encontrado nesta aula.</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 py-4">Nenhum aluno encontrado nesta aula.</p>
                   )}
                 </div>
               )}
@@ -394,25 +394,25 @@ export default function FormadorCalendarioPage() {
 
           {/* Aulas Hoje - Marcar Assiduidade */}
           {sessoesHoje.length > 0 && (
-            <div className="rounded-2xl border border-gray-200 bg-white p-6">
+            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
               <div className="mb-4">
-                <h2 className="text-lg font-bold text-gray-900">Aulas Hoje - Marcar Assiduidade</h2>
-                <p className="text-sm text-gray-500 mt-1">{sessoesHoje.length} aula(s) hoje</p>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Aulas Hoje - Marcar Assiduidade</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{sessoesHoje.length} aula(s) hoje</p>
               </div>
 
               {aulaHojeAberta ? (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-indigo-50 border border-indigo-200">
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800">
                     <div>
-                      <h3 className="font-semibold text-gray-900">{sessoesHoje.find(s => s.id === aulaHojeAberta)?.titulo}</h3>
-                      <p className="text-sm text-gray-600">
+                      <h3 className="font-semibold text-gray-900 dark:text-gray-100">{sessoesHoje.find(s => s.id === aulaHojeAberta)?.titulo}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         {sessoesHoje.find(s => s.id === aulaHojeAberta)?.horaInicio} · {sessoesHoje.find(s => s.id === aulaHojeAberta)?.duracao}
                       </p>
                     </div>
-                    <Button variant="outline" size="sm" onClick={fecharAulaHoje}>Fechar</Button>
+                    <Button variant="outline" size="sm" onClick={fecharAulaHoje} className="rounded-xl">Fechar</Button>
                   </div>
 
-                  <div className="rounded-lg border border-gray-200">
+                  <div className="rounded-lg border border-gray-200 dark:border-gray-800">
                     {loadingPresencaHoje ? (
                       <div className="flex items-center justify-center py-8">
                         <Loader className="h-5 w-5 animate-spin text-indigo-600" />
@@ -423,8 +423,8 @@ export default function FormadorCalendarioPage() {
                           {alunosHoje.map((aluno) => {
                             const statusAtual = presencasHojeAlteradas[aluno.id] ?? aluno.status;
                             return (
-                              <div key={aluno.id} className="flex items-center justify-between p-4 hover:bg-gray-50">
-                                <span className="text-sm font-medium text-gray-900">{aluno.nome}</span>
+                              <div key={aluno.id} className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800 divide-y-gray-100 dark:divide-gray-800">
+                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{aluno.nome}</span>
                                 <div className="flex gap-2">
                                   <Button
                                     size="sm"
@@ -448,7 +448,7 @@ export default function FormadorCalendarioPage() {
                           })}
                         </div>
                         {Object.keys(presencasHojeAlteradas).length > 0 && (
-                          <div className="border-t p-4 bg-gray-50">
+                          <div className="border-t p-4 bg-gray-50 dark:bg-gray-800/50">
                             <Button onClick={guardarPresencasHoje} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
                               Guardar Presenças
                             </Button>
@@ -456,7 +456,7 @@ export default function FormadorCalendarioPage() {
                         )}
                       </>
                     ) : (
-                      <div className="flex items-center justify-center py-8 text-gray-400">
+                      <div className="flex items-center justify-center py-8 text-gray-400 dark:text-gray-500">
                         <p className="text-sm">Nenhum aluno encontrado nesta aula.</p>
                       </div>
                     )}
@@ -474,21 +474,21 @@ export default function FormadorCalendarioPage() {
                         className={cn(
                           "text-left p-4 rounded-lg border-2 transition-all",
                           podeMarcar.pode
-                            ? "border-indigo-200 bg-indigo-50 hover:border-indigo-400 hover:bg-indigo-100 cursor-pointer"
-                            : "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
+                            ? "border-indigo-200 dark:border-indigo-900/30 bg-indigo-50 dark:bg-indigo-900/20 hover:border-indigo-400 dark:hover:border-indigo-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 cursor-pointer"
+                            : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 cursor-not-allowed opacity-60"
                         )}
                       >
                         <div className="flex items-start justify-between">
                           <div>
-                            <h3 className="font-semibold text-gray-900">{aula.titulo}</h3>
-                            <p className="text-sm text-gray-600 mt-1">{aula.horaInicio} · {aula.duracao}</p>
+                            <h3 className="font-semibold text-gray-900 dark:text-gray-100">{aula.titulo}</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{aula.horaInicio} · {aula.duracao}</p>
                           </div>
                           {podeMarcar.pode ? (
-                            <span className="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">Aberto</span>
+                            <span className="px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium">Aberto</span>
                           ) : (
                             <div className="text-right">
-                              <span className="px-2 py-1 rounded-full bg-gray-200 text-gray-700 text-xs font-medium block mb-1">Fechado</span>
-                              <p className="text-xs text-gray-500">{podeMarcar.motivo}</p>
+                              <span className="px-2 py-1 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-400 text-xs font-medium block mb-1">Fechado</span>
+                              <p className="text-xs text-gray-500 dark:text-gray-500">{podeMarcar.motivo}</p>
                             </div>
                           )}
                         </div>

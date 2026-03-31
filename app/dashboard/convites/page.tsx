@@ -12,8 +12,8 @@ export default async function ConvitesPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Os Meus Convites</h1>
-        <p className="text-gray-500 text-sm">Gere as tuas participações em novos cursos e módulos.</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Os Meus Convites</h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">Gere as tuas participações em novos cursos e módulos.</p>
       </div>
 
       <ConvitesFormando initialConvites={convites} />

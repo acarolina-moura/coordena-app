@@ -35,7 +35,7 @@ export function ConvitesFormando({ initialConvites }: ConvitesFormandoProps) {
             {/* Secção de Pendentes */}
             <div className="space-y-6">
                 <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600">
+                    <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-600 dark:text-amber-500">
                         <Mail className="h-4 w-4" />
                     </div>
                     <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Convites Pendentes ({pendentes.length})</h2>
@@ -48,8 +48,8 @@ export function ConvitesFormando({ initialConvites }: ConvitesFormandoProps) {
                         className="bg-gray-50 dark:bg-gray-800/50 border border-dashed border-gray-200 dark:border-gray-700 rounded-2xl p-12 text-center"
                     >
                         <Mail className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-500 font-medium">Não tens nenhum convite pendente de momento.</p>
-                        <p className="text-gray-400 text-sm">Fica atento às notificações para novas oportunidades!</p>
+                        <p className="text-gray-500 dark:text-gray-400 font-medium">Não tens nenhum convite pendente de momento.</p>
+                        <p className="text-gray-400 dark:text-gray-500 text-sm">Fica atento às notificações para novas oportunidades!</p>
                     </motion.div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -64,7 +64,7 @@ export function ConvitesFormando({ initialConvites }: ConvitesFormandoProps) {
                                     transition={{ duration: 0.3, delay: i * 0.05 }}
                                     className="group relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all duration-300"
                                 >
-                                    <div className="absolute top-4 right-4 h-8 w-8 rounded-full bg-teal-50 flex items-center justify-center text-teal-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="absolute top-4 right-4 h-8 w-8 rounded-full bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center text-teal-500 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <Sparkles className="h-4 w-4" />
                                     </div>
 
@@ -80,13 +80,13 @@ export function ConvitesFormando({ initialConvites }: ConvitesFormandoProps) {
                                         </div>
 
                                         <div className="space-y-3 py-2">
-                                            <div className="flex items-center gap-2.5 text-sm text-gray-500">
-                                                <Calendar className="h-4 w-4 text-gray-400" />
+                                            <div className="flex items-center gap-2.5 text-sm text-gray-500 dark:text-gray-400">
+                                                <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                                                 <span>Envio: {new Date(convite.dataEnvio).toLocaleDateString()}</span>
                                             </div>
                                             {convite.descricao && (
                                                 <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 text-xs text-gray-600 dark:text-gray-300 italic">
-                                                    "{convite.descricao}"
+                                                    &quot;{convite.descricao}&quot;
                                                 </div>
                                             )}
                                         </div>
@@ -94,7 +94,7 @@ export function ConvitesFormando({ initialConvites }: ConvitesFormandoProps) {
                                         <div className="flex gap-3 pt-2">
                                             <Button 
                                                 variant="outline" 
-                                                className="flex-1 rounded-xl h-11 border-red-100 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-200"
+                                                className="flex-1 rounded-xl h-11 border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300 hover:border-red-200 dark:hover:border-red-800"
                                                 onClick={() => handleResposta(convite.id, "RECUSADO")}
                                                 disabled={loadingId === convite.id}
                                             >
@@ -129,8 +129,8 @@ export function ConvitesFormando({ initialConvites }: ConvitesFormandoProps) {
 
             {/* Secção de Histórico */}
             {historico.length > 0 && (
-                <div className="space-y-6 pt-6 border-t border-gray-100">
-                    <div className="flex items-center gap-2 text-gray-400">
+                <div className="space-y-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+                    <div className="flex items-center gap-2 text-gray-400 dark:text-gray-500">
                         <Clock className="h-4 w-4" />
                         <h2 className="text-sm font-bold uppercase tracking-widest">Histórico de Convites</h2>
                     </div>
@@ -151,13 +151,15 @@ export function ConvitesFormando({ initialConvites }: ConvitesFormandoProps) {
                                         <td className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200">
                                             {convite.Curso?.nome || 'Curso Removido'}
                                         </td>
-                                        <td className="px-6 py-4 text-gray-500">
+                                        <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
                                             {new Date(convite.dataEnvio).toLocaleDateString()}
                                         </td>
-                                        <td className="px-6 py-4 text-gray-500 capitalize">
+                                        <td className="px-6 py-4 text-gray-500 dark:text-gray-400 capitalize">
                                             <div className={cn(
                                                 "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold",
-                                                convite.status === "ACEITE" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+                                                convite.status === "ACEITE" 
+                                                    ? "bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-500" 
+                                                    : "bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                                             )}>
                                                 {convite.status === "ACEITE" ? (
                                                     <CheckCircle2 className="h-3 w-3" />
@@ -167,7 +169,7 @@ export function ConvitesFormando({ initialConvites }: ConvitesFormandoProps) {
                                                 {convite.status.toLowerCase()}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-gray-400 text-xs italic">
+                                        <td className="px-6 py-4 text-gray-400 dark:text-gray-500 text-xs italic">
                                             Respondido em {convite.dataResposta ? new Date(convite.dataResposta).toLocaleDateString() : '—'}
                                         </td>
                                     </tr>

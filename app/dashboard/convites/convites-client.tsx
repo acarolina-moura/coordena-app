@@ -37,9 +37,9 @@ interface Convite {
  * Define: label (texto), ícone e classes Tailwind para cores
  */
 const STATUS_CONFIG: Record<ConviteStatus, { label: string; icon: React.ElementType; className: string }> = {
-  pendente:  { label: "Pendente",  icon: Clock,         className: "bg-amber-100 text-amber-700" },
-  aceite:    { label: "Aceite",    icon: CheckCircle2,  className: "bg-green-100 text-green-700" },
-  recusado:  { label: "Recusado",  icon: XCircle,       className: "bg-red-100 text-red-600" },
+  pendente:  { label: "Pendente",  icon: Clock,         className: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-500" },
+  aceite:    { label: "Aceite",    icon: CheckCircle2,  className: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-500" },
+  recusado:  { label: "Recusado",  icon: XCircle,       className: "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400" },
 };
 
 /**
@@ -96,7 +96,7 @@ export function ConvitesClient({ convitesIniciais }: { convitesIniciais: Convite
         <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
           Pendentes{" "}
           {pendentes.length > 0 && (
-            <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700">
+            <span className="ml-1 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-bold text-amber-700 dark:text-amber-500">
               {pendentes.length}
             </span>
           )}
@@ -115,8 +115,8 @@ export function ConvitesClient({ convitesIniciais }: { convitesIniciais: Convite
             /* Card do convite com informações e botões de acção */
             <div key={convite.id} className="flex items-start gap-4 rounded-2xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/50 p-5">
               {/* Ícone do convite */}
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100">
-                <Mail className="h-5 w-5 text-amber-600" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/40">
+                <Mail className="h-5 w-5 text-amber-600 dark:text-amber-500" />
               </div>
               {/* Informações do convite */}
               <div className="flex flex-1 flex-col gap-1 min-w-0">
@@ -125,7 +125,7 @@ export function ConvitesClient({ convitesIniciais }: { convitesIniciais: Convite
                 {/* Código/ID do módulo */}
                 <span className="text-xs text-purple-600 font-medium">{convite.codigo}</span>
                 {/* Detalhes adicionais: curso, coordenador, data */}
-                <div className="flex flex-wrap gap-3 mt-1 text-xs text-gray-500">
+                <div className="flex flex-wrap gap-3 mt-1 text-xs text-gray-500 dark:text-gray-400">
                   <span className="flex items-center gap-1"><GraduationCap className="h-3 w-3" />{convite.curso}</span>
                   <span>De: {convite.coordenador}</span>
                   <span>{convite.dataEnvio}</span>
@@ -139,7 +139,7 @@ export function ConvitesClient({ convitesIniciais }: { convitesIniciais: Convite
                   onClick={() => responder(convite.id, "recusado")}
                   variant="outline"
                   disabled={carregando} // Desabilitar enquanto processa
-                  className="rounded-xl border-gray-200 text-gray-600 hover:border-red-200 hover:text-red-500 text-xs px-3"
+                  className="rounded-xl border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-red-200 dark:hover:border-red-900/50 hover:text-red-500 dark:hover:text-red-400 text-xs px-3"
                 >
                   Recusar
                 </Button>
@@ -148,7 +148,7 @@ export function ConvitesClient({ convitesIniciais }: { convitesIniciais: Convite
                   size="sm"
                   onClick={() => responder(convite.id, "aceite")}
                   disabled={carregando} // Desabilitar enquanto processa
-                  className="rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs px-3"
+                  className="rounded-xl bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white text-xs px-3"
                 >
                   Aceitar
                 </Button>
@@ -172,15 +172,15 @@ export function ConvitesClient({ convitesIniciais }: { convitesIniciais: Convite
               /* Card do convite no histórico (sem botões de ação) */
               <div key={convite.id} className="flex items-center gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
                 {/* Ícone */}
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
+                  <Mail className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                 </div>
                 {/* Informações do convite */}
                 <div className="flex flex-1 flex-col gap-0.5 min-w-0">
                   {/* Nome do módulo */}
                   <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">{convite.modulo}</span>
                   {/* Detalhes: código, curso, data */}
-                  <div className="flex flex-wrap gap-3 text-xs text-gray-400">
+                  <div className="flex flex-wrap gap-3 text-xs text-gray-400 dark:text-gray-500">
                     <span>{convite.codigo}</span>
                     <span>·</span>
                     <span>{convite.curso}</span>

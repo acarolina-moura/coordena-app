@@ -18,7 +18,7 @@ export default async function DocumentosPage() {
 
   if (role === 'FORMADOR') {
     const documentos = await getDocumentosFormador(id)
-    return <FormadorDocumentos documentos={documentos} userId={id} />
+    return <FormadorDocumentos documentos={documentos} />
   }
 
   if (role === 'FORMANDO') {

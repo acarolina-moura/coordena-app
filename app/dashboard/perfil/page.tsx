@@ -33,8 +33,8 @@ export default async function PerfilPage() {
   if (!formador) {
     return (
       <div className="flex flex-col gap-6 max-w-2xl mx-auto">
-        <h1 className="text-[26px] font-bold text-gray-900">O Meu Perfil</h1>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+        <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">O Meu Perfil</h1>
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/30 rounded-lg p-4 text-red-700 dark:text-red-400">
           <p className="font-semibold">Erro ao carregar perfil</p>
           <p className="text-sm mt-1">O utilizador ou não existe na base de dados.</p>
         </div>

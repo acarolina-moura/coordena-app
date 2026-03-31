@@ -32,10 +32,10 @@ const DOCS_COM_VALIDADE = [
 ]
 
 const STATUS_CONFIG: Record<DocStatus, { label: string; icon: React.ElementType; iconClass: string; textClass: string; bgClass: string }> = {
-  "válido": { label: "Válido", icon: CheckCircle2, iconClass: "text-green-500", textClass: "text-green-600", bgClass: "bg-green-50" },
-  "a expirar": { label: "A Expirar", icon: Clock, iconClass: "text-amber-500", textClass: "text-amber-600", bgClass: "bg-amber-50" },
-  "expirado": { label: "Expirado", icon: AlertTriangle, iconClass: "text-red-500", textClass: "text-red-600", bgClass: "bg-red-50" },
-  "em falta": { label: "Em Falta", icon: AlertTriangle, iconClass: "text-gray-400", textClass: "text-gray-500", bgClass: "bg-gray-50" },
+  "válido": { label: "Válido", icon: CheckCircle2, iconClass: "text-green-500", textClass: "text-green-600 dark:text-green-500", bgClass: "bg-green-50 dark:bg-green-900/20" },
+  "a expirar": { label: "A Expirar", icon: Clock, iconClass: "text-amber-500", textClass: "text-amber-600 dark:text-amber-500", bgClass: "bg-amber-50 dark:bg-amber-900/20" },
+  "expirado": { label: "Expirado", icon: AlertTriangle, iconClass: "text-red-500", textClass: "text-red-600 dark:text-red-500", bgClass: "bg-red-50 dark:bg-red-900/20" },
+  "em falta": { label: "Em Falta", icon: AlertTriangle, iconClass: "text-gray-400", textClass: "text-gray-500 dark:text-gray-400", bgClass: "bg-gray-50 dark:bg-gray-800" },
 }
 
 // ─── Document Card ────────────────────────────────────────────────────────────
@@ -67,14 +67,14 @@ function DocCard({
   };
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 hover:border-purple-200 hover:shadow-sm transition-all">
+    <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 hover:border-purple-200 dark:hover:border-purple-800 hover:shadow-sm transition-all">
       {/* Header */}
       <div className="flex items-start gap-3">
         <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", cfg.bgClass)}>
           <Icon className={cn("h-5 w-5", cfg.iconClass)} />
         </div>
         <div className="flex flex-col gap-0.5">
-          <span className="text-base font-bold text-gray-900">{doc.nome}</span>
+          <span className="text-base font-bold text-gray-900 dark:text-gray-100">{doc.nome}</span>
           <span className={cn("text-sm font-semibold", cfg.textClass)}>{cfg.label}</span>
         </div>
       </div>
@@ -83,18 +83,18 @@ function DocCard({
       <div className="flex flex-col gap-3">
         {temValidade && (
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-gray-600">Data de validade</label>
+            <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Data de validade</label>
             <input
               type="date"
               value={validadeInput}
               onChange={(e) => setValidadeInput(e.target.value)}
-              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400"
+              className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400"
             />
           </div>
         )}
         
         {dataValidadeFormatada && !temValidade && (
-          <div className="flex items-center gap-1.5 text-xs text-gray-400">
+          <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
             <CalendarDays className="h-3.5 w-3.5" />
             Validade: {dataValidadeFormatada}
           </div>
@@ -112,7 +112,7 @@ function DocCard({
       <button 
         disabled={isUploading}
         onClick={() => fileInputRef.current?.click()}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-2.5 text-sm font-medium text-gray-600 hover:border-purple-300 hover:text-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:border-purple-300 dark:hover:border-purple-700 hover:text-purple-600 dark:hover:text-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {isUploading ? (
           <Loader2 className="h-4 w-4 animate-spin text-purple-500" />
@@ -127,7 +127,7 @@ function DocCard({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function FormadorDocumentos({ documentos: documentosIniciais, userId }: { documentos: DocumentoResult[], userId: string }) {
+export function FormadorDocumentos({ documentos: documentosIniciais }: { documentos: DocumentoResult[] }) {
   const [docs, setDocs] = useState<MeuDocumento[]>(
     documentosIniciais.map((d) => ({
       id: d.id,
@@ -179,15 +179,15 @@ export function FormadorDocumentos({ documentos: documentosIniciais, userId }: {
     <div className="flex flex-col gap-6">
       {/* Header */}
       <div>
-        <h1 className="text-[26px] font-bold text-gray-900">Os Meus Documentos</h1>
-        <p className="mt-0.5 text-sm text-gray-500">Faça upload dos documentos necessários</p>
+        <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">Os Meus Documentos</h1>
+        <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Faça upload dos documentos necessários</p>
       </div>
 
       {/* Alerta */}
       {(emFalta > 0 || expirados > 0) && (
-        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
-          <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
-          <p className="text-sm text-red-700">
+        <div className="flex items-start gap-3 rounded-xl border border-red-200 dark:border-red-900/30 bg-red-50 dark:bg-red-900/20 px-4 py-3">
+          <AlertTriangle className="h-5 w-5 text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
+          <p className="text-sm text-red-700 dark:text-red-400">
             {expirados > 0 && (
               <><span className="font-semibold">{expirados} documento{expirados > 1 ? "s" : ""} expirado{expirados > 1 ? "s" : ""}</span> — renova o mais rápido possível. </>
             )}

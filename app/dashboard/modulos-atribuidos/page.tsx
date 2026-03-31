@@ -82,9 +82,9 @@ export default async function ModulosAtribuidosPage() {
     <div className="flex flex-col gap-6">
       {/* Page Header Section */}
       <div>
-        <h1 className="text-[26px] font-bold text-gray-900">Módulos Atribuídos</h1>
+        <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">Módulos Atribuídos</h1>
         {/* Dynamic count of assigned modules */}
-        <p className="mt-0.5 text-sm text-gray-500">{modulos.length} módulos atribuídos</p>
+        <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{modulos.length} módulos atribuídos</p>
       </div>
 
       {/* 
