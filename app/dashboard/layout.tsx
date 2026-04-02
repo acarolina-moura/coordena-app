@@ -1,32 +1,30 @@
 import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { AppSidebar } from '@/components/app-sidebar'
-import { TopBar } from '@/components/top-bar'
+import { DashboardShell } from '@/components/dashboard-shell'
 
 export default async function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const session = await auth()
-  if (!session?.user) redirect('/login')
+  const session = await auth();
+  if (!session?.user) redirect("/login");
 
   const user = {
-    name: session.user.name ?? '',
-    email: session.user.email ?? '',
-    role: session.user.role as 'COORDENADOR' | 'FORMADOR' | 'FORMANDO',
+    name: session.user.name ?? "",
+    email: session.user.email ?? "",
+    role: session.user.role as "COORDENADOR" | "FORMADOR" | "FORMANDO",
     avatar: session.user.image ?? undefined,
-  }
+  };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
-      <AppSidebar user={user} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <TopBar user={user} notificationCount={3} />
-        <main className="flex-1 overflow-auto p-8">
-          {children}
-        </main>
-      </div>
-    </div>
+    <DashboardShell
+      user={user}
+      notificationCount={3}
+      sidebar={<AppSidebar user={user} />}
+    >
+      {children}
+    </DashboardShell>
   )
 }

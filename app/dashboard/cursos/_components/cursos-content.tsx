@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTransition } from "react";
 import {
-  Plus, Search, CalendarDays, Clock, Puzzle, GraduationCap, X, AlertCircle, CheckCircle,
+  Plus, Search, CalendarDays, Clock, Puzzle, GraduationCap, X, AlertCircle, CheckCircle, Trash2, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -263,7 +263,7 @@ function DetalhesDialog({ curso, onClose }: { curso: CursoComDetalhes; onClose: 
 
 // ─── Curso Row ────────────────────────────────────────────────────────────────
 
-function CursoRow({ curso, onVerDetalhes }: { curso: CursoComDetalhes; onVerDetalhes: () => void }) {
+function CursoRow({ curso, onVerDetalhes, onExcluir }: { curso: CursoComDetalhes; onVerDetalhes: () => void; onExcluir: () => void }) {
   const dataInicio = curso.dataInicio ? new Date(curso.dataInicio).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
   const dataFim = curso.dataFim ? new Date(curso.dataFim).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
@@ -301,7 +301,7 @@ function CursoRow({ curso, onVerDetalhes }: { curso: CursoComDetalhes; onVerDeta
           </div>
       </div>
       
-        <div>
+        <div className="flex items-center gap-3 text-red-500">
           <Button
             variant="outline"
             size="sm"
@@ -310,8 +310,78 @@ function CursoRow({ curso, onVerDetalhes }: { curso: CursoComDetalhes; onVerDeta
           >
             Ver Detalhes
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onExcluir}
+            className="rounded-xl border-red-100 text-red-500 hover:border-red-200 hover:bg-red-50 h-9 w-9 p-0 flex items-center justify-center"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
     </div>
+  );
+}
+
+// ─── Excluir Curso Dialog ───────────────────────────────────────────────────
+
+function ExcluirCursoDialog({ curso, onClose, onConfirm }: { curso: CursoComDetalhes; onClose: () => void; onConfirm: () => Promise<void> }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleExcluir = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      await onConfirm();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao excluir curso");
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-red-600">
+            <AlertCircle className="h-5 w-5" />
+            Excluir Curso
+          </DialogTitle>
+          <DialogDescription>
+            Tens a certeza que pretendes excluir o curso <span className="font-bold text-gray-900">"{curso.nome}"</span>?
+            Esta ação não pode ser desfeita e removerá também todos os módulos associados. 
+            A ação falhará se existirem formandos inscritos.
+          </DialogDescription>
+        </DialogHeader>
+
+        {error && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button variant="outline" onClick={onClose} disabled={loading} className="rounded-xl">
+            Cancelar
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleExcluir}
+            disabled={loading}
+            className="rounded-xl bg-red-600 hover:bg-red-700 font-semibold"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                A excluir...
+              </>
+            ) : "Excluir Curso"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -320,10 +390,26 @@ function CursoRow({ curso, onVerDetalhes }: { curso: CursoComDetalhes; onVerDeta
 export function CursosContent({ cursos }: { cursos: CursoComDetalhes[] }) {
   const [search, setSearch] = useState("");
   const [selectedCurso, setSelectedCurso] = useState<CursoComDetalhes | null>(null);
+  const [cursoParaExcluir, setCursoParaExcluir] = useState<CursoComDetalhes | null>(null);
 
   const filtrados = cursos.filter((c) =>
     c.nome.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleConfirmExcluir = async () => {
+    if (!cursoParaExcluir) return;
+
+    const response = await fetch(`/api/cursos/${cursoParaExcluir.id}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || "Erro ao excluir curso");
+    }
+
+    window.location.reload();
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -348,7 +434,12 @@ export function CursosContent({ cursos }: { cursos: CursoComDetalhes[] }) {
 
       <div className="flex flex-col gap-3">
         {filtrados.map((curso) => (
-          <CursoRow key={curso.id} curso={curso} onVerDetalhes={() => setSelectedCurso(curso)} />
+          <CursoRow 
+            key={curso.id} 
+            curso={curso} 
+            onVerDetalhes={() => setSelectedCurso(curso)} 
+            onExcluir={() => setCursoParaExcluir(curso)}
+          />
         ))}
         {filtrados.length === 0 && (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white py-16 text-center">
@@ -360,6 +451,14 @@ export function CursosContent({ cursos }: { cursos: CursoComDetalhes[] }) {
 
       {selectedCurso && (
         <DetalhesDialog curso={selectedCurso} onClose={() => setSelectedCurso(null)} />
+      )}
+
+      {cursoParaExcluir && (
+        <ExcluirCursoDialog 
+          curso={cursoParaExcluir} 
+          onClose={() => setCursoParaExcluir(null)} 
+          onConfirm={handleConfirmExcluir} 
+        />
       )}
     </div>
   );

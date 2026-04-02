@@ -2,6 +2,7 @@ import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import { getFormadorPerfil } from '@/app/dashboard/_data/formador'
 import { PerfilClient } from './_component'
+import { PerfilFormando } from './_components/perfil-formando'
 import { prisma } from '@/lib/prisma'
 
 export default async function PerfilPage() {
@@ -9,12 +10,23 @@ export default async function PerfilPage() {
   
   if (!session?.user?.email) redirect('/login')
 
-  // Buscar o user pela email (que é o correto)
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
   })
 
   if (!user?.id) redirect('/login')
+
+  if (user.role === 'FORMANDO') {
+    return (
+      <PerfilFormando 
+        formando={{
+          id: user.id,
+          nome: user.nome,
+          email: user.email,
+        }} 
+      />
+    )
+  }
 
   const formador = await getFormadorPerfil(user.id)
 

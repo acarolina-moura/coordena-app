@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
-const DOCS_OBRIGATORIOS = [
+const DOCS_OBRIGATORIOS_FORMADOR = [
   "CV",
   "Cartão de Cidadão",
   "CCP",
@@ -14,14 +14,20 @@ const DOCS_OBRIGATORIOS = [
   "Certidão Seg. Social",
 ];
 
+const DOCS_OBRIGATORIOS_FORMANDO = [
+  "Cartão de Cidadão",
+  "Certificado de Habilitações",
+  "IBAN",
+];
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type DocumentoResult = {
   id: string | null;
   nome: string;
   status: DocStatus | "EM_FALTA";
-  dataValidade: Date | null;
-  dataEmissao: Date | null;
+  dataValidade: string | null;
+  dataEmissao: string | null;
   numero: string | null;
 };
 
@@ -50,15 +56,15 @@ export async function getFormadoresComDocumentos() {
   return formadores.map((f) => {
     const docsFormador = todosDocumentos.filter((d) => d.formadorId === f.id);
 
-    const documentos = DOCS_OBRIGATORIOS.map((nomeDoc): DocumentoResult => {
+    const documentos = DOCS_OBRIGATORIOS_FORMADOR.map((nomeDoc): DocumentoResult => {
       const doc = docsFormador.find((d) => d.tipo === nomeDoc);
 
       return {
         id: doc?.id ?? null,
         nome: nomeDoc,
         status: doc ? calcularStatus(doc.dataExpiracao) : "EM_FALTA",
-        dataValidade: doc?.dataExpiracao ?? null,
-        dataEmissao: doc?.dataEmissao ?? null,
+        dataValidade: doc?.dataExpiracao?.toISOString() ?? null,
+        dataEmissao: doc?.dataEmissao?.toISOString() ?? null,
         numero: doc?.numero ?? null,
       };
     });
@@ -88,15 +94,36 @@ export async function getDocumentosFormador(
     }>
   >`SELECT id, tipo, numero, "dataEmissao", "dataExpiracao", status, "formadorId" FROM "DocumentoFormador" WHERE "formadorId" = ${formadorId}`;
 
-  return DOCS_OBRIGATORIOS.map((nomeDoc): DocumentoResult => {
+  return DOCS_OBRIGATORIOS_FORMADOR.map((nomeDoc): DocumentoResult => {
     const doc = docs.find((d) => d.tipo === nomeDoc);
 
     return {
       id: doc?.id ?? null,
       nome: nomeDoc,
       status: doc ? calcularStatus(doc.dataExpiracao) : "EM_FALTA",
-      dataValidade: doc?.dataExpiracao ?? null,
-      dataEmissao: doc?.dataEmissao ?? null,
+      dataValidade: doc?.dataExpiracao?.toISOString() ?? null,
+      dataEmissao: doc?.dataEmissao?.toISOString() ?? null,
+      numero: doc?.numero ?? null,
+    };
+  });
+}
+
+export async function getDocumentosFormando(
+  userId: string,
+) {
+  const docs = await prisma.documento.findMany({
+    where: { formando: { userId } },
+  });
+
+  return DOCS_OBRIGATORIOS_FORMANDO.map((nomeDoc) => {
+    const doc = docs.find((d) => d.tipo === nomeDoc);
+
+    return {
+      id: doc?.id ?? null,
+      nome: nomeDoc,
+      status: doc ? calcularStatus(doc.dataExpiracao) : "EM_FALTA",
+      dataValidade: doc?.dataExpiracao?.toISOString() ?? null,
+      dataEmissao: doc?.dataEmissao?.toISOString() ?? null,
       numero: doc?.numero ?? null,
     };
   });

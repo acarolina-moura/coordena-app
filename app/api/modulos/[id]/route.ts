@@ -64,25 +64,30 @@ export async function PUT(
       }
     }
 
-    // Gerencia a atribuição de formador
+    // Gerencia o convite para o formador
     if (formadorId) {
-      // Remove todos os formadores atuais
-      await prisma.formadorModulo.deleteMany({
-        where: { moduloId: id },
-      });
-
-      // Adiciona o novo formador
-      await prisma.formadorModulo.create({
-        data: {
+      // Verificar se já existe um convite pendente para este formador
+      const conviteExistente = await prisma.convite.findFirst({
+        where: {
           formadorId,
           moduloId: id,
+          status: 'PENDENTE',
         },
       });
-    } else {
-      // Remove todos os formadores se nenhum foi selecionado
-      await prisma.formadorModulo.deleteMany({
-        where: { moduloId: id },
-      });
+
+      // Se não existe, criar um novo convite
+      if (!conviteExistente) {
+        await prisma.convite.create({
+          data: {
+            id: crypto.randomUUID(),
+            formadorId,
+            moduloId: id,
+            cursoId,
+            descricao: `Convite para lecionar o módulo "${nome}"`,
+            status: 'PENDENTE',
+          },
+        });
+      }
     }
 
     // Atualiza o módulo
@@ -127,6 +132,37 @@ export async function PUT(
     console.error("[MODULO_PUT]", error);
     return Response.json(
       { error: "Erro ao atualizar módulo" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    // 1. Verificar se existem dependências (Aulas, Avaliações)
+    // Se quiser permitir a exclusão com dependências, apague-as primeiro ou deixe o Prisma falhar
+    // Para ser seguro, vamos apagar as relações FormadorModulo primeiro
+    await prisma.formadorModulo.deleteMany({
+      where: { moduloId: id }
+    });
+
+    // 2. Apagar o módulo
+    await prisma.modulo.delete({
+      where: { id }
+    });
+
+    revalidatePath("/dashboard/modulos");
+
+    return Response.json({ message: "Módulo excluído com sucesso" });
+  } catch (error) {
+    console.error("[MODULO_DELETE]", error);
+    return Response.json(
+      { error: "Erro ao excluir módulo. Já pode ter aulas associadas." },
       { status: 500 }
     );
   }

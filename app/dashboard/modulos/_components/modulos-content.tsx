@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Search, Puzzle, Tag, Users, AlertCircle, CheckCircle } from "lucide-react";
+import { Plus, Search, Puzzle, Tag, Users, AlertCircle, CheckCircle, Trash2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -219,7 +219,7 @@ function NovoModuloDialog({ cursos, formadores }: { cursos: CursoComDetalhes[]; 
 
 // ─── Módulo Card ──────────────────────────────────────────────────────────────
 
-function ModuloCard({ modulo, onEditar }: { modulo: ModuloComDetalhes; onEditar: () => void }) {
+function ModuloCard({ modulo, onEditar, onExcluir }: { modulo: ModuloComDetalhes; onEditar: () => void; onExcluir: () => void }) {
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 hover:border-indigo-200 hover:shadow-sm transition-all">
       {/* Header */}
@@ -251,18 +251,87 @@ function ModuloCard({ modulo, onEditar }: { modulo: ModuloComDetalhes; onEditar:
         )}
       </div>
 
-      {/* Botão Editar */}
-      <div className="flex pt-2">
+      {/* Botões */}
+      <div className="flex gap-2 pt-2">
         <Button
           variant="outline"
           size="sm"
           onClick={onEditar}
-          className="w-full rounded-xl border-indigo-200 text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50"
+          className="flex-1 rounded-xl border-indigo-200 text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50"
         >
           Editar
         </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onExcluir}
+          className="rounded-xl border-red-100 text-red-500 hover:border-red-200 hover:bg-red-50"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </div>
     </div>
+  );
+}
+
+// ─── Excluir Módulo Dialog ────────────────────────────────────────────────────
+
+function ExcluirModuloDialog({ modulo, onClose, onConfirm }: { modulo: ModuloComDetalhes; onClose: () => void; onConfirm: () => Promise<void> }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleExcluir = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      await onConfirm();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao excluir módulo");
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-red-600">
+            <AlertCircle className="h-5 w-5" />
+            Excluir Módulo
+          </DialogTitle>
+          <DialogDescription>
+            Tens a certeza que pretendes excluir o módulo <span className="font-bold text-gray-900">"{modulo.nome}"</span>?
+            Esta ação não pode ser desfeita e pode falhar se existirem aulas ou avaliações associadas.
+          </DialogDescription>
+        </DialogHeader>
+
+        {error && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button variant="outline" onClick={onClose} disabled={loading} className="rounded-xl">
+            Cancelar
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleExcluir}
+            disabled={loading}
+            className="rounded-xl bg-red-600 hover:bg-red-700"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                A excluir...
+              </>
+            ) : "Excluir Módulo"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -451,12 +520,29 @@ function EditarModuloDialog({ modulo, cursos, formadores, onClose }: { modulo: M
 export function ModulosContent({ modulos, cursos, formadores }: { modulos: ModuloComDetalhes[]; cursos: CursoComDetalhes[]; formadores: FormadorComDetalhes[] }) {
   const [search, setSearch] = useState("");
   const [selectedModulo, setSelectedModulo] = useState<ModuloComDetalhes | null>(null);
+  const [moduloParaExcluir, setModuloParaExcluir] = useState<ModuloComDetalhes | null>(null);
 
   const modulosFiltrados = modulos.filter(
     (m) =>
       m.nome.toLowerCase().includes(search.toLowerCase()) ||
       m.curso?.nome.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleConfirmExcluir = async () => {
+    if (!moduloParaExcluir) return;
+
+    const response = await fetch(`/api/modulos/${moduloParaExcluir.id}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || "Erro ao excluir módulo");
+    }
+
+    // Recarregar a página para atualizar os dados (ou poderia atualizar o estado local se preferir)
+    window.location.reload();
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -488,7 +574,12 @@ export function ModulosContent({ modulos, cursos, formadores }: { modulos: Modul
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {modulosFiltrados.length > 0 ? (
           modulosFiltrados.map((modulo) => (
-            <ModuloCard key={modulo.id} modulo={modulo} onEditar={() => setSelectedModulo(modulo)} />
+            <ModuloCard 
+              key={modulo.id} 
+              modulo={modulo} 
+              onEditar={() => setSelectedModulo(modulo)} 
+              onExcluir={() => setModuloParaExcluir(modulo)}
+            />
           ))
         ) : (
           <div className="col-span-full flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white py-16 text-center">
@@ -500,6 +591,14 @@ export function ModulosContent({ modulos, cursos, formadores }: { modulos: Modul
 
       {selectedModulo && (
         <EditarModuloDialog modulo={selectedModulo} cursos={cursos} formadores={formadores} onClose={() => setSelectedModulo(null)} />
+      )}
+
+      {moduloParaExcluir && (
+        <ExcluirModuloDialog 
+          modulo={moduloParaExcluir} 
+          onClose={() => setModuloParaExcluir(null)} 
+          onConfirm={handleConfirmExcluir} 
+        />
       )}
     </div>
   );

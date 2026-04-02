@@ -4,61 +4,30 @@ import { Clock, BookOpen, CalendarDays, GraduationCap, ChevronDown, ChevronUp } 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
+import { MeusCursos } from "../../_data/formando";
+import { StatusCurso } from "@prisma/client";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type CursoStatus = "Ativo" | "Concluído" | "Inativo";
-
-interface Modulo {
-  nome: string;
-  codigo: string;
-  formador: string;
-  nota: number | null;
-  progresso: number;
-}
-
-interface MeuCurso {
-  id: number;
-  nome: string;
-  status: CursoStatus;
-  cargaHoraria: number;
-  dataInicio: string;
-  dataFim: string;
-  progressoGeral: number;
-  modulos: Modulo[];
-}
-
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const meusCursos: MeuCurso[] = [
-  {
-    id: 1,
-    nome: "Técnico de Multimédia",
-    status: "Ativo",
-    cargaHoraria: 1200,
-    dataInicio: "15 set 2025",
-    dataFim: "30 jun 2026",
-    progressoGeral: 57,
-    modulos: [
-      { nome: "Design Gráfico",        codigo: "UFCD-0145", formador: "Ana Rodrigues",  nota: 14,   progresso: 72 },
-      { nome: "Desenvolvimento Web",   codigo: "UFCD-0577", formador: "Pedro Santos",   nota: 9,    progresso: 58 },
-      { nome: "Redes de Computadores", codigo: "UFCD-0773", formador: "Ana Rodrigues",  nota: null, progresso: 40 },
-    ],
-  },
-];
+type MeuCurso = MeusCursos[number];
+type Modulo = MeuCurso['modulos'][number];
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const STATUS_CONFIG: Record<CursoStatus, string> = {
-  Ativo:     "border-green-300 text-green-700 bg-green-50",
-  Concluído: "border-blue-300  text-blue-700  bg-blue-50",
-  Inativo:   "border-gray-300  text-gray-500  bg-gray-50",
+const STATUS_CONFIG: Record<StatusCurso, string> = {
+  ATIVO:     "border-green-300 text-green-700 bg-green-50",
+  PAUSADO:   "border-yellow-300 text-yellow-700 bg-yellow-50",
+  ENCERRADO: "border-red-300  text-red-700  bg-red-50",
 };
 
 function getNotaColor(nota: number | null) {
   if (nota === null) return "text-gray-400";
   if (nota >= 10)    return "text-green-600";
   return "text-red-500";
+}
+
+function formatDate(date: Date | string) {
+  return new Date(date).toLocaleDateString("pt-PT", { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 // ─── Curso Card ───────────────────────────────────────────────────────────────
@@ -76,7 +45,7 @@ function CursoCard({ curso }: { curso: MeuCurso }) {
             <div className="flex flex-wrap gap-4 text-sm text-gray-400">
               <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" />{curso.cargaHoraria}h</span>
               <span className="flex items-center gap-1.5"><BookOpen className="h-3.5 w-3.5" />{curso.modulos.length} módulos</span>
-              <span className="flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5" />{curso.dataInicio} – {curso.dataFim}</span>
+              <span className="flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5" />{formatDate(curso.dataInicio)} {curso.dataFim ? `– ${formatDate(curso.dataFim)}` : ""}</span>
             </div>
           </div>
           <div className="flex items-center gap-3 shrink-0">
@@ -108,9 +77,8 @@ function CursoCard({ curso }: { curso: MeuCurso }) {
           <p className="mb-3 text-[10px] font-bold tracking-widest text-gray-400 uppercase">Módulos</p>
           <div className="flex flex-col gap-3">
             {curso.modulos.map(mod => {
-              const assiduidade = Math.round((mod.progresso / 100) * 100);
               return (
-                <div key={mod.codigo} className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white px-4 py-3">
+                <div key={mod.id} className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white px-4 py-3">
                   {/* Icon */}
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-100">
                     <BookOpen className="h-4 w-4 text-teal-500" />
@@ -126,8 +94,7 @@ function CursoCard({ curso }: { curso: MeuCurso }) {
                     </div>
                     <div className="flex items-center gap-3 text-xs text-gray-400">
                       <span>{mod.codigo}</span>
-                      <span>·</span>
-                      <span className="flex items-center gap-1"><GraduationCap className="h-3 w-3" />{mod.formador}</span>
+                      {/* Nota: Formador não está vindo no getMeusCursos atualmente, mas podemos adicionar se necessário */}
                     </div>
                     <Progress
                       value={mod.progresso}
@@ -147,17 +114,24 @@ function CursoCard({ curso }: { curso: MeuCurso }) {
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// ─── Component ────────────────────────────────────────────────────────────────
 
-export default function FormandoCursos() {
+export default function FormandoCurso({ inicial }: { inicial: MeusCursos }) {
+  const [cursos] = useState<MeusCursos>(inicial);
+
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-[26px] font-bold text-gray-900">Os Meus Cursos</h1>
-        <p className="mt-0.5 text-sm text-gray-500">{meusCursos.length} curso{meusCursos.length !== 1 ? "s" : ""} inscrito{meusCursos.length !== 1 ? "s" : ""}</p>
+        <p className="mt-0.5 text-sm text-gray-500">{cursos.length} curso{cursos.length !== 1 ? "s" : ""} inscrito{cursos.length !== 1 ? "s" : ""}</p>
       </div>
       <div className="flex flex-col gap-4">
-        {meusCursos.map(curso => <CursoCard key={curso.id} curso={curso} />)}
+        {cursos.length === 0 && (
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center text-sm text-gray-400">
+            Ainda não estás inscrito em nenhum curso
+          </div>
+        )}
+        {cursos.map(curso => <CursoCard key={curso.id} curso={curso} />)}
       </div>
     </div>
   );

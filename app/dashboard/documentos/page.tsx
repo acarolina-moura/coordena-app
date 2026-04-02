@@ -2,7 +2,8 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { CoordenadorDocumentos } from './_components/coordenador-documentos'
 import { FormadorDocumentos } from './_components/formador-documentos'
-import { getFormadoresComDocumentos, getDocumentosFormador } from '@/app/dashboard/_data/documentos'
+import { FormandoDocumentos } from './_components/formando-documentos'
+import { getFormadoresComDocumentos, getDocumentosFormador, getDocumentosFormando } from '@/app/dashboard/_data/documentos'
 
 export default async function DocumentosPage() {
   const session = await auth()
@@ -18,6 +19,11 @@ export default async function DocumentosPage() {
   if (role === 'FORMADOR') {
     const documentos = await getDocumentosFormador(id)
     return <FormadorDocumentos documentos={documentos} userId={id} />
+  }
+
+  if (role === 'FORMANDO') {
+    const documentos = await getDocumentosFormando(id)
+    return <FormandoDocumentos documentos={documentos} userId={id} />
   }
 
   redirect('/dashboard')

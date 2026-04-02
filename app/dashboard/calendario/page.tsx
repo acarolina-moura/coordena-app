@@ -1,17 +1,18 @@
 import { redirect } from "next/navigation";
-import { UserRole } from "@/components/app-sidebar";
-import  FormadorDocumentos  from "./_components/formador-calendario";
+import { auth } from "@/auth";
+import FormadorCalendario from "./_components/formador-calendario";
 import CalendarioFormandoPage from "./_components/formando-calendario";
-async function getAuthUser(): Promise<{ name: string; role: UserRole } | null> {
-  return { name: "Ana Rodrigues", role: "FORMANDO" };
-}
+import CoordenadorCalendario from "./_components/coordenador-calendario";
 
-export default async function DocumentosPage() {
-  const user = await getAuthUser();
-  if (!user) redirect("/login");
+export default async function CalendarioPage() {
+  const session = await auth();
+  if (!session?.user) redirect("/login");
 
-  if (user.role === "FORMANDO") return <CalendarioFormandoPage />;
-  if (user.role === "FORMADOR") return <FormadorDocumentos />;
+  const role = session.user.role;
+
+  if (role === "FORMANDO") return <CalendarioFormandoPage />;
+  if (role === "FORMADOR") return <FormadorCalendario />;
+  if (role === "COORDENADOR") return <CoordenadorCalendario />;
 
   redirect("/dashboard");
-}
+}
