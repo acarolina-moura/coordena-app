@@ -126,21 +126,28 @@ model Formador {
   materiaisApoio    MaterialApoio[]
 }
 
+/// Modelo para armazenar as disponibilidades de horários dos formadores
+/// Permite que cada formador defina sua disponibilidade por semana do ano
+/// NOVO: campo 'semana' adicionado para identificar o número da semana do ano (1-53)
 model Disponibilidade {
   id         String   @id @default(uuid())
   formadorId String
   diaSemana  String /// "Segunda", "Terça", "Quarta", "Quinta", "Sexta"
   hora       Int /// 9-17
   minuto     Int /// 0 ou 30
+  
+  /// NOVO CAMPO: semana do ano (1-53) para permitir planejamento semanal
+  /// Ex: semana 15 = meados de abril, semana 1 = primeira semana de janeiro
+  /// Valor padrão é 1 para compatibilidade com dados existentes
+  semana     Int      @default(1)
+  
   disponivel Boolean  @default(true)
-  tipo       String?  /// "TOTAL" ou "PARCIAL"
+  /// Tipo de disponibilidade: "TOTAL" (presencial + online) ou "PARCIAL" (apenas online)
+  tipo       String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   formador Formador @relation(fields: [formadorId], references: [id], onDelete: Cascade)
-
-  /// Garantir apenas um slot por (formadorId, diaSemana, hora, minuto)
-  @@unique([formadorId, diaSemana, hora, minuto])
 }
 
 model Formando {
