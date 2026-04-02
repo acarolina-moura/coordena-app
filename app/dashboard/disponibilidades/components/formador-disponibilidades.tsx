@@ -169,12 +169,19 @@ export default function DisponibilidadesFormador({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  
+  // NOVO: Estado para garantir que o componente só renderiza após hidratação
+  // Evita erros de "Text content did not match" entre server e client
+  const [mounted, setMounted] = useState(false);
 
   /**
    * NOVO: Inicialização - calcula todas as semanas do ano
    * Seleciona o mês atual por padrão
    */
   useEffect(() => {
+    // NOVO: Marca como montado logo para evitar hidratação deficiente
+    setMounted(true);
+    
     const semanas = calcularSemanasDoAno();
     setTodasAsSemanas(semanas);
     
@@ -305,7 +312,8 @@ export default function DisponibilidadesFormador({
 
   const totalSelected = Object.values(slots).filter((t) => t !== null).length;
 
-  if (loading) {
+  // NOVO: Mostrar loading enquanto o componente não está hidratado no cliente
+  if (!mounted || loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
