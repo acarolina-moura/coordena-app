@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 
 // ─── GET /api/formadores ──────────────────────────────────────────────────────
 
@@ -31,11 +32,11 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { nome, email } = await req.json();
+    const { nome, email, senha } = await req.json();
 
-    if (!nome || !email) {
+    if (!nome || !email || !senha) {
       return NextResponse.json(
-        { error: "Nome e email são obrigatórios" },
+        { error: "Nome, email e senha são obrigatórios" },
         { status: 400 },
       );
     }
@@ -51,7 +52,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const senhaHash = "123456"; // TODO: substituir por senha gerada + envio por email
+    // ✅ Agora usa a senha recebida do request
+    const senhaHash = await bcrypt.hash(senha, 10);
 
     const user = await prisma.user.create({
       data: {

@@ -80,8 +80,15 @@ function CriarContaDialog({ onCreated }: { onCreated: () => void }) {
       const res = await fetch("/api/formadores", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome: form.nome, email: form.email }),
+
+        // ✅ CORRIGIDO: agora envia a senha
+        body: JSON.stringify({
+          nome: form.nome,
+          email: form.email,
+          senha: form.senha,
+        }),
       });
+
       const data = await res.json();
       if (!res.ok) {
         setErro(data.error ?? "Erro ao criar formador.");
@@ -406,8 +413,12 @@ export function FormadoresClient({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">Formadores</h1>
-          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{formadores.length} formadores registados</p>
+          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">
+            Formadores
+          </h1>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+            {formadores.length} formadores registados
+          </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative w-56">
