@@ -67,10 +67,17 @@ export async function POST(req: Request) {
       },
     });
 
-    // Associar formador diretamente via FormadorModulo
+    // ✅ TAREFA 1: Correção - Associar formador usando UPSERT para evitar erros/apagões
     if (formadorId) {
-      await prisma.formadorModulo.create({
-        data: {
+      await prisma.formadorModulo.upsert({
+        where: {
+          formadorId_moduloId: {
+            formadorId,
+            moduloId: modulo.id,
+          },
+        },
+        update: {}, // Se já existir, não faz nada
+        create: {
           formadorId,
           moduloId: modulo.id,
         },

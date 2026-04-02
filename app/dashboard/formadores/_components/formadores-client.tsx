@@ -75,17 +75,24 @@ function CriarContaDialog({ onCreated }: { onCreated: () => void }) {
       setErro("Todos os campos são obrigatórios.");
       return;
     }
+
+    // Bloqueia no frontend se tiver menos de 6 caracteres
+    if (form.senha.length < 6) {
+      setErro("A password deve ter pelo menos 6 caracteres.");
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch("/api/formadores", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-
-        // ✅ CORRIGIDO: agora envia a senha
+        // ✅ CORREÇÃO: Envia como "senha" e "password" para garantir compatibilidade com a tua API
         body: JSON.stringify({
           nome: form.nome,
           email: form.email,
           senha: form.senha,
+          password: form.senha,
         }),
       });
 

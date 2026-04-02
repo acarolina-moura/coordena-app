@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link"; // ✅ Adicionado para os botões
 import { Search, GraduationCap, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -18,52 +19,84 @@ function FormandoCard({ formando }: { formando: FormandoComDetalhes }) {
     .toUpperCase();
 
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 hover:border-indigo-200 dark:hover:border-indigo-800 hover:shadow-sm transition-all">
-      <Avatar className="h-11 w-11 border-2 border-gray-100 shrink-0">
-        <AvatarFallback className="bg-indigo-100 text-indigo-600 font-semibold text-sm">
-          {initials}
-        </AvatarFallback>
-      </Avatar>
+    // ✅ TAREFA 3: Mesmas classes CSS exatas do Card do Formador
+    <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 hover:border-indigo-200 dark:hover:border-indigo-800 hover:shadow-sm transition-all h-full">
+      {/* Header igual ao Formador */}
+      <div className="flex items-start gap-4">
+        <Avatar className="h-14 w-14 border-2 border-gray-100 shrink-0">
+          <AvatarFallback className="bg-indigo-100 text-indigo-600 font-semibold text-sm">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
 
-      <div className="flex flex-1 flex-col gap-0.5 min-w-0">
-        <span className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
-          {formando.nome}
-        </span>
-        <span className="truncate text-xs text-gray-400">{formando.curso}</span>
-      </div>
-
-      {/* Progresso */}
-      <div className="hidden sm:flex flex-col items-end gap-1 shrink-0">
-        <span className="text-xs text-gray-400">{formando.progresso}%</span>
-        <div className="h-1.5 w-20 rounded-full bg-gray-100 dark:bg-gray-700">
-          <div
-            className="h-1.5 rounded-full bg-indigo-500"
-            style={{ width: `${formando.progresso}%` }}
-          />
+        <div className="flex flex-1 flex-col gap-0.5 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 leading-tight">
+              {formando.nome}
+            </h3>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-gray-400 mt-1">
+            <span className="truncate">{formando.curso}</span>
+          </div>
         </div>
       </div>
 
-      {/* Status */}
-      <span
-        className={cn(
-          "shrink-0 rounded-full border px-3 py-0.5 text-xs font-medium",
-          formando.status === "ATIVO"
-            ? "border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800 text-green-600 dark:text-green-400"
-            : formando.status === "CONCLUÍDO"
-              ? "border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800 text-blue-600 dark:text-blue-400"
-              : "border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-500 dark:text-gray-400",
-        )}
-      >
-        {formando.status}
-      </span>
+      {/* Info (Progresso e Faltas) - Adaptada para o layout das "Tags" do formador */}
+      <div className="flex flex-col gap-3 py-1">
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-medium text-gray-500">Progresso</span>
+          <div className="h-1.5 flex-1 rounded-full bg-gray-100 dark:bg-gray-700">
+            <div
+              className="h-1.5 rounded-full bg-indigo-500 transition-all"
+              style={{ width: `${formando.progresso}%` }}
+            />
+          </div>
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-400 w-8 text-right">
+            {formando.progresso}%
+          </span>
+        </div>
 
-      {/* Negativos */}
-      {formando.negativos > 0 && (
-        <span className="shrink-0 flex items-center gap-1 rounded-lg bg-red-50 dark:bg-red-950 px-2.5 py-1 text-xs font-bold text-red-600 dark:text-red-400">
-          <AlertTriangle className="h-3 w-3" />
-          {formando.negativos}
+        {formando.negativos > 0 && (
+          <div className="flex items-center gap-1.5 w-fit rounded-lg bg-red-50 dark:bg-red-950 px-2.5 py-1.5 text-xs font-bold text-red-600 dark:text-red-400">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            {formando.negativos} Faltas / Negativas
+          </div>
+        )}
+      </div>
+
+      {/* Footer igual ao Formador */}
+      <div className="flex items-center justify-between gap-3 border-t border-gray-100 dark:border-gray-800 pt-4 mt-auto">
+        <span
+          className={cn(
+            "rounded-full border px-4 py-1 text-sm font-medium",
+            formando.status === "ATIVO"
+              ? "border-green-200 bg-green-50 dark:bg-green-950 text-green-600"
+              : formando.status === "CONCLUÍDO"
+                ? "border-blue-200 bg-blue-50 dark:bg-blue-950 text-blue-600"
+                : "border-gray-200 bg-gray-50 dark:bg-gray-800 text-gray-500",
+          )}
+        >
+          {formando.status}
         </span>
-      )}
+
+        <div className="flex gap-2">
+          {/* Botão antigo de Ver Perfil */}
+          <Link
+            href={`/dashboard/formandos/${formando.id}`}
+            className="rounded-full border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
+          >
+            Ver Perfil
+          </Link>
+
+          {/* ✅ NOVO Botão Editar */}
+          <Link
+            href={`/dashboard/formandos/${formando.id}/editar`}
+            className="rounded-full bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors shadow-sm"
+          >
+            Editar
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
@@ -94,7 +127,9 @@ export function FormandosClient({
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">Formandos</h1>
+          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">
+            Formandos
+          </h1>
           <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
             {initialFormandos.length} formandos registados
           </p>
@@ -132,9 +167,9 @@ export function FormandosClient({
         </div>
       </div>
 
-      {/* Lista */}
+      {/* ✅ TAREFA 3: Mudado para GRID como o Formador */}
       {filtrados.length > 0 ? (
-        <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filtrados.map((formando) => (
             <FormandoCard key={formando.id} formando={formando} />
           ))}
