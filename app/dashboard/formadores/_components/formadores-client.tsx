@@ -77,13 +77,27 @@ function CriarContaDialog({ onCreated }: { onCreated: () => void }) {
       setErro("Todos os campos são obrigatórios.");
       return;
     }
+
+    // Bloqueia no frontend se tiver menos de 6 caracteres
+    if (form.senha.length < 6) {
+      setErro("A password deve ter pelo menos 6 caracteres.");
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch("/api/formadores", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome: form.nome, email: form.email }),
+        // ✅ CORREÇÃO: Envia como "senha" e "password" para garantir compatibilidade com a tua API
+        body: JSON.stringify({
+          nome: form.nome,
+          email: form.email,
+          senha: form.senha,
+          password: form.senha,
+        }),
       });
+
       const data = await res.json();
       if (!res.ok) {
         setErro(data.error ?? "Erro ao criar formador.");
@@ -572,8 +586,12 @@ export function FormadoresClient({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">Formadores</h1>
-          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{formadores.length} formadores registados</p>
+          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">
+            Formadores
+          </h1>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+            {formadores.length} formadores registados
+          </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative w-56">

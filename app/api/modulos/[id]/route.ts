@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -15,15 +15,12 @@ export async function PUT(
     if (!nome || !nome.trim()) {
       return Response.json(
         { error: "Nome do módulo é obrigatório" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!cursoId) {
-      return Response.json(
-        { error: "Curso é obrigatório" },
-        { status: 400 }
-      );
+      return Response.json({ error: "Curso é obrigatório" }, { status: 400 });
     }
 
     // Verifica se o curso existe
@@ -32,10 +29,7 @@ export async function PUT(
     });
 
     if (!cursoExists) {
-      return Response.json(
-        { error: "Curso não encontrado" },
-        { status: 404 }
-      );
+      return Response.json({ error: "Curso não encontrado" }, { status: 404 });
     }
 
     // Verifica se o módulo existe
@@ -44,10 +38,7 @@ export async function PUT(
     });
 
     if (!moduloExists) {
-      return Response.json(
-        { error: "Módulo não encontrado" },
-        { status: 404 }
-      );
+      return Response.json({ error: "Módulo não encontrado" }, { status: 404 });
     }
 
     // Se houver formadorId, verifica se o formador existe
@@ -59,7 +50,7 @@ export async function PUT(
       if (!formadorExists) {
         return Response.json(
           { error: "Formador não encontrado" },
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
@@ -71,7 +62,7 @@ export async function PUT(
         where: {
           formadorId,
           moduloId: id,
-          status: 'PENDENTE',
+          status: "PENDENTE",
         },
       });
 
@@ -84,13 +75,13 @@ export async function PUT(
             moduloId: id,
             cursoId,
             descricao: `Convite para lecionar o módulo "${nome}"`,
-            status: 'PENDENTE',
+            status: "PENDENTE",
           },
         });
       }
     }
 
-    // Atualiza o módulo
+    // Atualiza os dados base do módulo
     const modulo = await prisma.modulo.update({
       where: { id },
       data: {
@@ -101,6 +92,22 @@ export async function PUT(
         cursoId,
       },
     });
+
+    // ✅ CORREÇÃO: Atualizar de facto o formador no Módulo (limpar o antigo e associar o novo)
+    if (formadorId) {
+      // 1. Apaga qualquer formador antigo associado a este módulo
+      await prisma.formadorModulo.deleteMany({
+        where: { moduloId: id },
+      });
+
+      // 2. Cria a associação com o novo formador escolhido
+      await prisma.formadorModulo.create({
+        data: {
+          formadorId: formadorId,
+          moduloId: id,
+        },
+      });
+    }
 
     // Busca o módulo atualizado com os formadores
     const moduloAtualizado = await prisma.modulo.findUnique({
@@ -122,7 +129,7 @@ export async function PUT(
     // Mapeia para retornar a mesma estrutura do getModulos
     const resultado = {
       ...moduloAtualizado,
-      formadores: moduloAtualizado?.formadores.map(fm => fm.formador) || [],
+      formadores: moduloAtualizado?.formadores.map((fm) => fm.formador) || [],
     };
 
     revalidatePath("/dashboard/modulos");
@@ -132,14 +139,14 @@ export async function PUT(
     console.error("[MODULO_PUT]", error);
     return Response.json(
       { error: "Erro ao atualizar módulo" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -148,12 +155,12 @@ export async function DELETE(
     // Se quiser permitir a exclusão com dependências, apague-as primeiro ou deixe o Prisma falhar
     // Para ser seguro, vamos apagar as relações FormadorModulo primeiro
     await prisma.formadorModulo.deleteMany({
-      where: { moduloId: id }
+      where: { moduloId: id },
     });
 
     // 2. Apagar o módulo
     await prisma.modulo.delete({
-      where: { id }
+      where: { id },
     });
 
     revalidatePath("/dashboard/modulos");
@@ -163,7 +170,7 @@ export async function DELETE(
     console.error("[MODULO_DELETE]", error);
     return Response.json(
       { error: "Erro ao excluir módulo. Já pode ter aulas associadas." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

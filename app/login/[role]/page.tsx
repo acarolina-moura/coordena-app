@@ -4,16 +4,20 @@ import { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
-  GraduationCap, UserCog, BookOpen,
-  Eye, EyeOff, ArrowLeft, Loader2,
+  GraduationCap,
+  UserCog,
+  BookOpen,
+  Eye,
+  EyeOff,
+  ArrowLeft,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signIn } from 'next-auth/react'
+import { signIn } from "next-auth/react";
 import { ThemeToggle } from "@/components/theme-toggle";
-
 
 // ─── Role Config ──────────────────────────────────────────────────────────────
 
@@ -63,7 +67,7 @@ export default function LoginRolePage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!email || !password) {
       setError("Preenche todos os campos.");
@@ -72,7 +76,7 @@ export default function LoginRolePage() {
 
     setLoading(true);
 
-    const result = await signIn('credentials', {
+    const result = await signIn("credentials", {
       email,
       password,
       redirect: false,
@@ -82,9 +86,9 @@ export default function LoginRolePage() {
 
     if (result?.error) {
       setError("Email ou palavra-passe inválidos.");
+      return; // ← corrigido: não avança para o dashboard se houver erro
     }
 
-    // Sucesso: redireciona para o dashboard
     router.push("/dashboard");
     router.refresh();
   }
@@ -115,15 +119,21 @@ export default function LoginRolePage() {
         <div className="w-full max-w-sm">
           {/* Logo */}
           <div className="flex flex-col items-center gap-4 mb-8">
-            <div className={cn(
-              "flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br shadow-lg",
-              config.gradient
-            )}>
+            <div
+              className={cn(
+                "flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br shadow-lg",
+                config.gradient,
+              )}
+            >
               <Icon className="h-7 w-7 text-white" />
             </div>
             <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{config.label}</h1>
-              <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">{config.description}</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {config.label}
+              </h1>
+              <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">
+                {config.description}
+              </p>
             </div>
           </div>
 
@@ -134,7 +144,10 @@ export default function LoginRolePage() {
           >
             {/* Email */}
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <Label
+                htmlFor="email"
+                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Email
               </Label>
               <Input
@@ -143,7 +156,10 @@ export default function LoginRolePage() {
                 placeholder="o.teu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={cn("rounded-xl border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950/50 text-sm dark:text-gray-100 transition-colors", config.ring)}
+                className={cn(
+                  "rounded-xl border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950/50 text-sm dark:text-gray-100 transition-colors",
+                  config.ring,
+                )}
                 autoComplete="email"
                 disabled={loading}
               />
@@ -152,7 +168,10 @@ export default function LoginRolePage() {
             {/* Password */}
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <Label
+                  htmlFor="password"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   Palavra-passe
                 </Label>
                 <Link
@@ -169,7 +188,10 @@ export default function LoginRolePage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={cn("rounded-xl border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950/50 text-sm dark:text-gray-100 pr-10 transition-colors", config.ring)}
+                  className={cn(
+                    "rounded-xl border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950/50 text-sm dark:text-gray-100 pr-10 transition-colors",
+                    config.ring,
+                  )}
                   autoComplete="current-password"
                   disabled={loading}
                 />
@@ -178,10 +200,11 @@ export default function LoginRolePage() {
                   onClick={() => setShowPwd(!showPwd)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  {showPwd
-                    ? <EyeOff className="h-4 w-4" />
-                    : <Eye className="h-4 w-4" />
-                  }
+                  {showPwd ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </button>
               </div>
             </div>
@@ -199,13 +222,12 @@ export default function LoginRolePage() {
               disabled={loading}
               className={cn(
                 "mt-1 w-full rounded-xl text-white font-semibold h-11 text-sm",
-                config.btn
+                config.btn,
               )}
             >
               {loading ? (
                 <span className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  A entrar...
+                  <Loader2 className="h-4 w-4 animate-spin" />A entrar...
                 </span>
               ) : (
                 "Entrar"
@@ -215,7 +237,8 @@ export default function LoginRolePage() {
 
           {/* Footer */}
           <p className="mt-6 text-center text-xs text-gray-400 dark:text-gray-500">
-            © {new Date().getFullYear()} Coordena · Todos os direitos reservados
+            © {new Date().getFullYear()} Coordena · Todos os direitos
+            reservados
           </p>
         </div>
       </div>

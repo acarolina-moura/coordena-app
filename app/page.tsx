@@ -6,16 +6,16 @@ import { Creators } from "@/components/landing-page/creators";
 import { Footer } from "@/components/landing-page/footer";
 
 export default function Home() {
-  return (
-    <main className="min-h-screen bg-white dark:bg-slate-900 selection:bg-blue-100 selection:text-blue-900">
-      <Navbar />
-      <div className="flex flex-col">
-        <Hero />
-        <AboutUs />
-        <Features />
-        <Creators />
-        <Footer />
-      </div>
-    </main>
-  );
+    return (
+        <main className="min-h-screen bg-white dark:bg-slate-900 selection:bg-blue-100 selection:text-blue-900">
+            <Navbar />
+            <div className="flex flex-col">
+                <Hero />
+                <AboutUs />
+                <Features />
+                <Creators />
+                <Footer />
+            </div>
+        </main>
+    );
 }

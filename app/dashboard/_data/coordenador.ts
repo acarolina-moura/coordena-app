@@ -246,6 +246,15 @@ export type FormadorComDisponibilidades = FormadorComDetalhes & {
   disponibilidades: SlotDisponibilidade[];
 };
 
+/**
+ * MODIFICADO: Busca disponibilidades de todos os formadores
+ * NOVO: Agora inclui o campo 'semana' (número 1-53 da semana do ano)
+ * 
+ * Utilizado na página de disponibilidades do coordenador para ver
+ * que horários cada formador tem marcado como disponível
+ * 
+ * Retorna array com formador + lista de suas disponibilidades
+ */
 export async function getDisponibilidadesFormadores(): Promise<
   FormadorComDisponibilidades[]
 > {
@@ -265,7 +274,8 @@ export async function getDisponibilidadesFormadores(): Promise<
       },
       disponibilidades: {
         where: { disponivel: true },
-        select: { diaSemana: true, hora: true, minuto: true },
+        // NOVO: Agora seleciona também o campo 'semana'
+        select: { diaSemana: true, hora: true, minuto: true, tipo: true, semana: true },
       },
     },
     orderBy: { user: { nome: "asc" } },

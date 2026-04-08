@@ -3,11 +3,21 @@ import { prisma } from "@/lib/prisma";
 export async function getFormadorStats(userId: string) {
     const formador = await prisma.formador.findUnique({
         where: { userId },
-        include: { modulosLecionados: true },
+        include: {
+            modulosLecionados: {
+                include: {
+                    modulo: {
+                        include: {
+                            curso: true,
+                        },
+                    },
+                },
+            },
+        },
     });
 
     if (!formador)
-        return { modulosAtivos: 0, proximasSessoes: 0, convitesPendentes: 0 };
+        return { modulosAtivos: 0, proximasSessoes: 0, convitesPendentes: 0, cursoNome: null };
 
     const agora = new Date();
 
@@ -27,10 +37,14 @@ export async function getFormadorStats(userId: string) {
         }),
     ]);
 
+    // Get the first course from the first module
+    const cursoNome = formador.modulosLecionados[0]?.modulo?.curso?.nome || null;
+
     return {
         modulosAtivos: formador.modulosLecionados.length,
         proximasSessoes,
         convitesPendentes,
+        cursoNome,
     };
 }
 
