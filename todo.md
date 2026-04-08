@@ -15,7 +15,7 @@ coordena-app/
 │ │ ├─ modulos/
 │ │ │ └─ route.ts
 │ │ └─ notificacoes/
-│ │ └─ route.ts ✅ NOVO
+│ │ └─ route.ts
 │ │
 │ ├─ dashboard/
 │ │ ├─ \_components/
@@ -24,7 +24,7 @@ coordena-app/
 │ │ │ └─ formando-dashboard.tsx
 │ │ │
 │ │ ├─ \_data/
-│ │ │ ├─ coordenador.ts ✅ ATUALIZADO
+│ │ │ ├─ coordenador.ts
 │ │ │ ├─ documentos.ts
 │ │ │ ├─ formador.ts
 │ │ │ ├─ formadores.ts
@@ -33,12 +33,12 @@ coordena-app/
 │ │ ├─ assiduidade/
 │ │ │ ├─ \_components/
 │ │ │ │ ├─ formando-assiduidade.tsx
-│ │ │ │ └─ coordenador-assiduidade.tsx ✅ NOVO
-│ │ │ └─ page.tsx ✅ ATUALIZADO
+│ │ │ │ └─ coordenador-assiduidade.tsx
+│ │ │ └─ page.tsx
 │ │ │
 │ │ ├─ calendario/
 │ │ │ ├─ \_components/
-│ │ │ │ ├─ coordenador-calendario.tsx ✅ ATUALIZADO
+│ │ │ │ ├─ coordenador-calendario.tsx
 │ │ │ │ ├─ formador-calendario.tsx
 │ │ │ │ └─ formando-calendario.tsx
 │ │ │ └─ page.tsx
@@ -51,24 +51,26 @@ coordena-app/
 │ │ │
 │ │ ├─ disponibilidades/
 │ │ │ ├─ \_components/
-│ │ │ │ ├─ formador-disponibilidades.tsx ✅ NOVO
-│ │ │ │ └─ coordenador-disponibilidades.tsx ✅ NOVO
-│ │ │ └─ page.tsx ✅ ATUALIZADO
+│ │ │ │ ├─ formador-disponibilidades.tsx 
+│ │ │ │ └─ coordenador-disponibilidades.tsx 
+│ │ │ └─ page.tsx 
 │ │ │
 │ │ ├─ documentos/
 │ │ │ └─ page.tsx
 │ │ │
 │ │ ├─ formadores/
 │ │ │ ├─ \_components/
-│ │ │ │ └─ formadores-client.tsx ✅ ATUALIZADO
+│ │ │ │ └─ formadores-client.tsx
 │ │ │ ├─ [id]/
-│ │ │ │ └─ page.tsx ✅ NOVO
+│ │ │ │ └─ page.tsx 
 │ │ │ └─ page.tsx
 │ │ │
 │ │ ├─ formandos/
 │ │ │ ├─ [id]/
-│ │ │ │ └─ editar/
-│ │ │ │ └─ page.tsx  NOVO
+│ │ │       └─ editar/
+│ │ │ │         └─ components/
+│ │ │ │             └─ editar-formando-client.tsx
+│ │ │ │ └─ page.tsx 
 │ │ │ ├─ actions.ts
 │ │ │ ├─ formandos-client.tsx
 │ │ │ ├─ ver-perfil-dialog.tsx
@@ -92,7 +94,7 @@ coordena-app/
 │ │ ├─ perfil/
 │ │ │ └─ page.tsx
 │ │ │
-│ │ ├─ layout.tsx ✅ ATUALIZADO
+│ │ ├─ layout.tsx
 │ │ └─ page.tsx
 │ │
 │ └─ login/
@@ -110,8 +112,8 @@ coordena-app/
 │ │ ├─ label.tsx
 │ │ ├─ progress.tsx
 │ │ └─ textarea.tsx
-│ ├─ app-sidebar.tsx ✅ ATUALIZADO
-│ └─ top-bar.tsx ✅ ATUALIZADO
+│ ├─ app-sidebar.tsx
+│ └─ top-bar.tsx 
 │
 ├─ lib/
 │ ├─ documento-utils.ts

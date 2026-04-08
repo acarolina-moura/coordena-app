@@ -1,3 +1,5 @@
+// app/dashboard/_data/coordenador.ts
+
 import { prisma } from "@/lib/prisma";
 import type { AssiduidadeFormando } from "../assiduidade/_components/coordenador-assiduidade";
 
@@ -115,7 +117,7 @@ export async function getDocumentosEmFalta(): Promise<DocumentoEmFalta[]> {
   }));
 }
 
-// ─── Formadores (lista) ───────────────────────────────────────────────────────
+// ─── Formadores ───────────────────────────────────────────────────────────────
 
 export type FormadorComDetalhes = {
   id: string;
@@ -142,15 +144,11 @@ export async function getFormadores(): Promise<FormadorComDetalhes[]> {
       idioma: true,
       nacionalidade: true,
       user: { select: { id: true, nome: true, email: true } },
-      modulosLecionados: {
-        include: { modulo: { select: { nome: true } } },
-      },
+      modulosLecionados: { include: { modulo: { select: { nome: true } } } },
     },
     orderBy: { user: { nome: "asc" } },
   });
 }
-
-// ─── Perfil de um Formador (por ID) ──────────────────────────────────────────
 
 export type FormadorPerfil = {
   id: string;
@@ -192,9 +190,7 @@ export async function getFormadorById(
       user: { select: { nome: true, email: true } },
       modulosLecionados: {
         include: {
-          modulo: {
-            include: { curso: { select: { id: true, nome: true } } },
-          },
+          modulo: { include: { curso: { select: { id: true, nome: true } } } },
         },
       },
       DocumentoFormador: {
@@ -231,7 +227,7 @@ export async function getFormadorById(
   };
 }
 
-// ─── Disponibilidades (Coordenador) ──────────────────────────────────────────
+// ─── Disponibilidades ──────────────────────────────────────────────────────────
 
 export type SlotDisponibilidade = {
   diaSemana: string;
@@ -257,9 +253,7 @@ export async function getDisponibilidadesFormadores(): Promise<
       idioma: true,
       nacionalidade: true,
       user: { select: { id: true, nome: true, email: true } },
-      modulosLecionados: {
-        include: { modulo: { select: { nome: true } } },
-      },
+      modulosLecionados: { include: { modulo: { select: { nome: true } } } },
       disponibilidades: {
         where: { disponivel: true },
         select: { diaSemana: true, hora: true, minuto: true },
@@ -274,7 +268,7 @@ export async function getDisponibilidadesFormadores(): Promise<
   }));
 }
 
-// ─── Assiduidade (Coordenador) ────────────────────────────────────────────────
+// ─── Assiduidade ──────────────────────────────────────────────────────────────
 
 export async function getAssiduidadeCoordenador(): Promise<
   AssiduidadeFormando[]
@@ -323,9 +317,7 @@ export async function getModulos(): Promise<ModuloComDetalhes[]> {
   const modulos = await prisma.modulo.findMany({
     include: {
       curso: { select: { id: true, nome: true } },
-      formadores: {
-        include: { formador: { include: { user: true } } },
-      },
+      formadores: { include: { formador: { include: { user: true } } } },
     },
     orderBy: { ordem: "asc" },
   });
@@ -403,11 +395,9 @@ export async function getFormandos(): Promise<FormandoComDetalhes[]> {
               100,
           )
         : 0;
-
     let status: "ATIVO" | "INATIVO" | "CONCLUÍDO" = "ATIVO";
     if (progresso === 100) status = "CONCLUÍDO";
     if (f.inscricoes.length === 0) status = "INATIVO";
-
     return {
       id: f.id,
       nome: f.user.nome,
@@ -453,6 +443,7 @@ export type FormandoPerfil = {
 export async function getFormandoPerfil(
   formandoId: string,
 ): Promise<FormandoPerfil | null> {
+  if (!formandoId) return null;
   const formando = await prisma.formando.findUnique({
     where: { id: formandoId },
     include: {
@@ -504,6 +495,7 @@ export async function getFormandoPerfil(
 }
 
 // ─── Tipos exportados ─────────────────────────────────────────────────────────
+
 export type ProximaSessao = Awaited<
   ReturnType<typeof getProximasSessoes>
 >[number];

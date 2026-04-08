@@ -1,27 +1,39 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link"; // ✅ Adicionado para os botões
-import { Search, GraduationCap, AlertTriangle } from "lucide-react";
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { Search, GraduationCap, AlertTriangle, Trash2 } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { FormandoComDetalhes } from "@/app/dashboard/_data/coordenador";
+import { Button } from "@/components/ui/button";
+
+import type { FormandoComDetalhes } from "@/app/dashboard/_data/coordenador";
 
 // ─── Formando Card ────────────────────────────────────────────────────────────
 
-function FormandoCard({ formando }: { formando: FormandoComDetalhes }) {
-  const initials = formando.nome
-    .split(" ")
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+function FormandoCard({
+  formando,
+  onDelete,
+  deleting,
+}: {
+  formando: FormandoComDetalhes;
+  onDelete: (id: string) => void;
+  deleting: boolean;
+}) {
+  const initials = useMemo(() => {
+    return formando.nome
+      .split(" ")
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
+  }, [formando.nome]);
 
   return (
-    // ✅ TAREFA 3: Mesmas classes CSS exatas do Card do Formador
     <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 hover:border-indigo-200 dark:hover:border-indigo-800 hover:shadow-sm transition-all h-full">
-      {/* Header igual ao Formador */}
+      {/* Header */}
       <div className="flex items-start gap-4">
         <Avatar className="h-14 w-14 border-2 border-gray-100 shrink-0">
           <AvatarFallback className="bg-indigo-100 text-indigo-600 font-semibold text-sm">
@@ -31,27 +43,34 @@ function FormandoCard({ formando }: { formando: FormandoComDetalhes }) {
 
         <div className="flex flex-1 flex-col gap-0.5 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 leading-tight">
+            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 leading-tight truncate">
               {formando.nome}
             </h3>
           </div>
+
           <div className="flex items-center gap-1.5 text-xs text-gray-400 mt-1">
             <span className="truncate">{formando.curso}</span>
           </div>
+
+          <p className="text-xs text-gray-400 truncate mt-1">
+            {formando.email}
+          </p>
         </div>
       </div>
 
-      {/* Info (Progresso e Faltas) - Adaptada para o layout das "Tags" do formador */}
+      {/* Progresso / Negativas */}
       <div className="flex flex-col gap-3 py-1">
         <div className="flex items-center gap-3">
           <span className="text-xs font-medium text-gray-500">Progresso</span>
+
           <div className="h-1.5 flex-1 rounded-full bg-gray-100 dark:bg-gray-700">
             <div
               className="h-1.5 rounded-full bg-indigo-500 transition-all"
               style={{ width: `${formando.progresso}%` }}
             />
           </div>
-          <span className="text-xs font-medium text-gray-600 dark:text-gray-400 w-8 text-right">
+
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-400 w-10 text-right">
             {formando.progresso}%
           </span>
         </div>
@@ -64,7 +83,7 @@ function FormandoCard({ formando }: { formando: FormandoComDetalhes }) {
         )}
       </div>
 
-      {/* Footer igual ao Formador */}
+      {/* Footer */}
       <div className="flex items-center justify-between gap-3 border-t border-gray-100 dark:border-gray-800 pt-4 mt-auto">
         <span
           className={cn(
@@ -80,7 +99,7 @@ function FormandoCard({ formando }: { formando: FormandoComDetalhes }) {
         </span>
 
         <div className="flex gap-2">
-          {/* Botão antigo de Ver Perfil */}
+          {/* Ver Perfil */}
           <Link
             href={`/dashboard/formandos/${formando.id}`}
             className="rounded-full border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
@@ -88,13 +107,24 @@ function FormandoCard({ formando }: { formando: FormandoComDetalhes }) {
             Ver Perfil
           </Link>
 
-          {/* ✅ NOVO Botão Editar */}
+          {/* Editar */}
           <Link
             href={`/dashboard/formandos/${formando.id}/editar`}
             className="rounded-full bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors shadow-sm"
           >
             Editar
           </Link>
+
+          {/* Excluir */}
+          <Button
+            variant="destructive"
+            size="sm"
+            disabled={deleting}
+            onClick={() => onDelete(formando.id)}
+            className="rounded-full px-4 py-1.5 text-sm font-medium"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>
@@ -108,19 +138,57 @@ export function FormandosClient({
 }: {
   formandos: FormandoComDetalhes[];
 }) {
+  const [formandos, setFormandos] =
+    useState<FormandoComDetalhes[]>(initialFormandos);
+
   const [search, setSearch] = useState("");
   const [filtroStatus, setFiltroStatus] = useState<string>("TODOS");
 
-  const filtrados = initialFormandos.filter((f) => {
-    const matchSearch =
-      f.nome.toLowerCase().includes(search.toLowerCase()) ||
-      f.email.toLowerCase().includes(search.toLowerCase()) ||
-      f.curso.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = filtroStatus === "TODOS" || f.status === filtroStatus;
-    return matchSearch && matchStatus;
-  });
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const filtrados = useMemo(() => {
+    return formandos.filter((f) => {
+      const matchSearch =
+        f.nome.toLowerCase().includes(search.toLowerCase()) ||
+        f.email.toLowerCase().includes(search.toLowerCase()) ||
+        f.curso.toLowerCase().includes(search.toLowerCase());
+
+      const matchStatus = filtroStatus === "TODOS" || f.status === filtroStatus;
+
+      return matchSearch && matchStatus;
+    });
+  }, [formandos, search, filtroStatus]);
 
   const statusOptions = ["TODOS", "ATIVO", "INATIVO", "CONCLUÍDO"];
+
+  async function handleDelete(formandoId: string) {
+    const ok = confirm(
+      "Tem certeza que deseja excluir este formando?\n\nEsta ação é irreversível.",
+    );
+
+    if (!ok) return;
+
+    try {
+      setDeletingId(formandoId);
+
+      const res = await fetch(`/api/formandos/${formandoId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        alert(data?.error ?? "Erro ao excluir formando");
+        return;
+      }
+
+      setFormandos((prev) => prev.filter((f) => f.id !== formandoId));
+    } catch (err) {
+      console.error(err);
+      alert("Erro inesperado ao excluir formando.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -131,7 +199,7 @@ export function FormandosClient({
             Formandos
           </h1>
           <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-            {initialFormandos.length} formandos registados
+            {formandos.length} formandos registados
           </p>
         </div>
 
@@ -167,11 +235,16 @@ export function FormandosClient({
         </div>
       </div>
 
-      {/* ✅ TAREFA 3: Mudado para GRID como o Formador */}
+      {/* Grid */}
       {filtrados.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filtrados.map((formando) => (
-            <FormandoCard key={formando.id} formando={formando} />
+            <FormandoCard
+              key={formando.id}
+              formando={formando}
+              deleting={deletingId === formando.id}
+              onDelete={handleDelete}
+            />
           ))}
         </div>
       ) : (
