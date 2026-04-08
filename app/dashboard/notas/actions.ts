@@ -302,6 +302,16 @@ export async function calcularNotaFinal(
       throw new Error('Não autorizado');
     }
 
+    // Buscar template com seus items
+    const template = await prisma.templateAvaliacao.findFirst({
+      where: {
+        moduloId: moduloId,
+      },
+      include: {
+        items: true,
+      },
+    });
+
     // Buscar todas as notas parciais
     const notas = await prisma.notaParcial.findMany({
       where: {
@@ -310,20 +320,42 @@ export async function calcularNotaFinal(
           moduloId: moduloId,
         },
       },
+      include: {
+        item: true,
+      },
     });
 
     if (notas.length === 0) {
       return { success: true, notaFinal: null };
     }
 
-    // Calcular média das notas (já em escala 0-20)
-    const mediaComponentes =
-      notas.reduce((acc, nota) => acc + nota.valor, 0) / notas.length;
+    // Calcular média ponderada das notas usando os pesos do template
+    let mediaComponentes = 0;
+    let pesoTotal = 0;
+
+    if (template && template.items.length > 0) {
+      // Média ponderada pelos pesos do template
+      for (const nota of notas) {
+        const item = template.items.find(i => i.id === nota.itemId);
+        if (item) {
+          mediaComponentes += nota.valor * (item.peso / 100);
+          pesoTotal += item.peso / 100;
+        }
+      }
+      // Normalizar pelo peso total (caso não tenha todos os items preenchidos)
+      if (pesoTotal > 0) {
+        mediaComponentes = mediaComponentes / pesoTotal;
+      }
+    } else {
+      // Fallback: média simples se não houver template
+      mediaComponentes =
+        notas.reduce((acc, nota) => acc + nota.valor, 0) / notas.length;
+    }
 
     // Converter assiduidade de percentual (0-100) para escala 0-20
     const notaAssiduidade = (percentualAssiduidade / 100) * 20;
 
-    // Aplicar fórmula
+    // Aplicar fórmula: 20% assiduidade + 80% componentes
     const notaFinal =
       notaAssiduidade * 0.2 + mediaComponentes * 0.8;
 

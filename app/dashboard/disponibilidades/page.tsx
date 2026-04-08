@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { getDisponibilidadesFormadores } from "@/app/dashboard/_data/coordenador";
 import DisponibilidadesCoordenador from "./components/coordenador-disponibilidades";
 import DisponibilidadesFormador from "./components/formador-disponibilidades";
@@ -16,7 +17,11 @@ export default async function DisponibilidadesPage() {
   }
 
   if (role === "FORMADOR") {
-    return <DisponibilidadesFormador userId={session.user.id} />;
+    return (
+      <Suspense fallback={<div className="text-center py-8">A carregar...</div>}>
+        <DisponibilidadesFormador userId={session.user.id} />
+      </Suspense>
+    );
   }
 
   redirect("/dashboard");

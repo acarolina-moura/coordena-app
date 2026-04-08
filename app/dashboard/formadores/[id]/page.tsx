@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
+import { prisma } from "@/lib/prisma"; // ✅ Adicionado Prisma
 import {
   ArrowLeft,
   Mail,
@@ -15,10 +16,6 @@ import {
   Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  getFormadorById,
-  type FormadorPerfil,
-} from "@/app/dashboard/_data/coordenador";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
@@ -79,8 +76,42 @@ export default async function FormadorPerfilPage({
   if (!session?.user) redirect("/login");
   if (session.user.role !== "COORDENADOR") redirect("/dashboard");
 
-  const formador: FormadorPerfil | null = await getFormadorById(id);
-  if (!formador) notFound();
+  // ✅ TAREFA 2: Busca direta à BD com o ID da URL, incluindo DocumentoFormador
+  const formadorDb = await prisma.formador.findUnique({
+    where: { id: id },
+    include: {
+      user: true,
+      DocumentoFormador: true, // A tabela correta de docs do formador
+      modulosLecionados: {
+        include: {
+          modulo: {
+            include: { curso: true },
+          },
+        },
+      },
+    },
+  });
+
+  if (!formadorDb) notFound();
+
+  // Mapeamos para o layout exatamente como estava para não alterar o design
+  const formador = {
+    nome: formadorDb.user.nome,
+    email: formadorDb.user.email,
+    especialidade: formadorDb.especialidade,
+    competencias: formadorDb.competencias,
+    idioma: formadorDb.idioma,
+    linkedin: formadorDb.linkedin,
+    github: formadorDb.github,
+    nacionalidade: formadorDb.nacionalidade,
+    modulos: formadorDb.modulosLecionados.map((fm) => ({
+      id: fm.modulo.id,
+      nome: fm.modulo.nome,
+      cargaHoraria: fm.modulo.cargaHoraria,
+      curso: { nome: fm.modulo.curso.nome },
+    })),
+    documentos: formadorDb.DocumentoFormador,
+  };
 
   const initials = formador.nome
     .split(" ")
@@ -107,7 +138,7 @@ export default async function FormadorPerfilPage({
         Voltar a Formadores
       </Link>
 
-      {/* Header card */}
+      {/* Header card (MANTIDO) */}
       <div className="flex items-center gap-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
         <Avatar className="h-20 w-20 border-2 border-gray-100 shrink-0">
           <AvatarFallback className="bg-indigo-100 text-indigo-600 text-2xl font-bold">
@@ -116,7 +147,9 @@ export default async function FormadorPerfilPage({
         </Avatar>
 
         <div className="flex flex-1 flex-col gap-2 min-w-0">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{formador.nome}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            {formador.nome}
+          </h1>
 
           <div className="flex flex-wrap gap-x-5 gap-y-1.5">
             <span className="flex items-center gap-1.5 text-sm text-gray-500">
@@ -162,7 +195,7 @@ export default async function FormadorPerfilPage({
         </div>
       </div>
 
-      {/* Body grid */}
+      {/* Body grid (MANTIDO) */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
         {/* Módulos Lecionados */}
         <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
@@ -177,26 +210,24 @@ export default async function FormadorPerfilPage({
             </p>
           ) : (
             <div className="flex flex-col gap-2">
-              {formador.modulos.map(
-                (mod: FormadorPerfil["modulos"][number]) => (
-                  <div
-                    key={mod.id}
-                    className="flex items-center justify-between gap-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-3"
-                  >
-                    <div className="flex flex-col gap-0.5 min-w-0">
-                      <span className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
-                        {mod.nome}
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        {mod.curso.nome}
-                      </span>
-                    </div>
-                    <span className="shrink-0 text-xs text-gray-400">
-                      {mod.cargaHoraria}h
+              {formador.modulos.map((mod) => (
+                <div
+                  key={mod.id}
+                  className="flex items-center justify-between gap-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-3"
+                >
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
+                      {mod.nome}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {mod.curso.nome}
                     </span>
                   </div>
-                ),
-              )}
+                  <span className="shrink-0 text-xs text-gray-400">
+                    {mod.cargaHoraria}h
+                  </span>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -235,17 +266,17 @@ export default async function FormadorPerfilPage({
               </p>
             ) : (
               <div className="flex flex-col gap-2.5">
-                {formador.documentos.map(
-                  (doc: FormadorPerfil["documentos"][number]) => (
-                    <div
-                      key={doc.id}
-                      className="flex items-center justify-between gap-2"
-                    >
-                      <span className="text-sm text-gray-700 dark:text-gray-200">{doc.tipo}</span>
-                      <DocBadge status={doc.status} />
-                    </div>
-                  ),
-                )}
+                {formador.documentos.map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="flex items-center justify-between gap-2"
+                  >
+                    <span className="text-sm text-gray-700 dark:text-gray-200">
+                      {doc.tipo}
+                    </span>
+                    <DocBadge status={doc.status} />
+                  </div>
+                ))}
               </div>
             )}
           </div>

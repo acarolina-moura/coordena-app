@@ -1,18 +1,21 @@
-import { prisma } from '@/lib/prisma'
-import { revalidatePath } from 'next/cache'
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 
 // ─── GET /api/modulos ─────────────────────────────────────────────────────────
 
 export async function GET() {
   try {
     const modulos = await prisma.modulo.findMany({
-      orderBy: { ordem: 'asc' },
+      orderBy: { ordem: "asc" },
       include: { curso: { select: { id: true, nome: true } } },
-    })
-    return Response.json(modulos)
+    });
+    return Response.json(modulos);
   } catch (error) {
-    console.error('[GET /api/modulos]', error)
-    return Response.json({ error: 'Erro ao carregar módulos' }, { status: 500 })
+    console.error("[GET /api/modulos]", error);
+    return Response.json(
+      { error: "Erro ao carregar módulos" },
+      { status: 500 },
+    );
   }
 }
 
@@ -20,46 +23,36 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { nome, descricao, ordem, cargaHoraria, cursoId, formadorId } = await req.json()
+    const { nome, descricao, ordem, cargaHoraria, cursoId, formadorId } =
+      await req.json();
 
-    // Validação básica
-    if (!nome || nome.trim() === '') {
+    if (!nome || nome.trim() === "") {
       return Response.json(
-        { error: 'Nome do módulo é obrigatório' },
-        { status: 400 }
-      )
+        { error: "Nome do módulo é obrigatório" },
+        { status: 400 },
+      );
     }
 
     if (!cursoId) {
-      return Response.json(
-        { error: 'Curso é obrigatório' },
-        { status: 400 }
-      )
+      return Response.json({ error: "Curso é obrigatório" }, { status: 400 });
     }
 
-    // Verificar se o curso existe
     const cursoExiste = await prisma.curso.findUnique({
       where: { id: cursoId },
-    })
-
+    });
     if (!cursoExiste) {
-      return Response.json(
-        { error: 'Curso não encontrado' },
-        { status: 404 }
-      )
+      return Response.json({ error: "Curso não encontrado" }, { status: 404 });
     }
 
-    // Verificar se o formador existe (se fornecido)
     if (formadorId) {
       const formadorExiste = await prisma.formador.findUnique({
         where: { id: formadorId },
-      })
-
+      });
       if (!formadorExiste) {
         return Response.json(
-          { error: 'Formador não encontrado' },
-          { status: 404 }
-        )
+          { error: "Formador não encontrado" },
+          { status: 404 },
+        );
       }
     }
 
@@ -72,55 +65,48 @@ export async function POST(req: Request) {
         cargaHoraria: parseInt(cargaHoraria) || 0,
         cursoId,
       },
-    })
+    });
 
-    // Criar Convite para o formador se fornecido
-    // (em vez de atribuir diretamente, deixa-se o formador aceitar/recusar)
+    // ✅ TAREFA 1: Correção - Associar formador usando UPSERT para evitar erros/apagões
     if (formadorId) {
-      await prisma.convite.create({
-        data: {
-          id: crypto.randomUUID(),
+      await prisma.formadorModulo.upsert({
+        where: {
+          formadorId_moduloId: {
+            formadorId,
+            moduloId: modulo.id,
+          },
+        },
+        update: {}, // Se já existir, não faz nada
+        create: {
           formadorId,
           moduloId: modulo.id,
-          cursoId: cursoId,
-          descricao: `Convite para lecionar o módulo "${nome}"`,
-          status: 'PENDENTE',
         },
-      })
+      });
     }
 
-    // Buscar o módulo completo com formadores
+    // Buscar o módulo completo
     const moduloCompleto = await prisma.modulo.findUnique({
       where: { id: modulo.id },
       include: {
-        curso: {
-          select: { id: true, nome: true },
-        },
+        curso: { select: { id: true, nome: true } },
         formadores: {
           include: {
-            formador: {
-              include: { user: true },
-            },
+            formador: { include: { user: true } },
           },
         },
       },
-    })
+    });
 
-    // Revalidar a página
-    revalidatePath('/dashboard/modulos')
+    revalidatePath("/dashboard/modulos");
 
-    // Mapear para retornar a mesma estrutura do getModulos
     const resultado = {
       ...moduloCompleto,
-      formadores: moduloCompleto?.formadores.map(fm => fm.formador) || [],
-    }
+      formadores: moduloCompleto?.formadores.map((fm) => fm.formador) ?? [],
+    };
 
-    return Response.json(resultado, { status: 201 })
+    return Response.json(resultado, { status: 201 });
   } catch (error) {
-    console.error('Erro ao criar módulo:', error)
-    return Response.json(
-      { error: 'Erro ao criar módulo' },
-      { status: 500 }
-    )
+    console.error("Erro ao criar módulo:", error);
+    return Response.json({ error: "Erro ao criar módulo" }, { status: 500 });
   }
 }
