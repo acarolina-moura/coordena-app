@@ -1,51 +1,132 @@
-import { auth } from '@/auth'
-import { redirect } from 'next/navigation'
-import { getFormadorPerfil } from '@/app/dashboard/_data/formador'
-import { PerfilClient } from './_component'
-import { PerfilFormando } from './_components/perfil-formando'
-import { prisma } from '@/lib/prisma'
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { getFormadorPerfil } from "@/app/dashboard/_data/formador";
+import { PerfilClient } from "./_component";
+import { PerfilFormando } from "./_components/perfil-formando";
+import { prisma } from "@/lib/prisma";
+// ✅ Adicionados imports para o layout do Coordenador
+import { User, Mail, ShieldCheck } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default async function PerfilPage() {
-  const session = await auth()
-  
-  if (!session?.user?.email) redirect('/login')
+  const session = await auth();
+
+  if (!session?.user?.email) redirect("/login");
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-  })
+  });
 
-  if (!user?.id) redirect('/login')
+  if (!user?.id) redirect("/login");
 
-  if (user.role === 'FORMANDO') {
+  // 1. Se for FORMANDO (MANTIDO INTACTO)
+  if (user.role === "FORMANDO") {
     return (
-      <PerfilFormando 
+      <PerfilFormando
         formando={{
           id: user.id,
           nome: user.nome,
           email: user.email,
-        }} 
+        }}
       />
-    )
+    );
   }
 
-  const formador = await getFormadorPerfil(user.id)
+  // 2. ✅ NOVA FUNCIONALIDADE: Se for COORDENADOR
+  if (user.role === "COORDENADOR") {
+    const initials = user.nome
+      .split(" ")
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
 
-  // Se formador é null, mostrar dados básicos em vez de redirecionar
-  if (!formador) {
     return (
-      <div className="flex flex-col gap-6 max-w-2xl mx-auto">
-        <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">O Meu Perfil</h1>
-        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <p className="font-semibold text-blue-700 dark:text-blue-400">Perfil Incompleto</p>
-          <p className="text-sm text-blue-600 dark:text-blue-300 mt-1">Dados básicos:</p>
-          <div className="mt-3 space-y-2 text-sm text-blue-600 dark:text-blue-300">
-            <p><strong>Nome:</strong> {user.nome}</p>
-            <p><strong>Email:</strong> {user.email}</p>
+      <div className="flex flex-col gap-6 max-w-4xl">
+        <div>
+          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">
+            O Meu Perfil
+          </h1>
+          <p className="mt-0.5 text-sm text-gray-500">
+            Faça a gestão dos seus dados e credenciais.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-8">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8">
+            <Avatar className="h-28 w-28 border-4 border-indigo-50 shadow-sm shrink-0">
+              <AvatarFallback className="bg-indigo-100 text-indigo-600 text-4xl font-bold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+
+            <div className="flex flex-1 flex-col gap-6 w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="flex flex-col gap-1.5 border-b sm:border-b-0 sm:border-r border-gray-100 dark:border-gray-800 pb-4 sm:pb-0">
+                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <User className="h-3.5 w-3.5" /> Nome Completo
+                  </span>
+                  <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    {user.nome}
+                  </span>
+                </div>
+
+                <div className="flex flex-col gap-1.5 pb-4 sm:pb-0">
+                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Mail className="h-3.5 w-3.5" /> Endereço de Email
+                  </span>
+                  <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    {user.email}
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-2 flex items-center gap-2 rounded-lg bg-green-50 dark:bg-green-950 px-4 py-3 border border-green-100 dark:border-green-900 w-fit">
+                <ShieldCheck className="h-5 w-5 text-green-600" />
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold text-green-700 dark:text-green-400">
+                    Cargo de Acesso
+                  </span>
+                  <span className="text-xs text-green-600/80 dark:text-green-500">
+                    Coordenador
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
-  return <PerfilClient formador={formador} />
+  // 3. Se for FORMADOR (MANTIDO INTACTO)
+  const formador = await getFormadorPerfil(user.id);
+
+  if (!formador) {
+    return (
+      <div className="flex flex-col gap-6 max-w-2xl mx-auto">
+        <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">
+          O Meu Perfil
+        </h1>
+        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <p className="font-semibold text-blue-700 dark:text-blue-400">
+            Perfil Incompleto
+          </p>
+          <p className="text-sm text-blue-600 dark:text-blue-300 mt-1">
+            Dados básicos:
+          </p>
+          <div className="mt-3 space-y-2 text-sm text-blue-600 dark:text-blue-300">
+            <p>
+              <strong>Nome:</strong> {user.nome}
+            </p>
+            <p>
+              <strong>Email:</strong> {user.email}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return <PerfilClient formador={formador} />;
 }

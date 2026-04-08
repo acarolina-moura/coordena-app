@@ -174,10 +174,10 @@ const NAV_ITEMS: NavItem[] = [
     group: "RECURSOS",
   },
   {
-    label: "Convites",
+    label: "Gestão de Convites",
     href: "/dashboard/convites",
     icon: Mail,
-    roles: ["FORMADOR", "FORMANDO"],
+    roles: ["COORDENADOR", "FORMADOR", "FORMANDO"],
     group: "RECURSOS",
   },
   {

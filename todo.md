@@ -66,8 +66,13 @@ coordena-app/
 │ │ │ └─ page.tsx
 │ │ │
 │ │ ├─ formandos/
-│ │ │ ├─ formandos-client.tsx ✅ NOVO
-│ │ │ └─ page.tsx ✅ ATUALIZADO
+│ │ │ ├─ [id]/
+│ │ │ │ └─ editar/
+│ │ │ │ └─ page.tsx  NOVO
+│ │ │ ├─ actions.ts
+│ │ │ ├─ formandos-client.tsx
+│ │ │ ├─ ver-perfil-dialog.tsx
+│ │ │ └─ page.tsx
 │ │ │
 │ │ ├─ meus-cursos/
 │ │ │ └─ page.tsx
