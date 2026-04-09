@@ -5,8 +5,9 @@ import { PerfilClient } from "./_component";
 import { PerfilFormando } from "./_components/perfil-formando";
 import { prisma } from "@/lib/prisma";
 // ✅ Adicionados imports para o layout do Coordenador
-import { User, Mail, ShieldCheck } from "lucide-react";
+import { User, Mail, ShieldCheck, Phone } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { EditCoordenadorPerfil } from "./_components/edit-coordenador-perfil";
 
 export default async function PerfilPage() {
   const session = await auth();
@@ -61,7 +62,7 @@ export default async function PerfilPage() {
             </Avatar>
 
             <div className="flex flex-1 flex-col gap-6 w-full">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div className="flex flex-col gap-1.5 border-b sm:border-b-0 sm:border-r border-gray-100 dark:border-gray-800 pb-4 sm:pb-0">
                   <span className="text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                     <User className="h-3.5 w-3.5" /> Nome Completo
@@ -71,7 +72,7 @@ export default async function PerfilPage() {
                   </span>
                 </div>
 
-                <div className="flex flex-col gap-1.5 pb-4 sm:pb-0">
+                <div className="flex flex-col gap-1.5 border-b sm:border-b-0 sm:border-r border-gray-100 dark:border-gray-800 pb-4 sm:pb-0">
                   <span className="text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                     <Mail className="h-3.5 w-3.5" /> Endereço de Email
                   </span>
@@ -79,18 +80,30 @@ export default async function PerfilPage() {
                     {user.email}
                   </span>
                 </div>
-              </div>
 
-              <div className="mt-2 flex items-center gap-2 rounded-lg bg-green-50 dark:bg-green-950 px-4 py-3 border border-green-100 dark:border-green-900 w-fit">
-                <ShieldCheck className="h-5 w-5 text-green-600" />
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold text-green-700 dark:text-green-400">
-                    Cargo de Acesso
+                <div className="flex flex-col gap-1.5 pb-4 sm:pb-0">
+                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Phone className="h-3.5 w-3.5" /> Telefone
                   </span>
-                  <span className="text-xs text-green-600/80 dark:text-green-500">
-                    Coordenador
+                  <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    {user.telefone || "Não definido"}
                   </span>
                 </div>
+              </div>
+
+              <div className="mt-2 flex items-center justify-between gap-2 rounded-lg bg-green-50 dark:bg-green-950 px-4 py-3 border border-green-100 dark:border-green-900 w-fit">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-5 w-5 text-green-600" />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-green-700 dark:text-green-400">
+                      Cargo de Acesso
+                    </span>
+                    <span className="text-xs text-green-600/80 dark:text-green-500">
+                      Coordenador
+                    </span>
+                  </div>
+                </div>
+                <EditCoordenadorPerfil user={user} />
               </div>
             </div>
           </div>
