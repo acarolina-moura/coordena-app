@@ -1,15 +1,24 @@
 // app/dashboard/_data/coordenador.ts
 
 import { prisma } from "@/lib/prisma";
+import { 
+  filtroCursosCoordenador, 
+  filtroInscricoesCoordenador, 
+  filtroModulosCoordenador,
+  filtroFormadoresCoordenador,
+  filtroFormandosCoordenador 
+} from "@/lib/coordenador-utils";
 import type { AssiduidadeFormando } from "../assiduidade/_components/coordenador-assiduidade";
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
 
 export async function getCoordenadorStats() {
+  const cursosFilter = await filtroCursosCoordenador({ status: "ATIVO" });
+  
   const [cursos, formadores, formandos] = await Promise.all([
-    prisma.curso.count({ where: { status: "ATIVO" } }),
-    prisma.formador.count(),
-    prisma.formando.count(),
+    prisma.curso.count({ where: cursosFilter }),
+    prisma.formador.count({ where: await filtroFormadoresCoordenador() }),
+    prisma.formando.count({ where: await filtroFormandosCoordenador() }),
   ]);
   return { cursos, formadores, formandos };
 }
@@ -18,8 +27,13 @@ export async function getCoordenadorStats() {
 
 export async function getProximasSessoes() {
   const agora = new Date();
+  const modulosFilter = await filtroModulosCoordenador();
+  
   const aulas = await prisma.aula.findMany({
-    where: { dataHora: { gte: agora } },
+    where: { 
+      dataHora: { gte: agora },
+      modulo: modulosFilter
+    },
     orderBy: { dataHora: "asc" },
     take: 4,
     include: {
@@ -46,8 +60,13 @@ type FormandoRiscoResult = {
 };
 
 export async function getFormandosEmRisco(): Promise<FormandoRiscoResult[]> {
+  const modulosFilter = await filtroModulosCoordenador();
+  
   const avaliacoesNegativas = await prisma.avaliacao.findMany({
-    where: { nota: { lt: 10 } },
+    where: { 
+      nota: { lt: 10 },
+      modulo: modulosFilter
+    },
     select: { formandoId: true, moduloId: true },
   });
 
@@ -66,11 +85,20 @@ export async function getFormandosEmRisco(): Promise<FormandoRiscoResult[]> {
     .slice(0, 5)
     .map(([id]) => id);
 
+  const formandosFilter = await filtroFormandosCoordenador();
+  
   const formandos = await prisma.formando.findMany({
-    where: { id: { in: formandoIdsOrdenados } },
+    where: { 
+      id: { in: formandoIdsOrdenados },
+      ...formandosFilter
+    },
     include: {
       user: { select: { nome: true } },
-      inscricoes: { include: { curso: { select: { nome: true } } }, take: 1 },
+      inscricoes: { 
+        where: await filtroInscricoesCoordenador(),
+        include: { curso: { select: { nome: true } } }, 
+        take: 1 
+      },
     },
   });
 
@@ -100,8 +128,13 @@ export type DocumentoEmFalta = {
 };
 
 export async function getDocumentosEmFalta(): Promise<DocumentoEmFalta[]> {
+  const formadoresFilter = await filtroFormadoresCoordenador();
+  
   const docs = await prisma.documentoFormador.findMany({
-    where: { status: { in: ["EM_FALTA", "EXPIRADO", "A_EXPIRAR"] } },
+    where: { 
+      status: { in: ["EM_FALTA", "EXPIRADO", "A_EXPIRAR"] },
+      Formador: formadoresFilter
+    },
     include: { Formador: { include: { user: { select: { nome: true } } } } },
     orderBy: [{ status: "asc" }, { dataExpiracao: "asc" }],
     take: 6,
@@ -133,7 +166,10 @@ export type FormadorComDetalhes = {
 };
 
 export async function getFormadores(): Promise<FormadorComDetalhes[]> {
+  const formadoresFilter = await filtroFormadoresCoordenador();
+  
   return await prisma.formador.findMany({
+    where: formadoresFilter,
     select: {
       id: true,
       userId: true,
@@ -144,7 +180,12 @@ export async function getFormadores(): Promise<FormadorComDetalhes[]> {
       idioma: true,
       nacionalidade: true,
       user: { select: { id: true, nome: true, email: true } },
-      modulosLecionados: { include: { modulo: { select: { nome: true } } } },
+      modulosLecionados: { 
+        where: {
+          modulo: await filtroModulosCoordenador()
+        },
+        include: { modulo: { select: { nome: true } } } 
+      },
     },
     orderBy: { user: { nome: "asc" } },
   });
@@ -177,6 +218,8 @@ export type FormadorPerfil = {
 export async function getFormadorById(
   id: string,
 ): Promise<FormadorPerfil | null> {
+  const modulosFilter = await filtroModulosCoordenador();
+  
   const formador = await prisma.formador.findUnique({
     where: { id },
     select: {
@@ -189,6 +232,9 @@ export async function getFormadorById(
       nacionalidade: true,
       user: { select: { nome: true, email: true } },
       modulosLecionados: {
+        where: {
+          modulo: modulosFilter
+        },
         include: {
           modulo: { include: { curso: { select: { id: true, nome: true } } } },
         },
@@ -251,7 +297,10 @@ export type FormadorComDisponibilidades = FormadorComDetalhes & {
 export async function getDisponibilidadesFormadores(): Promise<
   FormadorComDisponibilidades[]
 > {
+  const formadoresFilter = await filtroFormadoresCoordenador();
+  
   const formadores = await prisma.formador.findMany({
+    where: formadoresFilter,
     select: {
       id: true,
       userId: true,
@@ -262,7 +311,12 @@ export async function getDisponibilidadesFormadores(): Promise<
       idioma: true,
       nacionalidade: true,
       user: { select: { id: true, nome: true, email: true } },
-      modulosLecionados: { include: { modulo: { select: { nome: true } } } },
+      modulosLecionados: { 
+        where: {
+          modulo: await filtroModulosCoordenador()
+        },
+        include: { modulo: { select: { nome: true } } } 
+      },
       disponibilidades: {
         where: { disponivel: true },
         // NOVO: Agora seleciona também o campo 'semana'
@@ -297,13 +351,23 @@ export async function getAssiduidadeCoordenador(): Promise<
     justificados: number;
   }[]
 > {
+  const formandosFilter = await filtroFormandosCoordenador();
+  
   const formandos = await prisma.formando.findMany({
+    where: formandosFilter,
     include: {
       user: { select: { nome: true } },
-      inscricoes: { include: { curso: { select: { nome: true } } }, take: 1 },
+      inscricoes: { 
+        where: await filtroInscricoesCoordenador(),
+        include: { curso: { select: { nome: true } } }, 
+        take: 1 
+      },
       presencas: {
         where: {
           status: { in: ["PRESENTE", "AUSENTE", "JUSTIFICADO", "PENDENTE"] },
+          aula: {
+            modulo: await filtroModulosCoordenador()
+          }
         },
         select: { status: true },
       },
@@ -345,8 +409,15 @@ export type JustificativaPendente = {
 export async function getJustificativasPendentesCoordenador(): Promise<
   JustificativaPendente[]
 > {
+  const modulosFilter = await filtroModulosCoordenador();
+  
   const presencas = await prisma.presenca.findMany({
-    where: { status: "PENDENTE" },
+    where: { 
+      status: "PENDENTE",
+      aula: {
+        modulo: modulosFilter
+      }
+    },
     include: {
       aula: {
         select: {
@@ -402,7 +473,10 @@ export type ModuloComDetalhes = {
 };
 
 export async function getModulos(): Promise<ModuloComDetalhes[]> {
+  const modulosFilter = await filtroModulosCoordenador();
+  
   const modulos = await prisma.modulo.findMany({
+    where: modulosFilter,
     include: {
       curso: { select: { id: true, nome: true } },
       formadores: { include: { formador: { include: { user: true } } } },
@@ -437,7 +511,10 @@ export type CursoComDetalhes = {
 };
 
 export async function getCursos(): Promise<CursoComDetalhes[]> {
+  const cursosFilter = await filtroCursosCoordenador();
+  
   const cursos = await prisma.curso.findMany({
+    where: cursosFilter,
     include: { modulos: true, inscricoes: true },
     orderBy: { createdAt: "desc" },
   });
@@ -463,10 +540,16 @@ export type FormandoComDetalhes = {
 };
 
 export async function getFormandos(): Promise<FormandoComDetalhes[]> {
+  const formandosFilter = await filtroFormandosCoordenador();
+  
   const formandos = await prisma.formando.findMany({
+    where: formandosFilter,
     include: {
       user: { select: { id: true, nome: true, email: true } },
-      inscricoes: { include: { curso: true } },
+      inscricoes: { 
+        where: await filtroInscricoesCoordenador(),
+        include: { curso: true } 
+      },
       avaliacoes: true,
     },
     orderBy: { user: { nome: "asc" } },
@@ -538,20 +621,31 @@ export async function getFormandoPerfil(
   formandoId: string,
 ): Promise<FormandoPerfil | null> {
   if (!formandoId) return null;
+  
+  const inscricoesFilter = await filtroInscricoesCoordenador();
+  const modulosFilter = await filtroModulosCoordenador();
+  
   const formando = await prisma.formando.findUnique({
     where: { id: formandoId },
     include: {
       user: { select: { id: true, nome: true, email: true } },
       inscricoes: {
+        where: inscricoesFilter,
         include: {
           curso: {
             include: {
-              modulos: { select: { id: true, nome: true, cargaHoraria: true } },
+              modulos: { 
+                where: modulosFilter,
+                select: { id: true, nome: true, cargaHoraria: true } 
+              },
             },
           },
         },
       },
       avaliacoes: {
+        where: {
+          modulo: modulosFilter
+        },
         include: {
           modulo: { include: { curso: { select: { id: true, nome: true } } } },
         },

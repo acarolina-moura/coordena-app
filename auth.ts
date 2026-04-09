@@ -46,6 +46,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.id = user.id
                 token.role = (user as { role?: string }).role
                 token.picture = user.image
+                
+                // Se o usuário é um coordenador, buscar e armazenar coordenadorId
+                if ((user as { role?: string }).role === 'COORDENADOR') {
+                    const { prisma } = await import('@/lib/prisma')
+                    const coordenador = await prisma.coordenador.findUnique({
+                        where: { userId: user.id },
+                        select: { id: true }
+                    })
+                    if (coordenador) {
+                        token.coordenadorId = coordenador.id
+                    }
+                }
             }
             return token
         },
@@ -54,6 +66,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 session.user.id = token.id as string
                 session.user.role = token.role as "COORDENADOR" | "FORMADOR" | "FORMANDO"
                 session.user.image = token.picture as string | undefined | null
+                session.user.coordenadorId = token.coordenadorId as string | undefined
             }
             return session
         },

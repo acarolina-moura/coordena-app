@@ -5,6 +5,7 @@ declare module 'next-auth' {
         user: {
             id: string
             role: 'COORDENADOR' | 'FORMADOR' | 'FORMANDO'
+            coordenadorId?: string
         } & DefaultSession['user']
     }
 
@@ -17,5 +18,6 @@ declare module 'next-auth/jwt' {
     interface JWT {
         id: string
         role: 'COORDENADOR' | 'FORMADOR' | 'FORMANDO'
+        coordenadorId?: string
     }
 }

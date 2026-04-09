@@ -33,6 +33,9 @@ export async function POST(req: Request) {
                 senha: senhaHash,
                 role,
                 // Cria automaticamente o perfil conforme o role
+                ...(role === 'COORDENADOR' && {
+                    coordenador: { create: {} },
+                }),
                 ...(role === 'FORMADOR' && {
                     formador: { create: {} },
                 }),

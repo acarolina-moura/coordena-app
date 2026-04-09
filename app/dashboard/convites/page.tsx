@@ -121,15 +121,48 @@ export default async function ConvitesPage() {
   // 3. SE FOR COORDENADOR
   // =======================================================================
   if (user.role === "COORDENADOR") {
-    const convitesAll = await prisma.convite.findMany({
-      include: { formador: { include: { user: true } }, curso: true },
-      orderBy: { dataEnvio: "desc" },
+    // Buscar o coordenador logado
+    const coordenador = await prisma.coordenador.findUnique({
+      where: { userId: user.id }
     });
 
-    const formadores = await prisma.formador.findMany({
-      include: { user: true },
-    });
-    const cursos = await prisma.curso.findMany();
+    // Filtrar apenas convites dos cursos do coordenador
+    const convitesAll = coordenador
+      ? await prisma.convite.findMany({
+          where: {
+            curso: {
+              coordenadorId: coordenador.id
+            }
+          },
+          include: { formador: { include: { user: true } }, curso: true },
+          orderBy: { dataEnvio: "desc" },
+        })
+      : [];
+
+    // Buscar apenas formadores que têm módulos nos cursos do coordenador
+    const formadores = coordenador
+      ? await prisma.formador.findMany({
+          where: {
+            modulosLecionados: {
+              some: {
+                modulo: {
+                  curso: {
+                    coordenadorId: coordenador.id
+                  }
+                }
+              }
+            }
+          },
+          include: { user: true },
+        })
+      : [];
+      
+    // Buscar apenas cursos do coordenador
+    const cursos = coordenador
+      ? await prisma.curso.findMany({
+          where: { coordenadorId: coordenador.id }
+        })
+      : [];
 
     return (
       <div className="flex flex-col gap-6">

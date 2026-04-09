@@ -62,6 +62,7 @@ model User {
   sessions  Session[]
   formador  Formador?
   formando  Formando?
+  coordenador Coordenador?
 }
 
 model Account {
@@ -163,18 +164,29 @@ model Formando {
   convites   Convite[]
 }
 
+model Coordenador {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id])
+  cursos        Curso[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 model Curso {
-  id           String      @id @default(uuid())
-  nome         String
-  descricao    String?
-  status       StatusCurso @default(ATIVO)
-  createdAt    DateTime    @default(now())
-  cargaHoraria Int         @default(0)
-  dataFim      DateTime?
-  dataInicio   DateTime?
-  inscricoes   Inscricao[]
-  modulos      Modulo[]
-  convites     Convite[]
+  id             String      @id @default(uuid())
+  nome           String
+  descricao      String?
+  status         StatusCurso @default(ATIVO)
+  createdAt      DateTime    @default(now())
+  cargaHoraria   Int         @default(0)
+  dataFim        DateTime?
+  dataInicio     DateTime?
+  coordenadorId  String?
+  coordenador    Coordenador? @relation(fields: [coordenadorId], references: [id], onDelete: SetNull)
+  inscricoes     Inscricao[]
+  modulos        Modulo[]
+  convites       Convite[]
 }
 
 model Modulo {
