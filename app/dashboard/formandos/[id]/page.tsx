@@ -9,9 +9,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 export default async function FormandoPerfilPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const { id } = params;
+  const { id } = await params;
 
   // Checagem do ID
   if (!id) {

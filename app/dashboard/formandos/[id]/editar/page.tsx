@@ -7,16 +7,16 @@ import { EditarFormandoClient } from "./_components/editar-formando-client";
 export default async function EditarFormandoPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id: formandoId } = await params;
+  
   const session = await auth();
   if (!session?.user) redirect("/login");
 
   if (session.user.role !== "COORDENADOR") {
     redirect("/dashboard");
   }
-
-  const formandoId = params.id;
 
   if (!formandoId) {
     notFound();
