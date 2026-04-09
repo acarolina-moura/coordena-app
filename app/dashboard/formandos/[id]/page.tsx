@@ -1,10 +1,64 @@
 import { auth } from "@/auth";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Mail, BookOpen, CheckCircle2, XCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Mail,
+  BookOpen,
+  CheckCircle2,
+  XCircle,
+  FileText,
+  Clock,
+  AlertTriangle,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getFormandoPerfil } from "@/app/dashboard/_data/coordenador";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
+// ─── Status badge ─────────────────────────────────────────────────────────────
+
+function DocBadge({ status }: { status: string }) {
+  const map: Record<
+    string,
+    { label: string; cls: string; Icon: React.ElementType }
+  > = {
+    VALIDO: {
+      label: "Válido",
+      cls: "bg-green-50 text-green-600 border-green-200",
+      Icon: CheckCircle2,
+    },
+    A_EXPIRAR: {
+      label: "A expirar",
+      cls: "bg-orange-50 text-orange-600 border-orange-200",
+      Icon: Clock,
+    },
+    EXPIRADO: {
+      label: "Expirado",
+      cls: "bg-red-50 text-red-600 border-red-200",
+      Icon: XCircle,
+    },
+    EM_FALTA: {
+      label: "Em falta",
+      cls: "bg-gray-50 text-gray-500 border-gray-200",
+      Icon: AlertTriangle,
+    },
+  };
+
+  const cfg = map[status] ?? map.EM_FALTA;
+  const { label, cls, Icon } = cfg;
+
+  return (
+    <span
+      className={cn(
+        "flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium",
+        cls,
+      )}
+    >
+      <Icon className="h-3 w-3" />
+      {label}
+    </span>
+  );
+}
 
 export default async function FormandoPerfilPage({
   params,
@@ -177,6 +231,34 @@ export default async function FormandoPerfilPage({
                     ))}
                   </div>
                 )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Documentos */}
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+        <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-gray-100">
+          <FileText className="h-4 w-4 text-indigo-500" />
+          Documentos
+        </h2>
+
+        {perfil.documentos.length === 0 ? (
+          <p className="py-4 text-center text-sm text-gray-400">
+            Sem documentos registados
+          </p>
+        ) : (
+          <div className="flex flex-col gap-2.5">
+            {perfil.documentos.map((doc) => (
+              <div
+                key={doc.id}
+                className="flex items-center justify-between gap-2"
+              >
+                <span className="text-sm text-gray-700 dark:text-gray-200">
+                  {doc.tipo}
+                </span>
+                <DocBadge status={doc.status} />
               </div>
             ))}
           </div>

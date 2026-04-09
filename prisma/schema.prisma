@@ -269,11 +269,11 @@ model Documento {
   dataEmissao   DateTime
   dataExpiracao DateTime?
   status        StatusDocumento @default(VALIDO)
-  formandoId    String
+  formandoId    String?
   formadorId    String?
   fileUrl       String?
   createdAt     DateTime        @default(now())
-  formando      Formando        @relation(fields: [formandoId], references: [id])
+  formando      Formando?       @relation(fields: [formandoId], references: [id])
   formador      Formador?       @relation(fields: [formadorId], references: [id])
 }
 

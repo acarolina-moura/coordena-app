@@ -526,6 +526,12 @@ export type FormandoPerfil = {
     nota: number;
     modulo: { id: string; nome: string; curso: { id: string; nome: string } };
   }>;
+  documentos: Array<{
+    id: string;
+    tipo: string;
+    status: string;
+    fileUrl: string | null;
+  }>;
 };
 
 export async function getFormandoPerfil(
@@ -549,6 +555,9 @@ export async function getFormandoPerfil(
         include: {
           modulo: { include: { curso: { select: { id: true, nome: true } } } },
         },
+      },
+      documentos: {
+        select: { id: true, tipo: true, status: true, fileUrl: true },
       },
     },
   });
@@ -579,6 +588,7 @@ export async function getFormandoPerfil(
       }),
     })),
     avaliacoes: formando.avaliacoes,
+    documentos: formando.documentos,
   };
 }
 
