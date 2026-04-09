@@ -182,7 +182,9 @@ export function FormandosClient({
 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
-        alert(`Erro ao excluir formando: ${data?.error ?? "Erro desconhecido"}`);
+        alert(
+          `Erro ao excluir formando: ${data?.error ?? "Erro desconhecido"}`,
+        );
         return;
       }
 
