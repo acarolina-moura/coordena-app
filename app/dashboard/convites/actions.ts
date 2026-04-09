@@ -41,7 +41,6 @@ export async function responderConvite(conviteId: string, acao: "ACEITE" | "RECU
             formandoId: convite.formandoId,
             cursoId: convite.cursoId,
             dataInicio: new Date(),
-            status: "ATIVO"
           }
         });
       }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -22,12 +23,14 @@ interface Props {
 
 export function EditarFormandoClient({ formando, cursos }: Props) {
   const router = useRouter();
+
   const [form, setForm] = useState({
     nome: formando.nome,
     email: formando.email,
     cursoId: formando.cursoId,
     novaSenha: "",
   });
+
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState(false);
@@ -36,6 +39,8 @@ export function EditarFormandoClient({ formando, cursos }: Props) {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) {
     setErro("");
+    setSucesso(false);
+
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
@@ -48,29 +53,40 @@ export function EditarFormandoClient({ formando, cursos }: Props) {
       return;
     }
 
+    if (form.novaSenha && form.novaSenha.length < 6) {
+      setErro("A password deve ter no mínimo 6 caracteres.");
+      return;
+    }
+
     setSaving(true);
+
     try {
       const res = await fetch(`/api/formandos/${formando.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: formando.userId,
-          nome: form.nome,
-          email: form.email,
+          nome: form.nome.trim(),
+          email: form.email.trim(),
           cursoId: form.cursoId || null,
           novaSenha: form.novaSenha || null,
         }),
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        setErro(data.error ?? "Erro ao guardar alterações.");
+        const data = await res.json().catch(() => null);
+        setErro(data?.error ?? "Erro ao guardar alterações.");
         return;
       }
 
       setSucesso(true);
-      setTimeout(() => router.push("/dashboard/formandos"), 1000);
-    } catch {
+
+      setTimeout(() => {
+        router.push(`/dashboard/formandos/${formando.id}`);
+        router.refresh();
+      }, 800);
+    } catch (err) {
+      console.error(err);
       setErro("Erro de rede. Tenta novamente.");
     } finally {
       setSaving(false);
@@ -168,6 +184,7 @@ export function EditarFormandoClient({ formando, cursos }: Props) {
             {erro}
           </p>
         )}
+
         {sucesso && (
           <p className="rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-600">
             Alterações guardadas! A redirecionar...
@@ -192,6 +209,7 @@ export function EditarFormandoClient({ formando, cursos }: Props) {
               </>
             )}
           </Button>
+
           <Button
             variant="outline"
             onClick={() => router.back()}

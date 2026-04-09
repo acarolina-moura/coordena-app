@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 // GET /api/formandos/[formandoId]
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { formandoId: string } },
+  { params }: { params: Promise<{ formandoId: string }> },
 ) {
   const session = await auth();
   if (!session?.user) {
@@ -16,7 +16,7 @@ export async function GET(
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 
-  const { formandoId } = params;
+  const { formandoId } = await params;
 
   const formando = await prisma.formando.findUnique({
     where: { id: formandoId },
@@ -79,7 +79,7 @@ export async function GET(
 // PATCH /api/formandos/[formandoId]
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { formandoId: string } },
+  { params }: { params: Promise<{ formandoId: string }> },
 ) {
   const session = await auth();
   if (!session?.user) {
@@ -89,7 +89,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 
-  const { formandoId } = params;
+  const { formandoId } = await params;
 
   const body = await req.json();
   const { userId, nome, email, cursoId, novaSenha } = body;
@@ -148,7 +148,7 @@ export async function PATCH(
 // DELETE /api/formandos/[formandoId]
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { formandoId: string } },
+  { params }: { params: Promise<{ formandoId: string }> },
 ) {
   const session = await auth();
   if (!session?.user) {
@@ -158,7 +158,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 
-  const { formandoId } = params;
+  const { formandoId } = await params;
 
   try {
     const formando = await prisma.formando.findUnique({

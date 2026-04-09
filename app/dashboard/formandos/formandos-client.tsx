@@ -102,6 +102,7 @@ function FormandoCard({
           {/* Ver Perfil */}
           <Link
             href={`/dashboard/formandos/${formando.id}`}
+            onClick={(e) => e.stopPropagation()}
             className="rounded-full border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
           >
             Ver Perfil
@@ -110,6 +111,7 @@ function FormandoCard({
           {/* Editar */}
           <Link
             href={`/dashboard/formandos/${formando.id}/editar`}
+            onClick={(e) => e.stopPropagation()}
             className="rounded-full bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors shadow-sm"
           >
             Editar
@@ -120,7 +122,10 @@ function FormandoCard({
             variant="destructive"
             size="sm"
             disabled={deleting}
-            onClick={() => onDelete(formando.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(formando.id);
+            }}
             className="rounded-full px-4 py-1.5 text-sm font-medium"
           >
             <Trash2 className="h-4 w-4" />
@@ -177,14 +182,16 @@ export function FormandosClient({
 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
-        alert(data?.error ?? "Erro ao excluir formando");
+        alert(`Erro ao excluir formando: ${data?.error ?? "Erro desconhecido"}`);
         return;
       }
 
+      // Remove from local state
       setFormandos((prev) => prev.filter((f) => f.id !== formandoId));
+      alert("Formando excluído com sucesso!");
     } catch (err) {
-      console.error(err);
-      alert("Erro inesperado ao excluir formando.");
+      console.error("Erro ao excluir formando:", err);
+      alert("Erro inesperado ao excluir formando. Tente novamente.");
     } finally {
       setDeletingId(null);
     }
@@ -204,6 +211,13 @@ export function FormandosClient({
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
+          {/* Novo Formando */}
+          <Link href="/dashboard/formandos/novo">
+            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 py-2">
+              Novo Formando
+            </Button>
+          </Link>
+
           {/* Search */}
           <div className="relative w-56">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />

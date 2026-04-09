@@ -13,23 +13,25 @@ export default async function FormandoPerfilPage({
 }) {
   const { id } = params;
 
-  // Checagem segura do ID
+  // Checagem do ID
   if (!id) {
-    console.warn("ID do formando não foi fornecido!");
+    console.warn("ID do formando não fornecido!");
     notFound();
   }
 
+  // Autenticação
   const session = await auth();
   if (!session?.user) redirect("/login");
   if (session.user.role !== "COORDENADOR") redirect("/dashboard");
 
-  // Busca perfil
+  // Buscar perfil do formando
   const perfil = await getFormandoPerfil(id);
   if (!perfil) {
     console.warn(`Formando com id ${id} não encontrado.`);
     notFound();
   }
 
+  // Inicials do avatar
   const initials = perfil.nome
     .split(" ")
     .map((n: string) => n[0])
@@ -37,6 +39,7 @@ export default async function FormandoPerfilPage({
     .join("")
     .toUpperCase();
 
+  // Média, positivas e negativas
   const mediaNota =
     perfil.avaliacoes.length > 0
       ? (
@@ -50,7 +53,7 @@ export default async function FormandoPerfilPage({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Back */}
+      {/* Botão Voltar */}
       <Link
         href="/dashboard/formandos"
         className="flex w-fit items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors"
@@ -59,7 +62,7 @@ export default async function FormandoPerfilPage({
         Voltar a Formandos
       </Link>
 
-      {/* Header card */}
+      {/* Header Card */}
       <div className="flex items-center justify-between gap-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
         <div className="flex items-center gap-6">
           <Avatar className="h-20 w-20 border-2 border-gray-100 shrink-0">
@@ -98,6 +101,7 @@ export default async function FormandoPerfilPage({
           </div>
         </div>
 
+        {/* Botão Editar */}
         <Link
           href={`/dashboard/formandos/${id}/editar`}
           className="shrink-0 rounded-xl bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
