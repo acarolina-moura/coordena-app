@@ -29,6 +29,7 @@ import {
   obterNotasParciaisAluno,
   calcularNotaFinal,
   obterModulosComAlunos,
+  obterNotasFinais,
 } from '../actions';
 import { cn } from '@/lib/utils';
 
@@ -113,6 +114,24 @@ export default function FormadorNotasPage() {
   }, []);
 
   /**
+   * Carregar notas finais ao montar
+   */
+  useEffect(() => {
+    async function carregarNotasFinaisAoMontar() {
+      try {
+        const resultado = await obterNotasFinais();
+        if (resultado.success && resultado.notasFinais) {
+          setNotasFinais(resultado.notasFinais);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar notas finais:', error);
+      }
+    }
+
+    carregarNotasFinaisAoMontar();
+  }, []);
+
+  /**
    * Quando receber módulos e templates estiverem prontos,
    * carregar apenas as notas existentes cujos items ainda estão no template
    * Nota final será calculada apenas ao guardar
@@ -132,10 +151,15 @@ export default function FormadorNotasPage() {
           const resultado = await obterNotasParciaisAluno(aluno.id, modulo.id);
 
           if (resultado.notas && resultado.notas.length > 0) {
-            novasNotas[aluno.id] = {};
+            // NÃO resetar, fazer MERGE das notas
+            if (!novasNotas[aluno.id]) {
+              novasNotas[aluno.id] = {};
+            }
+            
             resultado.notas.forEach((nota: { item: { id: string }; valor: number }) => {
-              // Só incluir nota se o item ainda existe no template
-              if (itemsValidos.has(nota.item.id)) {
+              // Se há template, só incluir notas cujos items existem
+              // Se não há template, incluir todas as notas (podem ter sido criadas antes)
+              if (templateAtual === null || itemsValidos.has(nota.item.id)) {
                 novasNotas[aluno.id][nota.item.id] = nota.valor;
               }
             });
@@ -190,8 +214,16 @@ export default function FormadorNotasPage() {
           const notasAluno = notas[aluno.id] || {};
 
           // Filtrar apenas items que existem no template atual
+          // Se não há template, guardar todas as notas preenchidas
           const notasValidas = Object.entries(notasAluno)
-            .filter(([itemId]) => itemsValidos.has(itemId))
+            .filter(([itemId]) => {
+              if (template) {
+                // Se há template, só aceitar items do template
+                return itemsValidos.has(itemId);
+              }
+              // Se não há template, aceitar todas as notas preenchidas
+              return true;
+            })
             .reduce((acc, [itemId, valor]) => {
               acc[itemId] = valor;
               return acc;
@@ -206,6 +238,22 @@ export default function FormadorNotasPage() {
 
             if (!resultado.success) {
               console.error(`Erro ao salvar notas de ${aluno.nome}:`, resultado.error);
+            } else {
+              // Recarregar as notas do servidor após guardar com sucesso
+              const resultadoRecarregar = await obterNotasParciaisAluno(aluno.id, modulo.id);
+              
+              if (resultadoRecarregar.notas && resultadoRecarregar.notas.length > 0) {
+                setNotas((prev) => ({
+                  ...prev,
+                  [aluno.id]: {
+                    ...(prev[aluno.id] || {}),
+                    ...resultadoRecarregar.notas.reduce((acc, nota) => {
+                      acc[nota.item.id] = nota.valor;
+                      return acc;
+                    }, {} as Record<string, number>),
+                  },
+                }));
+              }
             }
           }
 
@@ -223,7 +271,7 @@ export default function FormadorNotasPage() {
           if (resultadoNotaFinal.success && resultadoNotaFinal.notaFinal !== undefined) {
             setNotasFinais((prev) => ({
               ...prev,
-              [aluno.id]: resultadoNotaFinal.notaFinal || null,
+              [`${modulo.id}_${aluno.id}`]: resultadoNotaFinal.notaFinal || null,
             }));
           }
         }
@@ -334,6 +382,13 @@ export default function FormadorNotasPage() {
 
                 {/* Tabela */}
                 <div className="overflow-x-auto">
+                  {!template && Object.keys(notas).length > 0 && (
+                    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-4 mx-6 mt-4">
+                      <p className="text-sm text-amber-800 dark:text-amber-200">
+                        ⚠️ Existem notas registadas mas nenhum template definido. Defina um template para poder editar as notas.
+                      </p>
+                    </div>
+                  )}
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
@@ -360,6 +415,12 @@ export default function FormadorNotasPage() {
                               <span className="font-normal text-gray-500">({item.peso}%)</span>
                             </th>
                           ))}
+
+                        {!template && Object.keys(notas).length > 0 && (
+                          <th className="text-center text-xs font-semibold text-gray-600 dark:text-gray-400 px-4 py-3">
+                            Notas existentes
+                          </th>
+                        )}
 
                         <th className="text-center text-xs font-semibold text-gray-600 dark:text-gray-400 px-6 py-3">
                           Nota Final
@@ -432,15 +493,24 @@ export default function FormadorNotasPage() {
                                 );
                               })}
 
+                            {/* Notas existentes (read-only se não há template) */}
+                            {!template && Object.keys(notas).length > 0 && (
+                              <td className="px-4 py-4 text-center text-xs text-gray-600 dark:text-gray-400">
+                                {notas[aluno.id] && Object.values(notas[aluno.id]).length > 0
+                                  ? Object.values(notas[aluno.id]).join(", ")
+                                  : "—"}
+                              </td>
+                            )}
+
                             {/* Nota Final */}
                             <td className="px-6 py-4 text-center text-sm font-bold">
-                              {notasFinais[aluno.id] !== undefined && notasFinais[aluno.id] !== null ? (
+                              {notasFinais[`${modulo.id}_${aluno.id}`] !== undefined && notasFinais[`${modulo.id}_${aluno.id}`] !== null ? (
                                 <span className={cn(
-                                  notasFinais[aluno.id]! >= 10
+                                  notasFinais[`${modulo.id}_${aluno.id}`]! >= 10
                                     ? 'text-green-600'
                                     : 'text-red-600'
                                 )}>
-                                  {notasFinais[aluno.id]}
+                                  {notasFinais[`${modulo.id}_${aluno.id}`]}
                                 </span>
                               ) : (
                                 <span className="text-gray-400">—</span>
