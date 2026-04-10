@@ -73,6 +73,14 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "COORDENADOR") {
+      return NextResponse.json(
+        { error: "Não autorizado. Apenas coordenadores podem criar aulas." },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const parsed = AulaSchema.safeParse(body);
 
@@ -84,6 +92,19 @@ export async function POST(req: Request) {
     }
 
     const { titulo, dataHora, duracao, moduloId, formadorId } = parsed.data;
+
+    // Verificar se o módulo pertence a um curso do coordenador logado
+    const modulo = await prisma.modulo.findUnique({
+      where: { id: moduloId },
+      include: { curso: { select: { coordenadorId: true } } }
+    });
+
+    if (!modulo || modulo.curso.coordenadorId !== session.user.coordenadorId) {
+      return NextResponse.json(
+        { error: "Módulo não encontrado ou não pertence ao coordenador" },
+        { status: 403 }
+      );
+    }
 
     const aula = await prisma.aula.create({
       data: {

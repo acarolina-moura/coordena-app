@@ -1,5 +1,6 @@
 import { calcularStatus, DocStatus } from "@/lib/documento-utils";
 import { prisma } from "@/lib/prisma";
+import { filtroFormadoresCoordenador } from "@/lib/coordenador-utils";
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -34,8 +35,12 @@ type DocumentoResult = {
 // ─── Funções ──────────────────────────────────────────────────────────────────
 
 export async function getFormadoresComDocumentos() {
-  // Query 1: buscar formadores com user
+  // Filtrar formadores do coordenador logado
+  const formadoresFilter = await filtroFormadoresCoordenador();
+  
+  // Query 1: buscar formadores com user (filtrados por coordenador)
   const formadores = await prisma.formador.findMany({
+    where: formadoresFilter,
     include: { user: true },
     orderBy: { user: { nome: "asc" } },
   });
