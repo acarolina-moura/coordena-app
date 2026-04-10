@@ -37,12 +37,13 @@ export async function obterAulasFormador() {
         if (minutos > 0) durationStr += `${minutos}m`;
         if (!durationStr) durationStr = '0m';
         
+        const timeStr = aula.dataHora.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
         return {
           id: aula.id,
           titulo: aula.titulo,
           formador: formador.user.nome,
           data: aula.dataHora.toISOString().split('T')[0],
-          horaInicio: `${String(aula.dataHora.getHours()).padStart(2, '0')}:${String(aula.dataHora.getMinutes()).padStart(2, '0')}`,
+          horaInicio: timeStr,
           duracao: durationStr,
           durationMinutes: aula.duracao,
           ufcd: aula.modulo.nome,

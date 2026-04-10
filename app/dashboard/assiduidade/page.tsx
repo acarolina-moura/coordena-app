@@ -2,7 +2,10 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { getMinhasPresencas } from "../_data/formando";
-import { getAssiduidadeCoordenador } from "../_data/coordenador";
+import {
+  getAssiduidadeCoordenador,
+  getJustificativasPendentesCoordenador,
+} from "../_data/coordenador";
 import { FormandoAssiduidade } from "./_components/formando-assiduidade";
 import { CoordenadorAssiduidade } from "./_components/coordenador-assiduidade";
 
@@ -18,8 +21,11 @@ export default async function AssiduidadePage() {
   }
 
   if (role === "COORDENADOR") {
-    const dados = await getAssiduidadeCoordenador();
-    return <CoordenadorAssiduidade dados={dados} />;
+    const [dados, pendentes] = await Promise.all([
+      getAssiduidadeCoordenador(),
+      getJustificativasPendentesCoordenador(),
+    ]);
+    return <CoordenadorAssiduidade dados={dados} pendentes={pendentes} />;
   }
 
   redirect("/dashboard");

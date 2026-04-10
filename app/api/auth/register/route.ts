@@ -13,6 +13,15 @@ export async function POST(req: Request) {
             )
         }
 
+        // Validar role
+        const validRoles = ['COORDENADOR', 'FORMADOR', 'FORMANDO'] as const;
+        if (!validRoles.includes(role)) {
+            return NextResponse.json(
+                { error: 'Role inválido. Use: COORDENADOR, FORMADOR ou FORMANDO.' },
+                { status: 400 }
+            )
+        }
+
         const userExistente = await prisma.user.findUnique({
             where: { email },
         })
@@ -33,6 +42,9 @@ export async function POST(req: Request) {
                 senha: senhaHash,
                 role,
                 // Cria automaticamente o perfil conforme o role
+                ...(role === 'COORDENADOR' && {
+                    coordenador: { create: {} },
+                }),
                 ...(role === 'FORMADOR' && {
                     formador: { create: {} },
                 }),

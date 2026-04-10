@@ -7,7 +7,9 @@ export async function getFormandoStats(userId: string) {
         include: { inscricoes: true },
     });
 
-    if (!formando)
+    // Se não tem formando, retorna stats vazios (é formador, não formando)
+    if (!formando) {
+        console.log("[getFormandoStats] Formando not found for userId:", userId);
         return {
             cursosInscritos: 0,
             modulosCompletos: 0,
@@ -15,13 +17,14 @@ export async function getFormandoStats(userId: string) {
             proximasSessoes: 0,
             pendingInvitations: 0,
         };
+    }
 
     const inicioDoDia = new Date();
     inicioDoDia.setHours(0, 0, 0, 0);
 
     const cursoIds = formando.inscricoes.map((i) => i.cursoId);
 
-    const [modulos, proximasSessoes] = await Promise.all([
+    const [modulos, proximasSessoes, convitesPendentes] = await Promise.all([
         prisma.modulo.findMany({
             where: { cursoId: { in: cursoIds } },
         }),
@@ -29,6 +32,12 @@ export async function getFormandoStats(userId: string) {
             where: {
                 dataHora: { gte: inicioDoDia },
                 modulo: { cursoId: { in: cursoIds } },
+            },
+        }),
+        prisma.convite.count({
+            where: {
+                formandoId: formando.id,
+                status: "PENDENTE",
             },
         }),
     ]);
@@ -46,7 +55,7 @@ export async function getFormandoStats(userId: string) {
         modulosCompletos: avaliacoesPositivas.length,
         totalModulos: modulos.length,
         proximasSessoes,
-        pendingInvitations: 0,
+        pendingInvitations: convitesPendentes,
     };
 }
 
@@ -505,7 +514,43 @@ export async function getMeusTrabalhos(userId: string) {
 
 // ------------------- CONVITES & REVIEWS -------------------
 export async function getMeusConvites(userId: string) {
-    return [];
+    const formando = await prisma.formando.findUnique({
+        where: { userId },
+    });
+
+    if (!formando) {
+        console.log("[getMeusConvites] Formando not found for userId:", userId);
+        return [];
+    }
+
+    const convites = await prisma.convite.findMany({
+        where: {
+            formandoId: formando.id,
+        },
+        include: {
+            curso: {
+                select: { id: true, nome: true },
+            },
+            modulo: {
+                select: { id: true, nome: true },
+            },
+        },
+        orderBy: { dataEnvio: "desc" },
+    });
+
+    console.log("[getMeusConvites] Found convites:", convites.length, "for formandoId:", formando.id);
+
+    return convites.map((c) => ({
+        id: c.id,
+        cursoId: c.cursoId,
+        moduloId: c.moduloId,
+        status: c.status,
+        dataEnvio: c.dataEnvio,
+        dataResposta: c.dataResposta,
+        descricao: c.descricao,
+        Curso: c.curso,
+        Modulo: c.modulo,
+    }));
 }
 
 export async function getModulosParaReview(userId: string) {
