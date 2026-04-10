@@ -1,10 +1,15 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
 import { motion } from "motion/react";
 import { ArrowRight, Sparkles, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DemoModal } from "./demo-modal";
 
 export function Hero() {
+    const [demoOpen, setDemoOpen] = useState(false);
+
     return (
         <section
             id="home"
@@ -59,13 +64,22 @@ export function Hero() {
                     transition={{ duration: 0.6, delay: 0.2 }}
                     className="flex flex-col sm:flex-row items-center gap-6 w-full sm:w-auto"
                 >
-                    <Button className="w-full sm:w-auto h-16 px-10 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xl shadow-[0_20px_50px_rgba(59,130,246,0.3)] active:scale-95 transition-all flex items-center gap-3">
-                        Começar Agora
-                        <ArrowRight className="w-6 h-6" />
+                    <Button
+                        asChild
+                        className="w-full sm:w-auto h-16 px-10 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xl shadow-[0_20px_50px_rgba(59,130,246,0.3)] active:scale-95 transition-all flex items-center gap-3"
+                    >
+                        <Link
+                            href="/register"
+                            className="flex items-center gap-3"
+                        >
+                            Começar Agora
+                            <ArrowRight className="w-6 h-6" />
+                        </Link>
                     </Button>
                     <Button
                         variant="outline"
                         className="w-full sm:w-auto h-16 px-10 rounded-2xl border-2 border-slate-800 bg-slate-900/50 backdrop-blur-md font-black text-xl active:scale-95 transition-all text-white"
+                        onClick={() => setDemoOpen(true)}
                     >
                         Ver Demo
                     </Button>
@@ -93,6 +107,7 @@ export function Hero() {
                     ))}
                 </motion.div>
             </div>
+            <DemoModal open={demoOpen} onOpenChange={setDemoOpen} />
         </section>
     );
 }
