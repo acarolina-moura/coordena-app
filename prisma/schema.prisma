@@ -112,7 +112,9 @@ model Formador {
   idioma        String?
   nacionalidade String?
   userId        String  @unique
+  criadoPorCoordenadorId String?
   user          User    @relation(fields: [userId], references: [id])
+  criadoPorCoordenador Coordenador? @relation("FormadoresCriados", fields: [criadoPorCoordenadorId], references: [id], onDelete: SetNull)
 
   aulas              Aula[]
   avaliacoes         Avaliacao[]
@@ -159,6 +161,7 @@ model Coordenador {
   userId        String   @unique
   user          User     @relation(fields: [userId], references: [id])
   cursos        Curso[]
+  formadoresCriados Formador[] @relation("FormadoresCriados")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }

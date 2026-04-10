@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import { filtroFormadoresCoordenador, filtroModulosCoordenador } from "@/lib/coordenador-utils";
+import { filtroFormadoresCoordenador, filtroModulosCoordenador, getCoordenadorIdOrNull } from "@/lib/coordenador-utils";
 
 export async function POST(req: Request) {
     try {
@@ -43,6 +43,8 @@ export async function POST(req: Request) {
         // Hash da senha com bcrypt
         const senhaHash = await bcrypt.hash(senha, 10);
 
+        const coordenadorId = await getCoordenadorIdOrNull();
+
         const novoUser = await prisma.user.create({
             data: {
                 nome: nome.trim(),
@@ -50,7 +52,9 @@ export async function POST(req: Request) {
                 senha: senhaHash,
                 role: "FORMADOR",
                 formador: {
-                    create: {},
+                    create: {
+                        criadoPorCoordenadorId: coordenadorId,
+                    },
                 },
             },
         });

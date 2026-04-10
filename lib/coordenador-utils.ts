@@ -56,7 +56,7 @@ export async function getCoordenadorLogado() {
  */
 export const getCoordenadorIdOrNull = cache(async (): Promise<string | null> => {
   const session = await auth()
-  
+
   if (!session?.user || session.user.role !== 'COORDENADOR') {
     return null
   }
@@ -65,12 +65,21 @@ export const getCoordenadorIdOrNull = cache(async (): Promise<string | null> => 
     return session.user.coordenadorId
   }
 
-  const coordenador = await prisma.coordenador.findUnique({
+  // Tentar buscar no banco
+  let coordenador = await prisma.coordenador.findUnique({
     where: { userId: session.user.id },
     select: { id: true }
   })
 
-  return coordenador?.id || null
+  // Auto-repair: se não existe, criar o registro Coordenador
+  if (!coordenador) {
+    coordenador = await prisma.coordenador.create({
+      data: { userId: session.user.id },
+      select: { id: true }
+    })
+  }
+
+  return coordenador.id
 })
 
 /**
@@ -150,19 +159,26 @@ export async function filtroModulosCoordenador(where: Record<string, any> = {}) 
 
 /**
  * Aplica filtro de multi-tenancy em queries de formadores.
- * Retorna apenas formadores atribuídos a módulos dos cursos do coordenador logado.
- * 
+ * Retorna formadores criados pelo coordenador OU atribuídos a módulos dos seus cursos.
+ *
  * @param where - Filtros adicionais opcionais
  * @returns Objeto where filtrado por cursos do coordenador
  */
 export async function filtroFormadoresCoordenador(where: Record<string, any> = {}) {
   const coordenadorId = await getCoordenadorIdOrNull()
-  
+
   if (!coordenadorId) {
     return { ...where, modulosLecionados: { some: { modulo: { curso: { id: '00000000-0000-0000-0000-000000000000' } } } } }
   }
 
-  return { ...where, modulosLecionados: { some: { modulo: { curso: { coordenadorId } } } } }
+  // Retorna formadores que foram criados pelo coordenador OU que lecionam módulos dos seus cursos
+  return {
+    ...where,
+    OR: [
+      { criadoPorCoordenadorId: coordenadorId },
+      { modulosLecionados: { some: { modulo: { curso: { coordenadorId } } } } }
+    ]
+  }
 }
 
 /**
