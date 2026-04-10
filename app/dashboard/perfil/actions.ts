@@ -7,7 +7,7 @@ export async function updateUserPerfil(
   userId: string,
   nome: string,
   email: string,
-  telefone: string = "",
+  telefone: string,
 ) {
   try {
     const resultado = await prisma.user.update({
@@ -15,7 +15,7 @@ export async function updateUserPerfil(
       data: {
         nome,
         email,
-        telefone,
+        telefone: telefone,
       },
     });
 

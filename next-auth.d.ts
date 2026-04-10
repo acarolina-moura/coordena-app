@@ -5,7 +5,7 @@ declare module 'next-auth' {
         user: {
             id: string
             role: 'COORDENADOR' | 'FORMADOR' | 'FORMANDO'
-            coordenadorId?: string
+            coordenadorId?: string | null
         } & DefaultSession['user']
     }
 
@@ -14,6 +14,7 @@ declare module 'next-auth' {
         name?: string | null
         email?: string | null
         role: 'COORDENADOR' | 'FORMADOR' | 'FORMANDO'
+        coordenadorId?: string | null
     }
 }
 

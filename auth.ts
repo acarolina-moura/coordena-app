@@ -17,7 +17,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
                 const user = await prisma.user.findUnique({
                     where: { email: credentials.email as string },
-                    select: { id: true, nome: true, email: true, role: true, image: true, senha: true }
+                    select: { id: true, nome: true, email: true, role: true, image: true, senha: true, coordenador: { select: { id: true } } }
                 })
 
                 if (!user || !user.senha) return null
@@ -35,6 +35,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     name: user.nome,
                     email: user.email,
                     role: user.role,
+                    coordenadorId: user.coordenador?.id ?? null,
                 }
             },
         }),
@@ -43,22 +44,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         async jwt({ token, user }) {
             if (user) {
                 return {
+                    ...token,
                     id: user.id,
                     name: user.name,
                     email: user.email,
                     role: user.role,
-                    coordenadorId: null,
+                    coordenadorId: user.coordenadorId,
                 }
             }
             return token
         },
         async session({ session, token }) {
-            session.user = {
-                id: token.id as string,
-                name: token.name as string,
-                email: token.email as string,
-                role: token.role as "COORDENADOR" | "FORMADOR" | "FORMANDO",
-                coordenadorId: token.coordenadorId as string | undefined,
+            if (session.user) {
+                session.user.id = token.id as string
+                session.user.role = token.role as "COORDENADOR" | "FORMADOR" | "FORMANDO"
+                session.user.coordenadorId = token.coordenadorId as string | undefined | null
             }
             return session
         },

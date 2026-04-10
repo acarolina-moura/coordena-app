@@ -53,6 +53,7 @@ enum StatusConvite {
 model User {
   id        String    @id @default(uuid())
   nome      String
+  telefone  String?
   email     String    @unique
   senha     String?
   image     String?
