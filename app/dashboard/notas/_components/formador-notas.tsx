@@ -151,16 +151,19 @@ export default function FormadorNotasPage() {
           const resultado = await obterNotasParciaisAluno(aluno.id, modulo.id);
 
           if (resultado.notas && resultado.notas.length > 0) {
+            // Criar chave única por módulo+aluno
+            const chaveAluno = `${modulo.id}_${aluno.id}`;
+            
             // NÃO resetar, fazer MERGE das notas
-            if (!novasNotas[aluno.id]) {
-              novasNotas[aluno.id] = {};
+            if (!novasNotas[chaveAluno]) {
+              novasNotas[chaveAluno] = {};
             }
             
             resultado.notas.forEach((nota: { item: { id: string }; valor: number }) => {
               // Se há template, só incluir notas cujos items existem
               // Se não há template, incluir todas as notas (podem ter sido criadas antes)
               if (templateAtual === null || itemsValidos.has(nota.item.id)) {
-                novasNotas[aluno.id][nota.item.id] = nota.valor;
+                novasNotas[chaveAluno][nota.item.id] = nota.valor;
               }
             });
           }
@@ -211,7 +214,7 @@ export default function FormadorNotasPage() {
         const itemsValidos = new Set(template?.items.map((item) => item.id) || []);
 
         for (const aluno of modulo.alunos) {
-          const notasAluno = notas[aluno.id] || {};
+          const notasAluno = notas[`${modulo.id}_${aluno.id}`] || {};
 
           // Filtrar apenas items que existem no template atual
           // Se não há template, guardar todas as notas preenchidas
@@ -243,16 +246,19 @@ export default function FormadorNotasPage() {
               const resultadoRecarregar = await obterNotasParciaisAluno(aluno.id, modulo.id);
               
               if (resultadoRecarregar.notas && resultadoRecarregar.notas.length > 0) {
-                setNotas((prev) => ({
-                  ...prev,
-                  [aluno.id]: {
-                    ...(prev[aluno.id] || {}),
-                    ...resultadoRecarregar.notas.reduce((acc, nota) => {
-                      acc[nota.item.id] = nota.valor;
-                      return acc;
-                    }, {} as Record<string, number>),
-                  },
-                }));
+                setNotas((prev) => {
+                  const chaveAluno = `${modulo.id}_${aluno.id}`;
+                  return {
+                    ...prev,
+                    [chaveAluno]: {
+                      ...(prev[chaveAluno] || {}),
+                      ...resultadoRecarregar.notas.reduce((acc, nota) => {
+                        acc[nota.item.id] = nota.valor;
+                        return acc;
+                      }, {} as Record<string, number>),
+                    },
+                  };
+                });
               }
             }
           }
@@ -467,7 +473,7 @@ export default function FormadorNotasPage() {
                             {template?.items
                               .sort((a, b) => a.ordem - b.ordem)
                               .map((item) => {
-                                const valor = notas[aluno.id]?.[item.id];
+                                const valor = notas[`${modulo.id}_${aluno.id}`]?.[item.id];
 
                                 return (
                                   <td key={item.id} className="px-4 py-4 text-center">
@@ -496,8 +502,8 @@ export default function FormadorNotasPage() {
                             {/* Notas existentes (read-only se não há template) */}
                             {!template && Object.keys(notas).length > 0 && (
                               <td className="px-4 py-4 text-center text-xs text-gray-600 dark:text-gray-400">
-                                {notas[aluno.id] && Object.values(notas[aluno.id]).length > 0
-                                  ? Object.values(notas[aluno.id]).join(", ")
+                                {notas[`${modulo.id}_${aluno.id}`] && Object.values(notas[`${modulo.id}_${aluno.id}`]).length > 0
+                                  ? Object.values(notas[`${modulo.id}_${aluno.id}`]).join(", ")
                                   : "—"}
                               </td>
                             )}
