@@ -93,21 +93,9 @@ export async function PUT(
       },
     });
 
-    // ✅ CORREÇÃO: Atualizar de facto o formador no Módulo (limpar o antigo e associar o novo)
-    if (formadorId) {
-      // 1. Apaga qualquer formador antigo associado a este módulo
-      await prisma.formadorModulo.deleteMany({
-        where: { moduloId: id },
-      });
-
-      // 2. Cria a associação com o novo formador escolhido
-      await prisma.formadorModulo.create({
-        data: {
-          formadorId: formadorId,
-          moduloId: id,
-        },
-      });
-    }
+    // ✅ NÃO associar o formador a FormadorModulo aqui!
+    // Isso só deve acontecer quando o formador ACEITA o convite
+    // Apenas remove se não há mais nenhum convite pendente/aceite
 
     // Busca o módulo atualizado com os formadores
     const moduloAtualizado = await prisma.modulo.findUnique({

@@ -88,19 +88,18 @@ export async function POST(req: Request) {
       },
     });
 
-    // Associar formador usando UPSERT para evitar erros
+    // Criar convite para o formador (se especificado)
+    // ✅ NÃO associar o formador a FormadorModulo aqui!
+    // Isso só deve acontecer quando o formador ACEITA o convite
     if (formadorId) {
-      await prisma.formadorModulo.upsert({
-        where: {
-          formadorId_moduloId: {
-            formadorId,
-            moduloId: modulo.id,
-          },
-        },
-        update: {},
-        create: {
+      await prisma.convite.create({
+        data: {
+          id: crypto.randomUUID(),
           formadorId,
           moduloId: modulo.id,
+          cursoId,
+          descricao: `Convite para lecionar o módulo "${nome}"`,
+          status: "PENDENTE",
         },
       });
     }

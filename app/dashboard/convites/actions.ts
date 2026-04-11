@@ -25,6 +25,37 @@ export async function responderConvite(conviteId: string, acao: "ACEITE" | "RECU
       }
     });
 
+    // Se for FORMADOR aceitando um convite de módulo
+    if (acao === "ACEITE" && convite.formadorId && convite.moduloId) {
+      // Verificar se já está associado ao módulo
+      const existente = await prisma.formadorModulo.findFirst({
+        where: {
+          formadorId: convite.formadorId,
+          moduloId: convite.moduloId,
+        }
+      });
+
+      if (!existente) {
+        await prisma.formadorModulo.create({
+          data: {
+            formadorId: convite.formadorId,
+            moduloId: convite.moduloId,
+          }
+        });
+      }
+    }
+
+    // Se for FORMADOR recusando um convite de módulo
+    if (acao === "RECUSADO" && convite.formadorId && convite.moduloId) {
+      // Remover a associação do módulo
+      await prisma.formadorModulo.deleteMany({
+        where: {
+          formadorId: convite.formadorId,
+          moduloId: convite.moduloId,
+        }
+      });
+    }
+
     // Se for FORMANDO aceitando um convite de curso
     if (acao === "ACEITE" && convite.formandoId && convite.cursoId) {
       // Verificar se já está inscrito
@@ -44,6 +75,17 @@ export async function responderConvite(conviteId: string, acao: "ACEITE" | "RECU
           }
         });
       }
+    }
+
+    // Se for FORMANDO recusando um convite de curso
+    if (acao === "RECUSADO" && convite.formandoId && convite.cursoId) {
+      // Remover a inscrição do curso
+      await prisma.inscricao.deleteMany({
+        where: {
+          formandoId: convite.formandoId,
+          cursoId: convite.cursoId,
+        }
+      });
     }
 
     revalidatePath("/dashboard/convites");
