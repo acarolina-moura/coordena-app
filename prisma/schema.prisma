@@ -276,6 +276,7 @@ model Documento {
   formadorId    String?
   fileUrl       String?
   createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   formando      Formando?       @relation(fields: [formandoId], references: [id])
   formador      Formador?       @relation(fields: [formadorId], references: [id])
 

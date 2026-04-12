@@ -47,6 +47,10 @@ export async function getFormandoStats(userId: string) {
         where: {
             formandoId: formando.id,
             nota: { gte: 10 },
+            // CORREÇÃO: Filtrar apenas módulos dos cursos do formando
+            modulo: {
+                cursoId: { in: cursoIds }
+            }
         },
     });
 
@@ -61,6 +65,14 @@ export async function getFormandoStats(userId: string) {
 
 // ------------------- CURSO DO FORMANDO -------------------
 export async function getCursoFormando(userId: string) {
+    // Primeiro obter o formando para ter acesso ao formandoId
+    const formandoBase = await prisma.formando.findUnique({
+        where: { userId },
+        select: { id: true },
+    });
+
+    if (!formandoBase) return null;
+
     const formando = await prisma.formando.findUnique({
         where: { userId },
         include: {
@@ -71,8 +83,9 @@ export async function getCursoFormando(userId: string) {
                             modulos: {
                                 orderBy: { ordem: "asc" },
                                 include: {
+                                    // CORREÇÃO: Filtrar avaliações pelo formandoId diretamente
                                     avaliacoes: {
-                                        where: { formando: { userId } },
+                                        where: { formandoId: formandoBase.id },
                                     },
                                     aulas: true,
                                 },
@@ -208,6 +221,14 @@ export async function getProximasSessoesFormando(userId: string) {
 // ------------------- MEUS CURSOS -------------------
 
 export async function getMeusCursos(userId: string) {
+    // CORREÇÃO: Obter formandoId primeiro para usar no filtro
+    const formandoBase = await prisma.formando.findUnique({
+        where: { userId },
+        select: { id: true },
+    });
+
+    if (!formandoBase) return [];
+
     const formando = await prisma.formando.findUnique({
         where: { userId },
         include: {
@@ -218,8 +239,9 @@ export async function getMeusCursos(userId: string) {
                             modulos: {
                                 orderBy: { ordem: "asc" },
                                 include: {
+                                    // CORREÇÃO: Filtrar avaliações pelo formandoId
                                     avaliacoes: {
-                                        where: { formando: { userId } },
+                                        where: { formandoId: formandoBase.id },
                                     },
                                     aulas: true,
                                 },
@@ -540,6 +562,14 @@ export async function getMeusConvites(userId: string) {
 }
 
 export async function getModulosParaReview(userId: string) {
+    // CORREÇÃO: Obter formandoId primeiro
+    const formandoBase = await prisma.formando.findUnique({
+        where: { userId },
+        select: { id: true },
+    });
+
+    if (!formandoBase) return [];
+
     const formando = await prisma.formando.findUnique({
         where: { userId },
         include: {
@@ -550,8 +580,9 @@ export async function getModulosParaReview(userId: string) {
                             modulos: {
                                 orderBy: { ordem: "asc" },
                                 include: {
+                                    // CORREÇÃO: Filtrar reviews pelo formandoId
                                     reviews: {
-                                        where: { formando: { userId } },
+                                        where: { formandoId: formandoBase.id },
                                     },
                                 },
                             },

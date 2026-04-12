@@ -167,16 +167,12 @@ function NovaSessaoDialog({
 
     setSaving(true);
     try {
-      // Convert local time to UTC: subtract timezone offset to get correct UTC time
-      const offset = dataHoraEscolhida.getTimezoneOffset() * 60000;
-      const utcDateTime = new Date(dataHoraEscolhida.getTime() - offset);
-      
       const res = await fetch("/api/aulas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           titulo: form.titulo,
-          dataHora: utcDateTime.toISOString(),
+          dataHora: dataHoraEscolhida.toISOString(),
           duracao: parseInt(form.duracao) || 60,
           moduloId: form.moduloId,
           formadorId: form.formadorId,

@@ -141,6 +141,7 @@ export async function getFormadorPerfil(userId: string) {
         idioma: user.formador.idioma || '',
         nacionalidade: user.formador.nacionalidade || '',
         userId: user.id,
+        image: user.image ?? null,
     };
 }
 
@@ -317,7 +318,7 @@ export async function getAulasFormador(userId: string) {
         titulo: aula.titulo,
         formador: formador.user.nome,
         data: aula.dataHora.toISOString().split("T")[0],
-        horaInicio: `${String(aula.dataHora.getHours()).padStart(2, "0")}:${String(aula.dataHora.getMinutes()).padStart(2, "0")}`,
+        horaInicio: `${String(aula.dataHora.getUTCHours()).padStart(2, "0")}:${String(aula.dataHora.getUTCMinutes()).padStart(2, "0")}`,
         duracao: `${aula.duracao}h`,
         ufcd: aula.modulo.nome,
         cor: "bg-indigo-100 text-indigo-700 border-indigo-200",

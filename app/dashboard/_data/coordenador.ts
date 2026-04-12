@@ -539,30 +539,43 @@ export type FormandoComDetalhes = {
 
 export async function getFormandos(): Promise<FormandoComDetalhes[]> {
   const formandosFilter = await filtroFormandosCoordenador();
-  
+  const modulosFilter = await filtroModulosCoordenador();
+
   const formandos = await prisma.formando.findMany({
     where: formandosFilter,
     include: {
       user: { select: { id: true, nome: true, email: true } },
-      inscricoes: { 
+      inscricoes: {
         where: await filtroInscricoesCoordenador(),
-        include: { curso: true } 
+        include: {
+          curso: {
+            include: {
+              modulos: {
+                where: modulosFilter
+              }
+            }
+          }
+        }
       },
-      avaliacoes: true,
+      // CORREÇÃO: Filtrar avaliações apenas pelos módulos do coordenador
+      avaliacoes: {
+        where: {
+          modulo: modulosFilter
+        }
+      },
     },
     orderBy: { user: { nome: "asc" } },
   });
 
   return formandos.map((f) => {
     const negativos = f.avaliacoes.filter((a) => a.nota < 10).length;
+    // CORREÇÃO: Calcular progresso baseado nos módulos concluídos (com nota)
+    // vs total de módulos do curso, não pela média das notas
+    const totalModulosCurso = f.inscricoes[0]?.curso.modulos?.length ?? 0;
+    const modulosConcluidos = f.avaliacoes.length;
     const progresso =
-      f.avaliacoes.length > 0
-        ? Math.round(
-            (f.avaliacoes.reduce((sum, a) => sum + a.nota, 0) /
-              f.avaliacoes.length /
-              20) *
-              100,
-          )
+      totalModulosCurso > 0
+        ? Math.round((modulosConcluidos / totalModulosCurso) * 100)
         : 0;
     let status: "ATIVO" | "INATIVO" | "CONCLUÍDO" = "ATIVO";
     if (progresso === 100) status = "CONCLUÍDO";

@@ -15,7 +15,7 @@ export async function updateUserPerfil(
       data: {
         nome,
         email,
-        telefone: telefone,
+        telefone,
       },
     });
 
