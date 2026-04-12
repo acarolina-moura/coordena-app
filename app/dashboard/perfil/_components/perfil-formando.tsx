@@ -7,11 +7,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { updateFormandoPerfil } from '../actions-formando'
+import { AvatarUploader } from '@/components/avatar-uploader'
 
 interface FormandoData {
   id: string
   nome: string
   email: string
+  image?: string | null
 }
 
 export function PerfilFormando({ formando }: { formando: FormandoData }) {
@@ -87,12 +89,11 @@ export function PerfilFormando({ formando }: { formando: FormandoData }) {
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-8 flex flex-col gap-8 shadow-sm">
         {/* Avatar Section */}
         <div className="flex items-center gap-6 pb-6 border-b border-gray-100 dark:border-gray-800">
-          <Avatar className="h-24 w-24 border-4 border-teal-50 shadow-sm">
-            <AvatarImage src={`https://i.pravatar.cc/150?u=${formando.email}`} />
-            <AvatarFallback className="bg-teal-100 text-teal-700 text-2xl font-bold uppercase">
-              {nome.split(' ').map(n => n[0]).slice(0, 2).join('')}
-            </AvatarFallback>
-          </Avatar>
+          <AvatarUploader
+            currentImageUrl={formando.image ?? undefined}
+            userName={nome}
+            size="lg"
+          />
           <div className="flex flex-col gap-1">
             <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">{nome}</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">

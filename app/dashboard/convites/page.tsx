@@ -1,16 +1,10 @@
 import { auth } from "@/auth";
-import { getMeusConvites } from "../_data/formando";
-import { getConvitesPendentesFormador } from "../_data/formador";
 import { ConvitesFormando } from "./_components/convites-formando";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { Mail, Plus, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-// ─── IMPORTS CORRIGIDOS ───────────────────────────────────────────────────
-// Se estes imports ainda derem erro, verifica se a tua pasta se chama
-// "componentes" ou "_components" e ajusta o caminho abaixo!
 import { ConvitesClient } from "./convites-client";
 
 // ─── SERVER ACTION ──────────────────────────────────────────────────────────
@@ -64,9 +58,7 @@ export default async function ConvitesPage() {
   });
   const role = session.user.role || "FORMANDO";
 
-  // Se for FORMANDO, carrega os convites para estudar
-  const convites = await getMeusConvites(session.user.id);
-
+  // Se for FORMANDO, carrega os convites
   if (!user) redirect("/login");
 
   // =======================================================================

@@ -4,11 +4,11 @@
  * ============================================================================
  * SERVER ACTIONS - SISTEMA DE AVALIAÇÕES COM TEMPLATES
  * ============================================================================
- * 
- * Este arquivo contém as ações do servidor para gerenciar templates de 
+ *
+ * Este arquivo contém as ações do servidor para gerenciar templates de
  * avaliação e notas parciais. Cada formador pode definir um template
  * diferente para cada módulo que leciona.
- * 
+ *
  * As operações incluem:
  * - Criar/atualizar templates de avaliação
  * - Obter template para um módulo
@@ -19,6 +19,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
+import { logError } from '@/lib/logger';
 
 /**
  * Salvar ou atualizar um template de avaliação para um módulo
@@ -104,7 +105,7 @@ export async function salvarTemplateAvaliacao(
     return { success: true, template };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Erro ao salvar template:', message);
+    logError('Erro ao salvar template:', message);
     return { success: false, error: message };
   }
 }
@@ -150,7 +151,7 @@ export async function obterTemplateAvaliacao(moduloId: string) {
     return { success: true, template };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Erro ao obter template:', message);
+    logError('Erro ao obter template:', message);
     return { success: false, error: message };
   }
 }
@@ -279,7 +280,7 @@ export async function salvarNotasParciais(
     return { success: true };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Erro ao salvar notas:', message);
+    logError('Erro ao salvar notas:', message);
     return { success: false, error: message };
   }
 }
@@ -326,7 +327,7 @@ export async function obterNotasParciaisAluno(
     return { success: true, notas };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Erro ao obter notas:', message);
+    logError('Erro ao obter notas:', message);
     return { success: false, error: message };
   }
 }
@@ -451,7 +452,7 @@ export async function calcularNotaFinal(
     return { success: true, notaFinal: notaFinalArredondada };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Erro ao calcular nota final:', message);
+    logError('Erro ao calcular nota final:', message);
     return { success: false, error: message };
   }
 }
@@ -548,7 +549,7 @@ export async function obterModulosComAlunos() {
     return { success: true, modulos: modulosComDetalhes };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Erro ao obter módulos:', message);
+    logError('Erro ao obter módulos:', message);
     return { success: false, error: message, modulos: [] };
   }
 }

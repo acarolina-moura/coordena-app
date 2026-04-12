@@ -120,7 +120,6 @@ model Formador {
   avaliacoes         Avaliacao[]
   convites           Convite[]
   documentos         Documento[]
-  DocumentoFormador  DocumentoFormador[]
   modulosLecionados  FormadorModulo[]
   presencas          Presenca[]
   templatesAvaliacao TemplateAvaliacao[]
@@ -269,30 +268,21 @@ model Avaliacao {
 model Documento {
   id            String          @id @default(uuid())
   tipo          String
-  numero        String
-  dataEmissao   DateTime
+  numero        String?
+  dataEmissao   DateTime?
   dataExpiracao DateTime?
   status        StatusDocumento @default(VALIDO)
   formandoId    String?
   formadorId    String?
   fileUrl       String?
   createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   formando      Formando?       @relation(fields: [formandoId], references: [id])
   formador      Formador?       @relation(fields: [formadorId], references: [id])
+
+  @@unique([formadorId, tipo], name: "formadorId_tipo")
 }
 
-model DocumentoFormador {
-  id            String          @id @default(uuid())
-  tipo          String
-  numero        String?
-  dataEmissao   DateTime?
-  dataExpiracao DateTime?
-  status        StatusDocumento @default(EM_FALTA)
-  formadorId    String
-  createdAt     DateTime        @default(now())
-  fileUrl       String?
-  Formador      Formador        @relation(fields: [formadorId], references: [id])
-}
 
 model Convite {
   id           String        @id @default(uuid())

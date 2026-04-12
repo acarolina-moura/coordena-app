@@ -4,10 +4,10 @@ import { getFormadorPerfil } from "@/app/dashboard/_data/formador";
 import { PerfilClient } from "./_component";
 import { PerfilFormando } from "./_components/perfil-formando";
 import { prisma } from "@/lib/prisma";
-// ✅ Adicionados imports para o layout do Coordenador
-import { User, Mail, ShieldCheck, Phone } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { User, Mail, ShieldCheck, Phone, Camera } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EditCoordenadorPerfil } from "./_components/edit-coordenador-perfil";
+import { AvatarUploader } from "@/components/avatar-uploader";
 
 export default async function PerfilPage() {
   const session = await auth();
@@ -28,6 +28,7 @@ export default async function PerfilPage() {
           id: user.id,
           nome: user.nome,
           email: user.email,
+          image: user.image,
         }}
       />
     );
@@ -55,11 +56,11 @@ export default async function PerfilPage() {
 
         <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-8">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8">
-            <Avatar className="h-28 w-28 border-4 border-indigo-50 shadow-sm shrink-0">
-              <AvatarFallback className="bg-indigo-100 text-indigo-600 text-4xl font-bold">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+            <AvatarUploader
+              currentImageUrl={user.image ?? undefined}
+              userName={user.nome}
+              size="lg"
+            />
 
             <div className="flex flex-1 flex-col gap-6 w-full">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">

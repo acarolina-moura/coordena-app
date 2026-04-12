@@ -76,12 +76,12 @@ export default async function FormadorPerfilPage({
   if (!session?.user) redirect("/login");
   if (session.user.role !== "COORDENADOR") redirect("/dashboard");
 
-  // ✅ TAREFA 2: Busca direta à BD com o ID da URL, incluindo DocumentoFormador
+  // Busca direta à BD com o ID da URL
   const formadorDb = await prisma.formador.findUnique({
     where: { id: id },
     include: {
       user: true,
-      DocumentoFormador: true, // A tabela correta de docs do formador
+      documentos: true,
       modulosLecionados: {
         include: {
           modulo: {
@@ -110,7 +110,7 @@ export default async function FormadorPerfilPage({
       cargaHoraria: fm.modulo.cargaHoraria,
       curso: { nome: fm.modulo.curso.nome },
     })),
-    documentos: formadorDb.DocumentoFormador,
+    documentos: formadorDb.documentos,
   };
 
   const initials = formador.nome

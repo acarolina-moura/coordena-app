@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
+import { logError } from "@/lib/logger";
 
 export async function submeterReview(moduloId: string, nota: number, comentario: string) {
     try {
@@ -38,7 +39,7 @@ export async function submeterReview(moduloId: string, nota: number, comentario:
         revalidatePath("/dashboard/reviews");
         return { success: true };
     } catch (error) {
-        console.error("Erro ao submeter review:", error);
+        logError("Erro ao submeter review:", error);
         return { success: false, error: "Falha ao gravar avaliação" };
     }
 }

@@ -46,20 +46,29 @@ export async function getFormadoresComDocumentos() {
   });
 
   // Query 2: buscar todos os documentos de formadores de uma vez
-  const todosDocumentos = await prisma.$queryRaw<
-    Array<{
-      id: string;
-      tipo: string;
-      numero: string | null;
-      dataEmissao: Date | null;
-      dataExpiracao: Date | null;
-      status: string;
-      formadorId: string;
-    }>
-  >`SELECT id, tipo, numero, "dataEmissao", "dataExpiracao", status, "formadorId" FROM "DocumentoFormador"`;
+  const todosDocumentos = await prisma.documento.findMany({
+    where: { formadorId: { not: null } },
+    select: {
+      id: true,
+      tipo: true,
+      numero: true,
+      dataEmissao: true,
+      dataExpiracao: true,
+      formadorId: true,
+    },
+  });
+
+  // Otimização: agrupar documentos por formadorId com Map O(1)
+  const docsByFormador = new Map<string, typeof todosDocumentos>();
+  for (const d of todosDocumentos) {
+    if (d.formadorId) {
+      if (!docsByFormador.has(d.formadorId)) docsByFormador.set(d.formadorId, []);
+      docsByFormador.get(d.formadorId)!.push(d);
+    }
+  }
 
   return formadores.map((f) => {
-    const docsFormador = todosDocumentos.filter((d) => d.formadorId === f.id);
+    const docsFormador = docsByFormador.get(f.id) ?? [];
 
     const documentos = DOCS_OBRIGATORIOS_FORMADOR.map((nomeDoc): DocumentoResult => {
       const doc = docsFormador.find((d) => d.tipo === nomeDoc);
@@ -87,17 +96,9 @@ export async function getFormadoresComDocumentos() {
 export async function getDocumentosFormador(
   formadorId: string,
 ): Promise<DocumentoResult[]> {
-  const docs = await prisma.$queryRaw<
-    Array<{
-      id: string;
-      tipo: string;
-      numero: string | null;
-      dataEmissao: Date | null;
-      dataExpiracao: Date | null;
-      status: string;
-      formadorId: string;
-    }>
-  >`SELECT id, tipo, numero, "dataEmissao", "dataExpiracao", status, "formadorId" FROM "DocumentoFormador" WHERE "formadorId" = ${formadorId}`;
+  const docs = await prisma.documento.findMany({
+    where: { formadorId }
+  });
 
   return DOCS_OBRIGATORIOS_FORMADOR.map((nomeDoc): DocumentoResult => {
     const doc = docs.find((d) => d.tipo === nomeDoc);

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { updateFormadorPerfil } from '@/app/dashboard/perfil/actions'
+import { AvatarUploader } from '@/components/avatar-uploader'
 
 interface FormadorData {
   nome: string
@@ -19,6 +20,7 @@ interface FormadorData {
   idioma: string
   nacionalidade: string
   userId: string
+  image?: string | null
 }
 
 const IDIOMAS = [
@@ -188,33 +190,11 @@ export function PerfilClient({ formador }: { formador: FormadorData }) {
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-8 flex flex-col gap-8">
         {/* Avatar + name */}
         <div className="flex items-center gap-5">
-          <div className="relative">
-            <Avatar className="h-20 w-20 border-2 border-gray-100 dark:border-gray-800">
-              <AvatarImage src={`https://i.pravatar.cc/150?u=${formador.email}`} />
-              <AvatarFallback className="bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 text-xl font-bold">
-                {formador.nome.split(' ').map(n => n[0]).join('')}
-              </AvatarFallback>
-            </Avatar>
-            {isEditMode && (
-              <>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileSelect}
-                  className="hidden"
-                  aria-label="Selecionar imagem de perfil"
-                />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-purple-600 text-white shadow-md hover:bg-purple-700 transition-colors"
-                  title="Clique para escolher uma imagem"
-                >
-                  <Camera className="h-3.5 w-3.5" />
-                </button>
-              </>
-            )}
-          </div>
+          <AvatarUploader
+            currentImageUrl={formador.image ?? undefined}
+            userName={formador.nome}
+            size="md"
+          />
           <div className="flex flex-col gap-0.5">
             <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{formador.nome}</span>
             <span className="text-sm text-gray-400 dark:text-gray-500">{formador.email}</span>

@@ -12,7 +12,6 @@ import {
     BarChart3,
     Send,
     Loader2,
-    FileUp,
     FileText,
     Clock3
 } from "lucide-react";
@@ -32,7 +31,8 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { justificarFalta } from "../actions";
+import { UploadFormando } from "@/components/upload-formando";
+import { justificarFalta } from "@/app/dashboard/assiduidade/actions";
 
 // ---------------------------------------------------------------------------
 // Tipos
@@ -189,15 +189,15 @@ function JustificarFaltasGeral({ faltas }: { faltas: any[] }) {
     const [open, setOpen] = useState(false);
     const [selectedFaltaId, setSelectedFaltaId] = useState<string | null>(faltas.length === 1 ? faltas[0].id : null);
     const [justificativa, setJustificativa] = useState("");
-    const [file, setFile] = useState<File | null>(null);
+    const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
+    const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
     const [carregando, setCarregando] = useState(false);
     const [sucesso, setSucesso] = useState(false);
 
     async function handleSubmeter() {
-        if (!selectedFaltaId || !justificativa.trim()) return;
+        if (!selectedFaltaId || !justificativa.trim() || !uploadedFileUrl) return;
         setCarregando(true);
-        // Simulando o upload enviando apenas o nome do arquivo
-        const result = await justificarFalta(selectedFaltaId, justificativa, file?.name);
+        const result = await justificarFalta(selectedFaltaId, justificativa, uploadedFileUrl);
         setCarregando(false);
         if (result.sucesso) {
             setSucesso(true);
@@ -205,12 +205,18 @@ function JustificarFaltasGeral({ faltas }: { faltas: any[] }) {
                 setOpen(false);
                 setSucesso(false);
                 setJustificativa("");
-                setFile(null);
+                setUploadedFileUrl(null);
+                setUploadedFileName(null);
                 setSelectedFaltaId(faltas.length === 1 ? faltas[0].id : null);
             }, 2000);
         } else {
             alert(result.mensagem);
         }
+    }
+
+    function handleUploadComplete(url: string, name: string) {
+        setUploadedFileUrl(url);
+        setUploadedFileName(name);
     }
 
     const selecionada = faltas.find(f => f.id === selectedFaltaId);
@@ -232,10 +238,10 @@ function JustificarFaltasGeral({ faltas }: { faltas: any[] }) {
                         </DialogDescription>
                     </DialogHeader>
                 </div>
-                
+
                 <div className="p-8 bg-white">
                     {sucesso ? (
-                        <motion.div 
+                        <motion.div
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             className="flex flex-col items-center justify-center py-8 text-center"
@@ -260,8 +266,8 @@ function JustificarFaltasGeral({ faltas }: { faltas: any[] }) {
                                                     onClick={() => setSelectedFaltaId(f.id)}
                                                     className={cn(
                                                         "flex flex-col p-4 rounded-2xl border text-left transition-all",
-                                                        selectedFaltaId === f.id 
-                                                            ? "border-teal-500 bg-teal-50 ring-4 ring-teal-500/5 shadow-sm" 
+                                                        selectedFaltaId === f.id
+                                                            ? "border-teal-500 bg-teal-50 ring-4 ring-teal-500/5 shadow-sm"
                                                             : "border-slate-100 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-200"
                                                     )}
                                                 >
@@ -279,7 +285,7 @@ function JustificarFaltasGeral({ faltas }: { faltas: any[] }) {
                             )}
 
                             {selectedFaltaId && (
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     className="flex flex-col gap-5"
@@ -297,55 +303,34 @@ function JustificarFaltasGeral({ faltas }: { faltas: any[] }) {
                                         />
                                     </div>
 
-                                    {/* Mock File Upload */}
-                                    <div className="flex flex-col gap-2">
-                                        <Label className="text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-widest leading-none">Documento Comprovativo</Label>
-                                        <div className="relative">
-                                            <input 
-                                                type="file" 
-                                                id="file-upload" 
-                                                className="hidden" 
-                                                onChange={(e) => setFile(e.target.files?.[0] || null)}
-                                            />
-                                            <label 
-                                                htmlFor="file-upload"
-                                                className={cn(
-                                                    "flex items-center gap-3 w-full p-4 rounded-2xl border-2 border-dashed transition-all cursor-pointer",
-                                                    file 
-                                                        ? "border-teal-200 bg-teal-50/30 text-teal-600" 
-                                                        : "border-slate-100 bg-slate-50/50 text-slate-400 hover:border-teal-200 hover:bg-teal-50/20"
-                                                )}
-                                            >
-                                                <div className={cn(
-                                                    "h-10 w-10 rounded-xl flex items-center justify-center shrink-0",
-                                                    file ? "bg-teal-100 text-teal-600" : "bg-white text-slate-400"
-                                                )}>
-                                                    <FileUp className="w-5 h-5" />
-                                                </div>
-                                                <div className="flex flex-col min-w-0">
-                                                    <span className="text-sm font-bold truncate">
-                                                        {file ? file.name : "Selecionar Documento"}
-                                                    </span>
-                                                    <span className="text-[11px] opacity-70">
-                                                        {file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : "PDF, JPG ou PNG (máx 5MB)"}
-                                                    </span>
-                                                </div>
-                                            </label>
+                                    {/* UploadThing */}
+                                    <UploadFormando
+                                        endpoint="documentUploader"
+                                        label="Documento Comprovativo"
+                                        description="PDF (máx. 16MB)"
+                                        onUploadComplete={(url, name) => handleUploadComplete(url, name)}
+                                        variant="dropzone"
+                                    />
+
+                                    {uploadedFileName && (
+                                        <div className="flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm">
+                                            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                                            <span className="text-emerald-700 font-medium truncate">{uploadedFileName}</span>
                                         </div>
-                                    </div>
-                                    
+                                    )}
+
                                     <DialogFooter className="flex gap-3 sm:justify-end pt-2">
-                                        <Button 
-                                            variant="ghost" 
-                                            onClick={() => setOpen(false)} 
+                                        <Button
+                                            variant="ghost"
+                                            onClick={() => setOpen(false)}
                                             disabled={carregando}
                                             className="rounded-xl font-semibold text-slate-400 hover:text-slate-600 hover:bg-slate-50"
                                         >
                                             Cancelar
                                         </Button>
-                                        <Button 
-                                            onClick={handleSubmeter} 
-                                            disabled={carregando || !justificativa.trim() || !file}
+                                        <Button
+                                            onClick={handleSubmeter}
+                                            disabled={carregando || !justificativa.trim() || !uploadedFileUrl}
                                             className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl px-10 font-bold shadow-lg shadow-teal-100 gap-2 h-11"
                                         >
                                             {carregando ? (
@@ -395,11 +380,12 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
         };
     }).reverse();
 
-    const faltasPendentes = presencas.filter(p => {
+    // CORREÇÃO: Incluir TODAS as ausências sem comentário (AUSENTE sem justificativa)
+    const faltasNaoJustificadas = presencas.filter(p => {
         const s = p.status as string;
         return (
-            s !== "PRESENTE" && 
-            s !== "JUSTIFICADO" && 
+            s !== "PRESENTE" &&
+            s !== "JUSTIFICADO" &&
             s !== "PENDENTE" &&
             !p.comentarioFormando
         );
@@ -419,12 +405,12 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                     <p className="mt-1 text-sm text-gray-400">Acompanha o teu registo de presenças e faltas</p>
                 </motion.div>
 
-                {faltasPendentes.length > 0 && (
+                {faltasNaoJustificadas.length > 0 && (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                     >
-                        <JustificarFaltasGeral faltas={faltasPendentes} />
+                        <JustificarFaltasGeral faltas={faltasNaoJustificadas} />
                     </motion.div>
                 )}
             </div>
@@ -502,18 +488,23 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                                     <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Módulo / Aula</th>
                                     <th className="px-6 py-4 text-center text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Estado</th>
                                     <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Justificativa</th>
+                                    <th className="px-6 py-4 text-center text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Ações</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-gray-800">
                                 {presencas.length === 0 ? (
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-12 text-center text-slate-400 text-sm italic">
+                                        <td colSpan={5} className="px-6 py-12 text-center text-slate-400 text-sm italic">
                                             Ainda não tens registos de assiduidade.
                                         </td>
                                     </tr>
                                 ) : (
                                     presencas.map((p: any, i: number) => {
                                         const data = new Date(p.dataHora);
+                                        const podeJustificar =
+                                            (p.status === "AUSENTE") &&
+                                            !p.comentarioFormando;
+
                                         return (
                                             <motion.tr
                                                 key={p.id}
@@ -554,6 +545,15 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                                                         <span className="text-xs text-slate-400 italic">
                                                             {p.justificativa || "—"}
                                                         </span>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4 text-center">
+                                                    {podeJustificar && (
+                                                        <JustificarDialog
+                                                            presencaId={p.id}
+                                                            data={data.toLocaleDateString("pt-PT")}
+                                                            modulo={p.modulo}
+                                                        />
                                                     )}
                                                 </td>
                                             </motion.tr>

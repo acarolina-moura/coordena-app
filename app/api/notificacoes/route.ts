@@ -20,15 +20,18 @@ export async function GET() {
 
     const notificacoes: Notificacao[] = [];
 
-    // ── Documentos expirados ou a expirar ──────────────────────────────────────
-    const docsProblema = await prisma.documentoFormador.findMany({
-      where: { status: { in: ["EXPIRADO", "A_EXPIRAR", "EM_FALTA"] } },
-      include: { Formador: { include: { user: { select: { nome: true } } } } },
-      orderBy: { status: "asc" },
+    // ── Documentos expirados ou a expirar (formadores) ─────────────────────────
+    const docsFormadores = await prisma.documento.findMany({
+      where: {
+        status: { in: ["EXPIRADO", "A_EXPIRAR", "EM_FALTA"] },
+        formadorId: { not: null }
+      },
+      include: { formador: { include: { user: { select: { nome: true } } } } },
+      orderBy: { status: "desc" },
       take: 10,
     });
 
-    for (const doc of docsProblema) {
+    for (const doc of docsFormadores) {
       const urgente = doc.status === "EXPIRADO";
       const statusLabel =
         doc.status === "EXPIRADO"
@@ -38,11 +41,41 @@ export async function GET() {
             : "está em falta";
 
       notificacoes.push({
-        id: `doc-${doc.id}`,
+        id: `doc-formador-${doc.id}`,
         tipo: "DOCUMENTO",
         titulo: `${doc.tipo} ${statusLabel}`,
-        descricao: doc.Formador.user.nome,
+        descricao: doc.formador?.user.nome ?? "Desconhecido",
         href: "/dashboard/documentos",
+        urgente,
+      });
+    }
+
+    // ── Documentos expirados ou a expirar (formandos) ──────────────────────────
+    const docsFormandos = await prisma.documento.findMany({
+      where: {
+        status: { in: ["EXPIRADO", "A_EXPIRAR", "EM_FALTA"] },
+        formandoId: { not: null }
+      },
+      include: { formando: { include: { user: { select: { nome: true } } } } },
+      orderBy: { status: "desc" },
+      take: 10,
+    });
+
+    for (const doc of docsFormandos) {
+      const urgente = doc.status === "EXPIRADO";
+      const statusLabel =
+        doc.status === "EXPIRADO"
+          ? "expirou"
+          : doc.status === "A_EXPIRAR"
+            ? "está a expirar"
+            : "está em falta";
+
+      notificacoes.push({
+        id: `doc-formando-${doc.id}`,
+        tipo: "DOCUMENTO",
+        titulo: `${doc.tipo} ${statusLabel}`,
+        descricao: doc.formando?.user.nome ?? "Desconhecido",
+        href: "/dashboard/formandos",
         urgente,
       });
     }

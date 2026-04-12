@@ -77,20 +77,20 @@ const hoverVariants = {
 
 export function Features() {
   return (
-    <section id="funcionalidades" className="py-24 bg-slate-50 dark:bg-slate-800/50">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex flex-col items-center text-center gap-6 mb-16">
-          <span className="text-blue-600 dark:text-blue-400 font-black uppercase tracking-[0.2em] text-sm">Funcionalidades</span>
-          <h2 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white leading-tight">
+    <section id="funcionalidades" className="py-16 sm:py-20 lg:py-24 bg-slate-50 dark:bg-slate-800/50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="flex flex-col items-center text-center gap-4 sm:gap-6 mb-12 sm:mb-16">
+          <span className="text-blue-600 dark:text-blue-400 font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-xs sm:text-sm">Funcionalidades</span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white leading-tight">
             Tudo o que sua escola <br />
             precisa em um <span className="text-blue-600">único lugar</span>
           </h2>
-          <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed px-2">
             Uma plataforma modular desenhada para simplificar fluxos de trabalho e maximizar a eficiência acadêmica.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
           {features.map((feature, index) => (
             <motion.div
               key={feature.title}
@@ -99,13 +99,13 @@ export function Features() {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
               whileHover={{ y: -5 }}
-              className={`p-8 bg-white dark:bg-slate-900 border-2 rounded-3xl transition-all duration-300 group ${hoverVariants[feature.color as keyof typeof hoverVariants]}`}
+              className={`p-4 sm:p-5 lg:p-6 bg-white dark:bg-slate-900 border-2 rounded-xl sm:rounded-2xl lg:rounded-3xl transition-all duration-300 group ${hoverVariants[feature.color as keyof typeof hoverVariants]}`}
             >
-              <div className={`h-14 w-14 rounded-2xl flex items-center justify-center mb-6 shadow-sm border transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12 ${colorVariants[feature.color as keyof typeof colorVariants]}`}>
-                <feature.icon className="w-8 h-8" />
+              <div className={`h-10 w-10 sm:h-12 sm:w-12 lg:h-14 lg:w-14 rounded-lg sm:rounded-xl lg:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 lg:mb-6 shadow-sm border transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12 ${colorVariants[feature.color as keyof typeof colorVariants]}`}>
+                <feature.icon className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{feature.title}</h3>
-              <p className="text-slate-500 dark:text-slate-400 leading-relaxed text-sm">
+              <h3 className="text-sm sm:text-base lg:text-lg xl:text-xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-2 lg:mb-3 line-clamp-2">{feature.title}</h3>
+              <p className="text-slate-500 dark:text-slate-400 leading-relaxed text-[10px] sm:text-xs lg:text-sm line-clamp-3">
                 {feature.description}
               </p>
             </motion.div>
