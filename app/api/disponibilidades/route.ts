@@ -13,26 +13,45 @@ import { prisma } from "@/lib/prisma";
  * - semana: número da semana do ano (1-53) - defaut: 1
  */
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json([], { status: 401 });
+  try {
+    const session = await auth();
+    if (!session?.user) return NextResponse.json([], { status: 401 });
 
-  const userId = req.nextUrl.searchParams.get("userId");
-  // NOVO: Extrair parâmetro de semana. Defaut é semana 1 se não especificado
-  const semana = parseInt(req.nextUrl.searchParams.get("semana") || "1", 10);
-  
-  if (!userId) return NextResponse.json([], { status: 400 });
+    const userId = req.nextUrl.searchParams.get("userId");
+    // NOVO: Extrair parâmetro de semana. Defaut é semana 1 se não especificado
+    const semana = parseInt(req.nextUrl.searchParams.get("semana") || "1", 10);
+    
+    if (!userId) return NextResponse.json([], { status: 400 });
 
-  const formador = await prisma.formador.findUnique({ where: { userId } });
-  if (!formador) return NextResponse.json([]);
+    const formador = await prisma.formador.findUnique({ where: { userId } });
+    if (!formador) return NextResponse.json([]);
 
-  // MODIFICADO: Agora filtra também por semana do ano
-  const disponibilidades = await prisma.disponibilidade.findMany({
-    where: { formadorId: formador.id, disponivel: true, semana },
-    // NOVO: Incluir campo 'semana' na resposta
-    select: { diaSemana: true, hora: true, minuto: true, tipo: true, semana: true },
-  });
+    // MODIFICADO: Agora filtra também por semana do ano
+    const disponibilidades = await prisma.disponibilidade.findMany({
+      where: { formadorId: formador.id, disponivel: true, semana },
+      // NOVO: Incluir campo 'semana' na resposta
+      select: { diaSemana: true, hora: true, minuto: true, tipo: true, semana: true },
+    });
 
-  return NextResponse.json(disponibilidades);
+    // Validar e limpar dados antes de reenviar
+    const dados_validos = disponibilidades
+      .filter(d => d && d.diaSemana && typeof d.hora === 'number' && typeof d.minuto === 'number')
+      .map(d => ({
+        diaSemana: String(d.diaSemana),
+        hora: Number(d.hora),
+        minuto: Number(d.minuto),
+        tipo: d.tipo ? String(d.tipo) : null,
+        semana: Number(d.semana),
+      }));
+
+    return NextResponse.json(dados_validos);
+  } catch (error) {
+    console.error("[GET_DISPONIBILIDADES]", error);
+    return NextResponse.json(
+      { error: "Erro ao carregar disponibilidades" },
+      { status: 500 }
+    );
+  }
 }
 
 /**
@@ -49,47 +68,55 @@ export async function GET(req: NextRequest) {
  * }
  */
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user)
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  try {
+    const session = await auth();
+    if (!session?.user)
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-  // MODIFICADO: Extrair 'semana' do body (defaut é semana 1)
-  const { userId, slots, semana = 1 } = await req.json();
-  
-  if (!userId)
-    return NextResponse.json({ error: "userId em falta" }, { status: 400 });
+    // MODIFICADO: Extrair 'semana' do body (defaut é semana 1)
+    const { userId, slots, semana = 1 } = await req.json();
+    
+    if (!userId)
+      return NextResponse.json({ error: "userId em falta" }, { status: 400 });
 
-  const formador = await prisma.formador.findUnique({ where: { userId } });
-  if (!formador)
-    return NextResponse.json(
-      { error: "Formador não encontrado" },
-      { status: 404 },
-    );
+    const formador = await prisma.formador.findUnique({ where: { userId } });
+    if (!formador)
+      return NextResponse.json(
+        { error: "Formador não encontrado" },
+        { status: 404 },
+      );
 
-  // MODIFICADO: Apaga APENAS as disponibilidades da semana específica enviada
-  // Isto permite que o formador edite diferentes semanas sem perder dados de outras semanas
-  await prisma.disponibilidade.deleteMany({
-    where: { formadorId: formador.id, semana },
-  });
-
-  if (Array.isArray(slots) && slots.length > 0) {
-    await prisma.disponibilidade.createMany({
-      data: slots.map(
-        (s: { hora: number; minuto: number; diaSemana: string; tipo?: string }) => ({
-          formadorId: formador.id,
-          diaSemana: s.diaSemana,
-          hora: s.hora,
-          minuto: s.minuto,
-          // NOVO: Guardar o número da semana do ano
-          semana,
-          // Campo disponível é true se tem tipo (TOTAL ou PARCIAL)
-          disponivel: !!s.tipo,
-          // Tipo pode ser "TOTAL" ou "PARCIAL"
-          tipo: s.tipo || null,
-        }),
-      ),
+    // MODIFICADO: Apaga APENAS as disponibilidades da semana específica enviada
+    // Isto permite que o formador edite diferentes semanas sem perder dados de outras semanas
+    await prisma.disponibilidade.deleteMany({
+      where: { formadorId: formador.id, semana },
     });
-  }
 
-  return NextResponse.json({ ok: true });
+    if (Array.isArray(slots) && slots.length > 0) {
+      await prisma.disponibilidade.createMany({
+        data: slots.map(
+          (s: { hora: number; minuto: number; diaSemana: string; tipo?: string }) => ({
+            formadorId: formador.id,
+            diaSemana: s.diaSemana,
+            hora: s.hora,
+            minuto: s.minuto,
+            // NOVO: Guardar o número da semana do ano
+            semana,
+            // Campo disponível é true se tem tipo (TOTAL ou PARCIAL)
+            disponivel: !!s.tipo,
+            // Tipo pode ser "TOTAL" ou "PARCIAL"
+            tipo: s.tipo || null,
+          }),
+        ),
+      });
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("[POST_DISPONIBILIDADES]", error);
+    return NextResponse.json(
+      { error: "Erro ao guardar disponibilidades" },
+      { status: 500 }
+    );
+  }
 }

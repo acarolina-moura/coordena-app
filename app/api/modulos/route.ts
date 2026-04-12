@@ -1,18 +1,29 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { auth } from "@/auth";
+import { NextResponse } from "next/server";
+import { filtroModulosCoordenador, cursoPertenceAoCoordenador } from "@/lib/coordenador-utils";
 
 // ─── GET /api/modulos ─────────────────────────────────────────────────────────
 
 export async function GET() {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
+
+    const modulosFilter = await filtroModulosCoordenador();
+    
     const modulos = await prisma.modulo.findMany({
+      where: modulosFilter,
       orderBy: { ordem: "asc" },
       include: { curso: { select: { id: true, nome: true } } },
     });
-    return Response.json(modulos);
+    return NextResponse.json(modulos);
   } catch (error) {
     console.error("[GET /api/modulos]", error);
-    return Response.json(
+    return NextResponse.json(
       { error: "Erro ao carregar módulos" },
       { status: 500 },
     );
@@ -23,25 +34,35 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "COORDENADOR") {
+      return NextResponse.json(
+        { error: "Não autorizado. Apenas coordenadores podem criar módulos." },
+        { status: 403 }
+      );
+    }
+
     const { nome, descricao, ordem, cargaHoraria, cursoId, formadorId } =
       await req.json();
 
     if (!nome || nome.trim() === "") {
-      return Response.json(
+      return NextResponse.json(
         { error: "Nome do módulo é obrigatório" },
         { status: 400 },
       );
     }
 
     if (!cursoId) {
-      return Response.json({ error: "Curso é obrigatório" }, { status: 400 });
+      return NextResponse.json({ error: "Curso é obrigatório" }, { status: 400 });
     }
 
-    const cursoExiste = await prisma.curso.findUnique({
-      where: { id: cursoId },
-    });
-    if (!cursoExiste) {
-      return Response.json({ error: "Curso não encontrado" }, { status: 404 });
+    // Verificar se o curso pertence ao coordenador logado
+    const cursoPertence = await cursoPertenceAoCoordenador(cursoId);
+    if (!cursoPertence) {
+      return NextResponse.json(
+        { error: "Curso não encontrado ou não pertence ao coordenador" },
+        { status: 403 }
+      );
     }
 
     if (formadorId) {
@@ -49,7 +70,7 @@ export async function POST(req: Request) {
         where: { id: formadorId },
       });
       if (!formadorExiste) {
-        return Response.json(
+        return NextResponse.json(
           { error: "Formador não encontrado" },
           { status: 404 },
         );
@@ -67,7 +88,7 @@ export async function POST(req: Request) {
       },
     });
 
-    // ✅ TAREFA 1: Correção - Associar formador usando UPSERT para evitar erros/apagões
+    // Associar formador usando UPSERT para evitar erros
     if (formadorId) {
       await prisma.formadorModulo.upsert({
         where: {
@@ -76,7 +97,7 @@ export async function POST(req: Request) {
             moduloId: modulo.id,
           },
         },
-        update: {}, // Se já existir, não faz nada
+        update: {},
         create: {
           formadorId,
           moduloId: modulo.id,
@@ -84,7 +105,6 @@ export async function POST(req: Request) {
       });
     }
 
-    // Buscar o módulo completo
     const moduloCompleto = await prisma.modulo.findUnique({
       where: { id: modulo.id },
       include: {
@@ -104,9 +124,9 @@ export async function POST(req: Request) {
       formadores: moduloCompleto?.formadores.map((fm) => fm.formador) ?? [],
     };
 
-    return Response.json(resultado, { status: 201 });
+    return NextResponse.json(resultado, { status: 201 });
   } catch (error) {
     console.error("Erro ao criar módulo:", error);
-    return Response.json({ error: "Erro ao criar módulo" }, { status: 500 });
+    return NextResponse.json({ error: "Erro ao criar módulo" }, { status: 500 });
   }
 }

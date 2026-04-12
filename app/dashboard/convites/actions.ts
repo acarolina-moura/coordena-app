@@ -7,8 +7,13 @@ export async function responderConvite(conviteId: string, acao: "ACEITE" | "RECU
   try {
     const convite = await prisma.convite.findUnique({
       where: { id: conviteId },
-      include: { Curso: true } as any
-    }) as any;
+      include: { 
+        curso: true,
+        modulo: true,
+        formando: true,
+        formador: true,
+      }
+    });
 
     if (!convite) throw new Error("Convite não encontrado");
 
@@ -17,9 +22,10 @@ export async function responderConvite(conviteId: string, acao: "ACEITE" | "RECU
       data: {
         status: acao,
         dataResposta: new Date(),
-      } as any
+      }
     });
 
+    // Se for FORMANDO aceitando um convite de curso
     if (acao === "ACEITE" && convite.formandoId && convite.cursoId) {
       // Verificar se já está inscrito
       const existente = await prisma.inscricao.findFirst({
@@ -30,13 +36,12 @@ export async function responderConvite(conviteId: string, acao: "ACEITE" | "RECU
       });
 
       if (!existente) {
-        await (prisma as any).inscricao.create({
+        await prisma.inscricao.create({
           data: {
             formandoId: convite.formandoId,
             cursoId: convite.cursoId,
             dataInicio: new Date(),
-            status: "ATIVO"
-          } as any
+          }
         });
       }
     }

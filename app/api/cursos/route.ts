@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { auth } from "@/auth";
+import { filtroCursosCoordenador, getCoordenadorIdOrNull } from "@/lib/coordenador-utils";
 
 // ─── Validation Schema ────────────────────────────────────────────────────────
 
@@ -18,7 +20,15 @@ const CursoSchema = z.object({
 
 export async function GET() {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
+
+    const cursosFilter = await filtroCursosCoordenador();
+    
     const cursos = await prisma.curso.findMany({
+      where: cursosFilter,
       orderBy: { createdAt: "desc" },
       include: {
         modulos: true,
@@ -45,6 +55,14 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "COORDENADOR") {
+      return NextResponse.json(
+        { error: "Não autorizado. Apenas coordenadores podem criar cursos." },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
 
     const parsed = CursoSchema.safeParse(body);
@@ -58,6 +76,8 @@ export async function POST(req: Request) {
     const { nome, descricao, dataInicio, dataFim, cargaHoraria, status } =
       parsed.data;
 
+    const coordenadorId = await getCoordenadorIdOrNull();
+
     const curso = await prisma.curso.create({
       data: {
         nome: nome.trim(),
@@ -66,6 +86,7 @@ export async function POST(req: Request) {
         dataFim: dataFim ? new Date(dataFim) : null,
         cargaHoraria,
         status,
+        coordenadorId,
       },
       include: {
         modulos: true,
@@ -73,7 +94,6 @@ export async function POST(req: Request) {
       },
     });
 
-    // Revalida o server component da página de cursos
     revalidatePath("/dashboard/cursos");
 
     return NextResponse.json(

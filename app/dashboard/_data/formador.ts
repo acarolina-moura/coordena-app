@@ -91,15 +91,29 @@ export async function getConvitesPendentesFormador(userId: string) {
     const convites = await prisma.convite.findMany({
         where: {
             formadorId: formador.id,
-            status: 'PENDENTE',
+            status: "PENDENTE",
+        },
+        include: {
+            curso: {
+                select: { id: true, nome: true },
+            },
+            modulo: {
+                select: { id: true, nome: true },
+            },
         },
         orderBy: { dataEnvio: "desc" },
     });
 
     return convites.map((convite) => ({
         id: convite.id,
-        descricao: convite.descricao || 'Sem descrição',
+        cursoId: convite.cursoId,
+        moduloId: convite.moduloId,
+        status: convite.status,
         dataEnvio: convite.dataEnvio,
+        dataResposta: convite.dataResposta,
+        descricao: convite.descricao || "Sem descrição",
+        Curso: convite.curso,
+        Modulo: convite.modulo,
     }));
 }
 

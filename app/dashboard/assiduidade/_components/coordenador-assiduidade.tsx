@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   Search,
   BarChart2,
@@ -11,6 +12,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { toast } from "sonner";
+import { aprovarJustificativa, rejeitarJustificativa } from "../actions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -22,6 +25,24 @@ export type AssiduidadeFormando = {
   presentes: number;
   ausentes: number;
   justificados: number;
+};
+
+export type JustificativaPendente = {
+  id: string;
+  status: string;
+  comentarioFormando: string | null;
+  documentoUrl: string | null;
+  aula: {
+    id: string;
+    titulo: string;
+    dataHora: string | Date;
+    modulo: { nome: string };
+  };
+  formando: {
+    id: string;
+    user: { nome: string };
+    curso: string | null;
+  };
 };
 
 // ─── Barra de progresso de assiduidade ───────────────────────────────────────
@@ -69,11 +90,15 @@ function BarraAssiduidade({
 
 export function CoordenadorAssiduidade({
   dados,
+  pendentes,
 }: {
   dados: AssiduidadeFormando[];
+  pendentes: JustificativaPendente[];
 }) {
   const [search, setSearch] = useState("");
   const [filtro, setFiltro] = useState<"TODOS" | "RISCO" | "OK">("TODOS");
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const filtrados = dados.filter((d) => {
     const pct = d.total === 0 ? 100 : Math.round((d.presentes / d.total) * 100);
@@ -91,17 +116,47 @@ export function CoordenadorAssiduidade({
     (d) => d.total > 0 && Math.round((d.presentes / d.total) * 100) < 75,
   ).length;
 
+  async function handleAprovar(id: string) {
+    startTransition(async () => {
+      const result = await aprovarJustificativa(id);
+      if (result.sucesso) {
+        toast.success(result.mensagem);
+        router.refresh();
+      } else {
+        toast.error(result.mensagem);
+      }
+    });
+  }
+
+  async function handleRejeitar(id: string) {
+    if (!confirm("Tem certeza que deseja rejeitar esta justificativa?")) return;
+    startTransition(async () => {
+      const result = await rejeitarJustificativa(id);
+      if (result.sucesso) {
+        toast.success(result.mensagem);
+        router.refresh();
+      } else {
+        toast.error(result.mensagem);
+      }
+    });
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">Assiduidade</h1>
+          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">
+            Assiduidade
+          </h1>
           <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
             {dados.length} formandos ·{" "}
             {emRisco > 0
               ? `${emRisco} com assiduidade em risco`
               : "Todos dentro do limite"}
+            {pendentes.length > 0 && (
+              <span>{` · ${pendentes.length} justificativa${pendentes.length === 1 ? "" : "s"} pendente${pendentes.length === 1 ? "" : "s"}`}</span>
+            )}
           </p>
         </div>
         <div className="relative w-56">
@@ -113,6 +168,127 @@ export function CoordenadorAssiduidade({
             className="pl-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-sm rounded-xl dark:text-gray-200"
           />
         </div>
+      </div>
+
+      {/* Pendências de justificativa */}
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              Justificativas pendentes
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Veja as solicitações de justificação de falta submetidas pelos
+              formadores e aprove ou recuse.
+            </p>
+          </div>
+          <div className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+            {pendentes.length} pendente{pendentes.length === 1 ? "" : "s"}
+          </div>
+        </div>
+
+        {pendentes.length === 0 ? (
+          <div className="mt-6 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 p-6 text-center text-sm text-gray-500 dark:text-gray-400">
+            Não há justificativas pendentes no momento.
+          </div>
+        ) : (
+          <div className="mt-6 overflow-x-auto">
+            <table className="min-w-full border-separate border-spacing-0 text-sm text-left">
+              <thead className="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  <th className="px-4 py-3 font-semibold text-slate-500">
+                    Formando
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-slate-500">
+                    Curso
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-slate-500">
+                    Aula
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-slate-500">
+                    Documento
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-slate-500">
+                    Comentário
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-slate-500">
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendentes.map((item) => {
+                  const documentoLink = item.documentoUrl
+                    ? item.documentoUrl.startsWith("/")
+                      ? item.documentoUrl
+                      : `/uploads/${item.documentoUrl}`
+                    : null;
+                  return (
+                    <tr
+                      key={item.id}
+                      className="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/40"
+                    >
+                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-gray-100">
+                        {item.formando.user.nome}
+                      </td>
+                      <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
+                        {item.formando.curso ?? "Sem curso"}
+                      </td>
+                      <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
+                        <div className="font-semibold text-slate-900 dark:text-gray-100">
+                          {item.aula.titulo}
+                        </div>
+                        <div className="text-xs text-slate-400">
+                          {new Date(item.aula.dataHora).toLocaleDateString(
+                            "pt-PT",
+                          )}{" "}
+                          · {item.aula.modulo.nome}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        {documentoLink ? (
+                          <a
+                            href={documentoLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-300 dark:hover:text-indigo-100 underline"
+                          >
+                            {item.documentoUrl}
+                          </a>
+                        ) : (
+                          <span className="text-slate-400 italic">
+                            Sem anexo
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
+                        {item.comentarioFormando || "—"}
+                      </td>
+                      <td className="px-4 py-3 space-x-2">
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          onClick={() => handleAprovar(item.id)}
+                          className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-600 disabled:opacity-50"
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Aceitar
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          onClick={() => handleRejeitar(item.id)}
+                          className="inline-flex items-center gap-2 rounded-xl bg-rose-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-rose-600 disabled:opacity-50"
+                        >
+                          <XCircle className="h-3.5 w-3.5" /> Recusar
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Filtros */}
@@ -147,12 +323,24 @@ export function CoordenadorAssiduidade({
         <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden">
           {/* Table header */}
           <div className="grid grid-cols-[1fr_160px_80px_80px_80px_140px] gap-4 px-5 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Formando</span>
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Curso</span>
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 text-center">Presentes</span>
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 text-center">Ausentes</span>
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 text-center">Justif.</span>
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Assiduidade</span>
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+              Formando
+            </span>
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+              Curso
+            </span>
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 text-center">
+              Presentes
+            </span>
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 text-center">
+              Ausentes
+            </span>
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 text-center">
+              Justif.
+            </span>
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+              Assiduidade
+            </span>
           </div>
 
           {/* Rows */}

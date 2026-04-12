@@ -13,6 +13,7 @@ async function main() {
             email: 'coordenador@coordena.pt',
             senha: await bcrypt.hash('123456', 10),
             role: 'COORDENADOR',
+            coordenador: { create: {} },
         },
     })
 
