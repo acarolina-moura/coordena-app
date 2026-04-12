@@ -65,14 +65,6 @@ export async function getFormandoStats(userId: string) {
 
 // ------------------- CURSO DO FORMANDO -------------------
 export async function getCursoFormando(userId: string) {
-    // Primeiro obter o formando para ter acesso ao formandoId
-    const formandoBase = await prisma.formando.findUnique({
-        where: { userId },
-        select: { id: true },
-    });
-
-    if (!formandoBase) return null;
-
     const formando = await prisma.formando.findUnique({
         where: { userId },
         include: {
@@ -83,10 +75,7 @@ export async function getCursoFormando(userId: string) {
                             modulos: {
                                 orderBy: { ordem: "asc" },
                                 include: {
-                                    // CORREÇÃO: Filtrar avaliações pelo formandoId diretamente
-                                    avaliacoes: {
-                                        where: { formandoId: formandoBase.id },
-                                    },
+                                    avaliacoes: true,
                                     aulas: true,
                                 },
                             },
@@ -98,13 +87,16 @@ export async function getCursoFormando(userId: string) {
     });
 
     if (!formando || formando.inscricoes.length === 0) return null;
+    const formandoId = formando.id;
 
+    // Filter avaliacoes by formandoId in memory since we can't reference it in the query
     const inscricao = formando.inscricoes[0];
     const curso = inscricao.curso;
     const hoje = new Date();
 
     const modulos = curso.modulos.map((m) => {
-        const notas = m.avaliacoes.map((a) => a.nota);
+        const avaliacoesDoFormando = m.avaliacoes.filter((a) => a.formandoId === formandoId);
+        const notas = avaliacoesDoFormando.map((a) => a.nota);
         const media =
             notas.length > 0
                 ? notas.reduce((s, n) => s + n, 0) / notas.length
@@ -221,14 +213,6 @@ export async function getProximasSessoesFormando(userId: string) {
 // ------------------- MEUS CURSOS -------------------
 
 export async function getMeusCursos(userId: string) {
-    // CORREÇÃO: Obter formandoId primeiro para usar no filtro
-    const formandoBase = await prisma.formando.findUnique({
-        where: { userId },
-        select: { id: true },
-    });
-
-    if (!formandoBase) return [];
-
     const formando = await prisma.formando.findUnique({
         where: { userId },
         include: {
@@ -239,10 +223,7 @@ export async function getMeusCursos(userId: string) {
                             modulos: {
                                 orderBy: { ordem: "asc" },
                                 include: {
-                                    // CORREÇÃO: Filtrar avaliações pelo formandoId
-                                    avaliacoes: {
-                                        where: { formandoId: formandoBase.id },
-                                    },
+                                    avaliacoes: true,
                                     aulas: true,
                                 },
                             },
@@ -255,6 +236,7 @@ export async function getMeusCursos(userId: string) {
     });
 
     if (!formando) return [];
+    const formandoId = formando.id;
 
     const hoje = new Date();
 
@@ -262,7 +244,8 @@ export async function getMeusCursos(userId: string) {
         const curso = insc.curso;
 
         const modulos = curso.modulos.map((m) => {
-            const notas = m.avaliacoes.map((a) => a.nota);
+            const avaliacoesDoFormando = m.avaliacoes.filter((a) => a.formandoId === formandoId);
+            const notas = avaliacoesDoFormando.map((a) => a.nota);
             const media =
                 notas.length > 0
                     ? notas.reduce((s, n) => s + n, 0) / notas.length
@@ -562,14 +545,6 @@ export async function getMeusConvites(userId: string) {
 }
 
 export async function getModulosParaReview(userId: string) {
-    // CORREÇÃO: Obter formandoId primeiro
-    const formandoBase = await prisma.formando.findUnique({
-        where: { userId },
-        select: { id: true },
-    });
-
-    if (!formandoBase) return [];
-
     const formando = await prisma.formando.findUnique({
         where: { userId },
         include: {
@@ -580,10 +555,7 @@ export async function getModulosParaReview(userId: string) {
                             modulos: {
                                 orderBy: { ordem: "asc" },
                                 include: {
-                                    // CORREÇÃO: Filtrar reviews pelo formandoId
-                                    reviews: {
-                                        where: { formandoId: formandoBase.id },
-                                    },
+                                    reviews: true,
                                 },
                             },
                         },
@@ -594,21 +566,25 @@ export async function getModulosParaReview(userId: string) {
     });
 
     if (!formando) return [];
+    const formandoId = formando.id;
 
     return formando.inscricoes.flatMap((insc) =>
-        insc.curso.modulos.map((m) => ({
-            id: m.id,
-            nome: m.nome,
-            cursoNome: insc.curso.nome,
-            hasReview: m.reviews.length > 0,
-            review: m.reviews[0]
-                ? {
-                      nota: m.reviews[0].nota,
-                      comentario: m.reviews[0].comentario ?? "",
-                      data: m.reviews[0].createdAt,
-                  }
-                : undefined,
-        })),
+        insc.curso.modulos.map((m) => {
+            const reviewsDoFormando = m.reviews.filter((r) => r.formandoId === formandoId);
+            return {
+                id: m.id,
+                nome: m.nome,
+                cursoNome: insc.curso.nome,
+                hasReview: reviewsDoFormando.length > 0,
+                review: reviewsDoFormando[0]
+                    ? {
+                          nota: reviewsDoFormando[0].nota,
+                          comentario: reviewsDoFormando[0].comentario ?? "",
+                          data: reviewsDoFormando[0].createdAt,
+                      }
+                    : undefined,
+            };
+        }),
     );
 }
 

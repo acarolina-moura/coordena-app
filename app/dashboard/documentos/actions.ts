@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import { logError } from "@/lib/logger";
 
 /**
  * Regista um documento na base de dados após upload feito via UploadThing.
@@ -27,6 +28,10 @@ export async function registarDocumento(formData: FormData) {
 
     if (!fileUrl || !tipo) {
       throw new Error("URL do ficheiro ou tipo em falta");
+    }
+
+    if (!fileUrl.startsWith("https://") && !fileUrl.startsWith("/")) {
+      throw new Error("URL do ficheiro inválido");
     }
 
     // ─── FORMANDO ───────────────────────────────────────────────────────
@@ -113,7 +118,7 @@ export async function registarDocumento(formData: FormData) {
       mensagem: `Documento "${tipo}" registado com sucesso`,
     };
   } catch (error) {
-    console.error("[registarDocumento]", error);
+    logError("[registarDocumento]", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Erro ao registar documento",
@@ -179,7 +184,7 @@ export async function uploadDocumentoFormando(formData: FormData) {
     revalidatePath("/dashboard/documentos");
     return { success: true };
   } catch (error) {
-    console.error("[uploadDocumentoFormando]", error);
+    logError("[uploadDocumentoFormando]", error);
     return { error: error instanceof Error ? error.message : "Erro no upload" };
   }
 }
@@ -240,7 +245,7 @@ export async function uploadDocumentoFormador(formData: FormData) {
     revalidatePath("/dashboard/documentos");
     return { success: true };
   } catch (error) {
-    console.error("[uploadDocumentoFormador]", error);
+    logError("[uploadDocumentoFormador]", error);
     return { error: error instanceof Error ? error.message : "Erro no upload" };
   }
 }

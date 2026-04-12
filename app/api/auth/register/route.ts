@@ -13,11 +13,18 @@ export async function POST(req: Request) {
             )
         }
 
+        if (role === "COORDENADOR") {
+            return NextResponse.json(
+                { error: "Registro de coordenador requer token especial" },
+                { status: 403 },
+            );
+        }
+
         // Validar role
-        const validRoles = ['COORDENADOR', 'FORMADOR', 'FORMANDO'] as const;
+        const validRoles = ['FORMADOR', 'FORMANDO'] as const;
         if (!validRoles.includes(role)) {
             return NextResponse.json(
-                { error: 'Role inválido. Use: COORDENADOR, FORMADOR ou FORMANDO.' },
+                { error: 'Role inválido. Use: FORMADOR ou FORMANDO.' },
                 { status: 400 }
             )
         }
@@ -42,9 +49,6 @@ export async function POST(req: Request) {
                 senha: senhaHash,
                 role,
                 // Cria automaticamente o perfil conforme o role
-                ...(role === 'COORDENADOR' && {
-                    coordenador: { create: {} },
-                }),
                 ...(role === 'FORMADOR' && {
                     formador: { create: {} },
                 }),

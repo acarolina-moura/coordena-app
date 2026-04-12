@@ -1,11 +1,17 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { auth } from "@/auth";
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "COORDENADOR") {
+      return Response.json({ error: "Não autorizado" }, { status: 403 });
+    }
+
     const { id } = await params;
     const body = await request.json();
 
@@ -149,6 +155,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "COORDENADOR") {
+      return Response.json({ error: "Não autorizado" }, { status: 403 });
+    }
+
     const { id } = await params;
 
     // 1. Verificar se existem dependências (Aulas, Avaliações)

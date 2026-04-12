@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import { logError } from "@/lib/logger";
 
 export async function justificarFalta(
   presencaId: string,
@@ -46,7 +47,7 @@ export async function justificarFalta(
       mensagem: "Pedido de justificação enviado para análise!",
     };
   } catch (erro) {
-    console.error("Erro ao justificar falta:", erro);
+    logError("Erro ao justificar falta:", erro);
     return {
       sucesso: false,
       mensagem:
@@ -87,7 +88,7 @@ export async function aprovarJustificativa(presencaId: string) {
       mensagem: "Justificativa aceite e falta justificada",
     };
   } catch (erro) {
-    console.error("Erro ao aprovar justificativa:", erro);
+    logError("Erro ao aprovar justificativa:", erro);
     return {
       sucesso: false,
       mensagem:
@@ -128,7 +129,7 @@ export async function rejeitarJustificativa(presencaId: string) {
       mensagem: "Justificativa recusada e falta mantida",
     };
   } catch (erro) {
-    console.error("Erro ao rejeitar justificativa:", erro);
+    logError("Erro ao rejeitar justificativa:", erro);
     return {
       sucesso: false,
       mensagem:

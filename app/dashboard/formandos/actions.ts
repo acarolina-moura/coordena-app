@@ -1,5 +1,6 @@
 'use server';
 
+import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import bcrypt from 'bcryptjs';
@@ -12,6 +13,11 @@ export async function adicionarFormando(dados: {
   cursoId: string;
 }) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "COORDENADOR") {
+      return { sucesso: false, mensagem: "Não autorizado" };
+    }
+
     // Validar dados
     if (!dados.nome?.trim() || !dados.email?.trim() || !dados.senha?.trim() || !dados.cursoId?.trim()) {
       throw new Error('Nome, email, senha e curso são obrigatórios');

@@ -22,6 +22,7 @@ export async function updateAvatar(imageUrl: string) {
     });
 
     revalidatePath("/dashboard/perfil");
+    revalidatePath("/");
     return { success: true, mensagem: "Avatar atualizado com sucesso!" };
   } catch (error) {
     console.error("[updateAvatar]", error);
@@ -51,6 +52,14 @@ export async function registarMaterialApoio(
       where: { userId: session.user.id },
     });
     if (!formador) throw new Error("Formador não encontrado");
+
+    // Validar que o módulo pertence ao formador
+    const moduloFormador = await prisma.formadorModulo.findFirst({
+      where: { formadorId: formador.id, moduloId },
+    });
+    if (!moduloFormador) {
+      throw new Error("Não tens permissão para este módulo");
+    }
 
     await prisma.materialApoio.create({
       data: {
@@ -127,58 +136,6 @@ export async function registarSubmissao(
     return {
       success: false,
       error: error instanceof Error ? error.message : "Erro ao submeter trabalho",
-    };
-  }
-}
-
-/**
- * Justifica falta com URL real de comprovativo (UploadThing).
- */
-export async function justificarFaltaComUrl(
-  presencaId: string,
-  comentario: string,
-  documentoUrl: string,
-) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return { sucesso: false, mensagem: "Não autorizado" };
-    }
-
-    const presenca = await prisma.presenca.findUnique({
-      where: { id: presencaId },
-      include: { formando: true },
-    });
-
-    if (!presenca) {
-      return { sucesso: false, mensagem: "Presença não encontrada" };
-    }
-
-    if (presenca.formando.userId !== session.user.id) {
-      return { sucesso: false, mensagem: "Não autorizado para esta presença" };
-    }
-
-    await prisma.presenca.update({
-      where: { id: presencaId },
-      data: {
-        status: "PENDENTE" as any,
-        comentarioFormando: comentario,
-        documentoUrl,
-        justificativa: null,
-      } as any,
-    });
-
-    revalidatePath("/dashboard/assiduidade");
-    return {
-      sucesso: true,
-      mensagem: "Pedido de justificação enviado com comprovativo!",
-    };
-  } catch (error) {
-    console.error("[justificarFaltaComUrl]", error);
-    return {
-      sucesso: false,
-      mensagem:
-        error instanceof Error ? error.message : "Erro ao justificar falta",
     };
   }
 }

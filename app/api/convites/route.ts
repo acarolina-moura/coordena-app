@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -5,6 +6,11 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "COORDENADOR") {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
+    }
+
     const { formadorId, formandoId, cursoId, moduloId, descricao } =
       await req.json();
 

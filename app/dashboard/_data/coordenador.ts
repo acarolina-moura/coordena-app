@@ -284,13 +284,13 @@ export type FormadorComDisponibilidades = FormadorComDetalhes & {
 };
 
 /**
- * MODIFICADO: Busca disponibilidades de todos os formadores
- * NOVO: Agora inclui o campo 'semana' (número 1-53 da semana do ano)
+ * Busca disponibilidades de todos os formadores.
+ * Inclui o campo 'semana' (numero 1-53 da semana do ano).
  *
- * Utilizado na página de disponibilidades do coordenador para ver
- * que horários cada formador tem marcado como disponível
+ * Utilizado na pagina de disponibilidades do coordenador para ver
+ * que horarios cada formador tem marcado como disponivel.
  *
- * Retorna array com formador + lista de suas disponibilidades
+ * Retorna array com formador + lista de suas disponibilidades.
  */
 export async function getDisponibilidadesFormadores(): Promise<
   FormadorComDisponibilidades[]
@@ -317,7 +317,6 @@ export async function getDisponibilidadesFormadores(): Promise<
       },
       disponibilidades: {
         where: { disponivel: true },
-        // NOVO: Agora seleciona também o campo 'semana'
         select: {
           diaSemana: true,
           hora: true,
@@ -513,12 +512,13 @@ export async function getCursos(): Promise<CursoComDetalhes[]> {
   
   const cursos = await prisma.curso.findMany({
     where: cursosFilter,
-    include: { modulos: true, inscricoes: true },
+    include: { _count: { select: { modulos: true, inscricoes: true } } },
     orderBy: { createdAt: "desc" },
   });
   return cursos.map((curso) => ({
     ...curso,
-    formandos: curso.inscricoes.length,
+    modulos: [],
+    formandos: curso._count.inscricoes,
   }));
 }
 
@@ -557,7 +557,6 @@ export async function getFormandos(): Promise<FormandoComDetalhes[]> {
           }
         }
       },
-      // CORREÇÃO: Filtrar avaliações apenas pelos módulos do coordenador
       avaliacoes: {
         where: {
           modulo: modulosFilter
@@ -569,8 +568,6 @@ export async function getFormandos(): Promise<FormandoComDetalhes[]> {
 
   return formandos.map((f) => {
     const negativos = f.avaliacoes.filter((a) => a.nota < 10).length;
-    // CORREÇÃO: Calcular progresso baseado nos módulos concluídos (com nota)
-    // vs total de módulos do curso, não pela média das notas
     const totalModulosCurso = f.inscricoes[0]?.curso.modulos?.length ?? 0;
     const modulosConcluidos = f.avaliacoes.length;
     const progresso =

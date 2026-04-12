@@ -32,7 +32,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { UploadFormando } from "@/components/upload-formando";
-import { justificarFaltaComUrl } from "@/app/dashboard/upload-actions";
 import { justificarFalta } from "@/app/dashboard/assiduidade/actions";
 
 // ---------------------------------------------------------------------------
@@ -198,7 +197,7 @@ function JustificarFaltasGeral({ faltas }: { faltas: any[] }) {
     async function handleSubmeter() {
         if (!selectedFaltaId || !justificativa.trim() || !uploadedFileUrl) return;
         setCarregando(true);
-        const result = await justificarFaltaComUrl(selectedFaltaId, justificativa, uploadedFileUrl);
+        const result = await justificarFalta(selectedFaltaId, justificativa, uploadedFileUrl);
         setCarregando(false);
         if (result.sucesso) {
             setSucesso(true);

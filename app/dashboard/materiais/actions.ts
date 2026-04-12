@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import { logError } from "@/lib/logger";
 
 export async function getMateriaisForFormando() {
   try {
@@ -54,7 +55,7 @@ export async function getMateriaisForFormando() {
 
     return materiais;
   } catch (error) {
-    console.error("[getMateriaisForFormando]", error);
+    logError("[getMateriaisForFormando]", error);
     return [];
   }
 }
@@ -96,7 +97,7 @@ export async function getMateriaisForFormador() {
       })),
     };
   } catch (error) {
-    console.error("[getMateriaisForFormador]", error);
+    logError("[getMateriaisForFormador]", error);
     return { materiais: [], modulos: [] };
   }
 }
@@ -141,7 +142,7 @@ export async function uploadMaterialApoio(formData: FormData) {
     revalidatePath("/dashboard/materiais");
     return { success: true };
   } catch (error) {
-    console.error("[uploadMaterialApoio]", error);
+    logError("[uploadMaterialApoio]", error);
     return { error: error instanceof Error ? error.message : "Erro no upload" };
   }
 }
@@ -173,7 +174,7 @@ export async function deleteMaterialApoio(id: string) {
     revalidatePath("/dashboard/materiais");
     return { success: true };
   } catch (error) {
-    console.error("[deleteMaterialApoio]", error);
+    logError("[deleteMaterialApoio]", error);
     return { error: error instanceof Error ? error.message : "Erro ao eliminar" };
   }
 }

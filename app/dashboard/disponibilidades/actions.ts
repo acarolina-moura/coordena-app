@@ -3,6 +3,7 @@
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { logError } from '@/lib/logger';
 
 /**
  * Guardar disponibilidades do formador
@@ -62,7 +63,7 @@ export async function salvarDisponibilidades(
     revalidatePath('/dashboard/disponibilidades');
     return { success: true, total: disponibilidades.length };
   } catch (error) {
-    console.error('Erro ao guardar disponibilidades:', error);
+    logError('Erro ao guardar disponibilidades:', error);
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Erro ao guardar'
@@ -108,7 +109,7 @@ export async function carregarDisponibilidades() {
 
     return { success: true, slots };
   } catch (error) {
-    console.error('Erro ao carregar disponibilidades:', error);
+    logError('Erro ao carregar disponibilidades:', error);
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Erro ao carregar'

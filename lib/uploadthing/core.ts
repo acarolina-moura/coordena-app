@@ -1,5 +1,6 @@
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 
 const f = createUploadthing();
 
@@ -40,10 +41,15 @@ const onUploadComplete = async ({
     type: file.type,
   });
 
-  // Aqui podes adicionar lógica extra:
-  // - Notificar coordenador
-  // - Validar tipo de ficheiro
-  // - Registar em tabela de audit log
+  // Registrar no DB para audit trail
+  await prisma.documento.create({
+    data: {
+      tipo: `UPLOAD_${file.type || "UNKNOWN"}`,
+      fileUrl: file.url,
+      status: "VALIDO",
+      // Não associar a ninguém aqui — será feito pelo caller
+    },
+  }).catch(() => {}); // Silencioso — não falhar o upload se o log falhar
 
   return {
     uploadedBy: metadata.userId,
