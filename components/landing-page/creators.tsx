@@ -18,7 +18,7 @@ const creators = [
         name: "Ana Moura",
         role: "Developer",
         description: "Desenvolvimento da CoordenaApp. Backedn e Frontend",
-        image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Bea",
+        image: "https://media.licdn.com/dms/image/v2/D4D03AQGHnn3dP8yWpw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1718831145503?e=1777507200&v=beta&t=qUYrHCxlDXzIMUnosrD6th5iU-zeH92N4B11xdXw2qs",
         github: "https://github.com/acarolina-moura",
         linkedin: "https://www.linkedin.com/in/anacarolinat-moura",
     },
@@ -35,7 +35,7 @@ const creators = [
         name: "Margarida Louzeiro",
         role: "Developer",
         description: "Desenvolvimento da CoordenaApp. Backedn e Frontend",
-        image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dani",
+        image: "https://media.licdn.com/dms/image/v2/D4E03AQGdv7o27x8G_g/profile-displayphoto-scale_400_400/B4EZ2GlrrYHYAg-/0/1776079521028?e=1777507200&v=beta&t=inePYifBwPRx4SFNRsTds2PTDolszr3nPqyCGnoEcXU",
         github: "https://github.com/mp-24",
         linkedin: "https://www.linkedin.com/in/margarida-louzeiro-b1a765361/",
     },
@@ -59,11 +59,7 @@ export function Creators() {
                     </h2>
                 </div>
 
-<<<<<<< HEAD
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-=======
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
->>>>>>> 188c8867c94ff149ad4dea98c85ed7ba5e75c9aa
                     {creators.map((creator, index) => (
                         <motion.div
                             key={creator.name}
