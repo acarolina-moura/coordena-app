@@ -80,7 +80,7 @@ export async function CoordenadorDashboard({ userName }: { userName: string }) {
       </div>
 
       {/* ── KPI Cards ──────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 xl:grid-cols-4">
         {kpis.map((kpi) => {
           const Icon = kpi.icon;
           return (
@@ -92,7 +92,7 @@ export async function CoordenadorDashboard({ userName }: { userName: string }) {
               )}
             >
               <div className="flex flex-col gap-1">
-                <span className="text-[11px] font-semibold tracking-widest text-gray-500 dark:text-gray-400">
+                <span className="text-xs sm:text-[11px] font-semibold tracking-widest text-gray-500 dark:text-gray-400">
                   {kpi.label}
                 </span>
                 <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
@@ -113,7 +113,7 @@ export async function CoordenadorDashboard({ userName }: { userName: string }) {
       </div>
 
       {/* ── Bottom grid ────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[1fr_340px]">
         {/* ── Próximas Sessões ──────────────────────────────────────── */}
         <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
           <div className="flex items-center justify-between">

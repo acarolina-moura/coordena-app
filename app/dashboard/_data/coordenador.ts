@@ -703,3 +703,51 @@ export type FormandoEmRisco = Awaited<
   ReturnType<typeof getFormandosEmRisco>
 >[number];
 export type FormadorItem = FormadorComDetalhes;
+
+// ─── Todas as Justificativas de um Formando ───────────────────────────────────
+
+export type JustificativaFormando = {
+  id: string;
+  status: string;
+  comentarioFormando: string | null;
+  documentoUrl: string | null;
+  justificativa: string | null;
+  aula: {
+    titulo: string;
+    dataHora: Date;
+    modulo: { nome: string };
+  };
+};
+
+export async function getJustificativasDoFormando(
+  formandoId: string,
+): Promise<JustificativaFormando[]> {
+  const presencas = await prisma.presenca.findMany({
+    where: {
+      formandoId,
+      status: { in: ["JUSTIFICADO", "PENDENTE"] },
+      comentarioFormando: { not: null },
+    },
+    include: {
+      aula: {
+        include: {
+          modulo: { select: { nome: true } },
+        },
+      },
+    },
+    orderBy: { aula: { dataHora: "desc" } },
+  });
+
+  return presencas.map((p) => ({
+    id: p.id,
+    status: p.status,
+    comentarioFormando: p.comentarioFormando,
+    documentoUrl: p.documentoUrl,
+    justificativa: p.justificativa,
+    aula: {
+      titulo: p.aula.titulo,
+      dataHora: p.aula.dataHora,
+      modulo: p.aula.modulo,
+    },
+  }));
+}

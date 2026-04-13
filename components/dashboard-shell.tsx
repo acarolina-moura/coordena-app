@@ -60,11 +60,12 @@ export function DashboardShell({ sidebar, user, notificationCount = 0, children 
         )}
       >
         <div className="absolute top-4 right-4 lg:hidden">
-            <button 
+            <button
                 onClick={() => setIsSidebarOpen(false)}
+                aria-label="Fechar menu lateral"
                 className="p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 transition-all"
             >
-                <X className="h-6 w-6" />
+                <X className="h-6 w-6" aria-hidden="true" />
             </button>
         </div>
         {sidebar}

@@ -137,3 +137,44 @@ export async function rejeitarJustificativa(presencaId: string) {
     };
   }
 }
+
+export async function getJustificativasFormando(formandoId: string) {
+  try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "COORDENADOR") {
+      return [];
+    }
+
+    const presencas = await prisma.presenca.findMany({
+      where: {
+        formandoId,
+        status: { in: ["JUSTIFICADO", "PENDENTE"] },
+        comentarioFormando: { not: null },
+      },
+      include: {
+        aula: {
+          include: {
+            modulo: { select: { nome: true } },
+          },
+        },
+      },
+      orderBy: { aula: { dataHora: "desc" } },
+    });
+
+    return presencas.map((p) => ({
+      id: p.id,
+      status: p.status,
+      comentarioFormando: p.comentarioFormando,
+      documentoUrl: p.documentoUrl,
+      justificativa: p.justificativa,
+      aula: {
+        titulo: p.aula.titulo,
+        dataHora: p.aula.dataHora.toISOString(),
+        modulo: p.aula.modulo,
+      },
+    }));
+  } catch (erro) {
+    logError("Erro ao buscar justificativas:", erro);
+    return [];
+  }
+}
