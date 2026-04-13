@@ -1,14 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
-<<<<<<< HEAD
-import { Plus, Trash2, FileText, Upload, Loader2 } from "lucide-react";
-=======
-import { Plus, Trash2, FileText } from "lucide-react";
->>>>>>> Everton
+import { Plus, Trash2, FileText, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
-import { uploadMaterialApoio, deleteMaterialApoio } from "../actions";
+import { deleteMaterialApoio } from "../actions";
+import { registarMaterialApoio } from "@/app/dashboard/upload-actions";
+import { UploadFormando } from "@/components/upload-formando";
 import { toast } from "sonner";
 
 interface Material {
@@ -34,49 +32,34 @@ interface GestaoMateriaisFormadorProps {
 export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisFormadorProps) {
   const [isPending, startTransition] = useTransition();
   const [showForm, setShowForm] = useState(false);
-<<<<<<< HEAD
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-=======
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
   const [moduloId, setModuloId] = useState("");
-  const [_uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
+  const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
-  async function handleUploadComplete(url: string, _name: string, _size: number) {
+  async function handleUploadComplete(url: string, name: string, size: number) {
     if (!titulo.trim() || !moduloId) return;
->>>>>>> Everton
 
-  async function handleUpload(formData: FormData) {
     startTransition(async () => {
-      const result = await uploadMaterialApoio(formData);
+      const result = await registarMaterialApoio(url, titulo, descricao, moduloId);
       if ("error" in result) {
         toast.error(result.error);
       } else {
         toast.success("Material carregado com sucesso!");
         setShowForm(false);
-        setSelectedFile(null);
+        setTitulo("");
+        setDescricao("");
+        setModuloId("");
+        setUploadedFileUrl(null);
+        setUploadedFileName(null);
       }
     });
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-    }
-  }
-
-  function handleCancelForm() {
-    setShowForm(!showForm);
-    if (!showForm) {
-      setSelectedFile(null);
-    }
-  }
-
   async function handleDelete(id: string) {
     if (!confirm("Tem certeza que deseja eliminar este material?")) return;
-    
+
     startTransition(async () => {
       const result = await deleteMaterialApoio(id);
       if ("error" in result) {
@@ -92,7 +75,7 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Gerir Materiais de Apoio</h2>
         <button
-          onClick={handleCancelForm}
+          onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-purple-600/20 transition-all hover:bg-purple-700 hover:shadow-purple-700/30 active:scale-95"
         >
           {showForm ? "Cancelar" : <><Plus className="h-4 w-4" /> Novo Material</>}
@@ -101,33 +84,23 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
 
       {showForm && (
         <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
-          <form action={handleUpload} className="space-y-4">
+          <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <label htmlFor="titulo-material" className="text-sm font-medium text-gray-700 dark:text-gray-300">Título do Material</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Título do Material</label>
                 <input
-<<<<<<< HEAD
-                  name="titulo"
-=======
-                  id="titulo-material"
                   value={titulo}
                   onChange={(e) => setTitulo(e.target.value)}
->>>>>>> Everton
                   required
                   placeholder="Ex: Guia de Estudo Módulo 1"
                   className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10"
                 />
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="modulo-select" className="text-sm font-medium text-gray-700 dark:text-gray-300">Módulo</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Módulo</label>
                 <select
-<<<<<<< HEAD
-                  name="moduloId"
-=======
-                  id="modulo-select"
                   value={moduloId}
                   onChange={(e) => setModuloId(e.target.value)}
->>>>>>> Everton
                   required
                   className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10"
                 >
@@ -142,82 +115,38 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="descricao-material" className="text-sm font-medium text-gray-700 dark:text-gray-300">Descrição (Opcional)</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Descrição (Opcional)</label>
               <textarea
-<<<<<<< HEAD
-                name="descricao"
-=======
-                id="descricao-material"
                 value={descricao}
                 onChange={(e) => setDescricao(e.target.value)}
->>>>>>> Everton
                 rows={3}
                 placeholder="Breve descrição sobre o conteúdo deste material..."
                 className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Ficheiro</label>
-              <div className={`relative flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed transition-colors ${
-                selectedFile 
-                  ? 'border-green-400 dark:border-green-500 bg-green-50 dark:bg-green-900/10' 
-                  : 'border-gray-200 dark:border-gray-800 hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50/50 dark:hover:bg-purple-900/10'
-              }`}>
-                <input
-                  type="file"
-                  name="file"
-                  required
-                  onChange={handleFileChange}
-                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                />
-                {selectedFile ? (
-                  <>
-                    <FileText className="h-8 w-8 text-green-500 dark:text-green-400" />
-                    <p className="mt-2 text-sm font-medium text-green-700 dark:text-green-400">
-                      {selectedFile.name}
-                    </p>
-                    <p className="text-xs text-green-600 dark:text-green-500">
-                      {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <Upload className="h-8 w-8 text-gray-400 dark:text-gray-600" />
-                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                      Clique ou arraste um ficheiro para carregar
-                    </p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">PDF, ZIP, DOC (Máx: 10MB)</p>
-                  </>
-                )}
-              </div>
-            </div>
+            {/* UploadThing */}
+            <UploadFormando
+              endpoint="fileUploader"
+              label="Ficheiro do Material"
+              description="PDF, ZIP, DOC, XLS (máx. 32MB)"
+              onUploadComplete={handleUploadComplete}
+              variant="dropzone"
+              disabled={!titulo.trim() || !moduloId}
+            />
 
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                disabled={isPending}
-                className="flex items-center gap-2 rounded-xl bg-purple-600 px-6 py-2 text-sm font-semibold text-white transition-all hover:bg-purple-700 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {isPending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    A carregar...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="h-4 w-4" />
-                    Carregar Material
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
+            {uploadedFileName && (
+              <div className="flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 px-3 py-2 text-sm">
+                <FileText className="h-4 w-4 text-emerald-600 shrink-0" />
+                <span className="text-emerald-700 dark:text-emerald-400 font-medium truncate">{uploadedFileName}</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {materiais.length === 0 ? (
-        <div className="flex bg-white dark:bg-gray-900 flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 p-8 sm:p-12 lg:p-20 text-center">
+        <div className="flex bg-white dark:bg-gray-900 flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 p-20 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-50 dark:bg-gray-800">
             <FileText className="h-8 w-8 text-gray-300 dark:text-gray-600" />
           </div>
@@ -225,7 +154,7 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Comece por carregar materiais para os seus alunos.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
           <table className="w-full text-left text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800/50 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               <tr>
