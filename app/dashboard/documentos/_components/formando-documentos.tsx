@@ -84,8 +84,9 @@ function DocCard({
       <div className="flex flex-col gap-3">
         {temValidade && (
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-gray-600">Data de validade</label>
+            <label htmlFor="data-validade" className="text-xs font-semibold text-gray-600">Data de validade</label>
             <input
+              id="data-validade"
               type="date"
               value={validadeInput}
               onChange={(e) => setValidadeInput(e.target.value)}
@@ -273,7 +274,7 @@ export function FormandoDocumentos({ documentos: documentosIniciais, userId }: {
 
       {/* Dialog de UploadThing */}
       {docUploadThing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" role="dialog" aria-modal="true">
           <div className="relative w-full max-w-lg rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-xl">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
@@ -287,7 +288,7 @@ export function FormandoDocumentos({ documentos: documentosIniciais, userId }: {
               </div>
               <button
                 onClick={() => setDocUploadThing(null)}
-                className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="h-11 w-11 sm:h-8 sm:w-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 ✕
               </button>

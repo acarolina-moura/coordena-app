@@ -177,7 +177,7 @@ export default function RegisterPage() {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="w-full max-w-lg relative z-10"
         >
-          <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl border border-slate-200 dark:border-slate-800/50 rounded-[2.5rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-none relative">
+          <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl border border-slate-200 dark:border-slate-800/50 rounded-[2.5rem] p-6 sm:p-8 lg:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-none relative">
             {/* Top Glow */}
             <div className="absolute -top-px left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
 
@@ -257,9 +257,10 @@ export default function RegisterPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
                   </button>
                 </div>
                 {errors.senha && <p className="text-red-500 text-xs ml-1">{errors.senha}</p>}
@@ -293,7 +294,7 @@ export default function RegisterPage() {
                 <Label className="text-slate-700 dark:text-slate-300 ml-1">
                   Tipo de Utilizador
                 </Label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {roles.map((role) => (
                     <button
                       key={role.id}

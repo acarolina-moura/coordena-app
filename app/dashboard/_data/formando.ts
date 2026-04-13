@@ -183,14 +183,15 @@ export async function getProximasSessoesFormando(userId: string) {
 
     if (!formando) return [];
 
-    const inicioDoDia = new Date();
-    inicioDoDia.setHours(0, 0, 0, 0);
+    // CORREÇÃO: Comparar com a hora atual, não com o início do dia
+    // para que sessões já terminadas não apareçam
+    const agora = new Date();
 
     const cursoIds = formando.inscricoes.map((i) => i.cursoId);
 
     const aulas = await prisma.aula.findMany({
         where: {
-            dataHora: { gte: inicioDoDia },
+            dataHora: { gte: agora },
             modulo: { cursoId: { in: cursoIds } },
         },
         orderBy: { dataHora: "asc" },

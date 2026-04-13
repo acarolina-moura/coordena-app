@@ -308,7 +308,7 @@ function TrabalhoCard({ trabalho, onSubmeter, loading, moduloNome }: { trabalho:
                                             <FileText className="w-5 h-5 text-slate-400 shrink-0" />
                                             <span className="text-xs font-bold text-slate-700 truncate">Enunciado / Apoio</span>
                                         </div>
-                                        <Button variant="ghost" size="sm" className="h-8 text-teal-600 font-bold shrink-0" asChild>
+                                        <Button variant="ghost" size="sm" className="h-11 sm:h-8 text-teal-600 font-bold shrink-0" asChild>
                                             <a href={trabalho.ficheiroAnexoUrl} download><Download className="w-4 h-4 mr-2" /> Baixar</a>
                                         </Button>
                                     </div>

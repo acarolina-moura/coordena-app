@@ -135,9 +135,10 @@ export function TopBar({
       <div className="flex lg:hidden items-center gap-3 mr-2">
         <button
           onClick={onMenuClick}
+          aria-label="Abrir menu de navegação"
           className="p-2 -ml-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
         >
-          <Menu className="h-6 w-6" />
+          <Menu className="h-6 w-6" aria-hidden="true" />
         </button>
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 bg-teal-500 rounded-lg flex items-center justify-center text-white">
@@ -154,6 +155,7 @@ export function TopBar({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
           placeholder="Pesquisar cursos, formadores, formandos..."
+          aria-label="Pesquisar"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="pl-9 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-sm placeholder:text-gray-400 dark:text-gray-200 focus-visible:ring-indigo-500"

@@ -87,8 +87,9 @@ function DocCard({
       <div className="flex flex-col gap-3">
         {temValidade && (
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Data de validade</label>
+            <label htmlFor="data-validade" className="text-xs font-semibold text-gray-600 dark:text-gray-400">Data de validade</label>
             <input
+              id="data-validade"
               type="date"
               value={validadeInput}
               onChange={(e) => setValidadeInput(e.target.value)}
@@ -284,7 +285,7 @@ export function FormadorDocumentos({ documentos: documentosIniciais }: { documen
               </div>
               <button
                 onClick={() => setDocUploadThing(null)}
-                className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="h-11 w-11 sm:h-8 sm:w-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>

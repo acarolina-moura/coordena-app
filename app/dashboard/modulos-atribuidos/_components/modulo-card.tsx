@@ -85,8 +85,7 @@ const STATUS_STYLE: Record<ModuloStatus, string> = {
  */
 function ModuloDetailModal({ modulo, onClose }: { modulo: ModuloAtribuido; onClose: () => void }) {
   return (
-    // Full-screen overlay with centered modal
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true">
       {/* Modal Container with max width and scrollable content */}
       <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-900 p-6 shadow-lg dark:shadow-2xl border dark:border-gray-800">
         {/* Modal Header */}

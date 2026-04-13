@@ -290,24 +290,26 @@ export default function FormadorCalendarioPage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_380px]">
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[1fr_380px] items-start">
                         {/* Calendar grid */}
-                        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+                        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 self-start">
                             <div className="flex items-center justify-between mb-6">
                                 <button
                                     onClick={prevMonth}
-                                    className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                    aria-label="Mês anterior"
+                                    className="flex h-11 w-11 sm:h-8 sm:w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                                 >
-                                    <ChevronLeft className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                                    <ChevronLeft className="h-4 w-4 text-gray-600 dark:text-gray-400" aria-hidden="true" />
                                 </button>
                                 <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
                                     {MONTHS[viewMonth]} {viewYear}
                                 </h2>
                                 <button
                                     onClick={nextMonth}
-                                    className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                    aria-label="Mês seguinte"
+                                    className="flex h-11 w-11 sm:h-8 sm:w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                                 >
-                                    <ChevronRight className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                                    <ChevronRight className="h-4 w-4 text-gray-600 dark:text-gray-400" aria-hidden="true" />
                                 </button>
                             </div>
 
@@ -396,21 +398,21 @@ export default function FormadorCalendarioPage() {
                                                     sessao.cor,
                                                 )}
                                             >
-                                                <div className="flex items-start justify-between gap-2">
-                                                    <p className="text-sm font-semibold leading-tight">
+                                                <div className="flex items-start justify-between gap-2 min-w-0">
+                                                    <p className="text-sm font-semibold leading-tight truncate flex-1 min-w-0">
                                                         {sessao.titulo}
                                                     </p>
-                                                    <span className="shrink-0 rounded-lg bg-white/60 border border-current/10 px-2 py-0.5 text-[11px] font-medium">
+                                                    <span className="shrink-0 rounded-lg bg-white/60 border border-current/10 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap">
                                                         {sessao.ufcd}
                                                     </span>
                                                 </div>
-                                                <div className="flex flex-wrap gap-3 text-xs opacity-80">
-                                                    <span className="flex items-center gap-1">
-                                                        <Clock className="h-3 w-3" />{" "}
+                                                <div className="flex flex-wrap gap-y-2 gap-x-3 text-xs opacity-80 min-w-0">
+                                                    <span className="flex items-center gap-1 truncate">
+                                                        <Clock className="h-3 w-3 shrink-0" />{" "}
                                                         {sessao.horaInicio} ·{" "}
                                                         {sessao.duracao}
                                                     </span>
-                                                    <span>
+                                                    <span className="truncate block">
                                                         {sessao.formador}
                                                     </span>
                                                 </div>

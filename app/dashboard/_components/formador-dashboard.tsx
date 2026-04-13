@@ -31,13 +31,13 @@ export async function FormadorDashboard({ userName, userId }: { userName: string
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 xl:grid-cols-4">
         {kpis.map((kpi) => {
           const Icon = kpi.icon
           return (
             <div key={kpi.label} className={cn('flex items-center justify-between rounded-2xl p-5', kpi.bg)}>
               <div className="flex flex-col gap-1">
-                <span className="text-[11px] font-semibold tracking-widest text-gray-500 dark:text-gray-400">{kpi.label}</span>
+                <span className="text-xs sm:text-[11px] font-semibold tracking-widest text-gray-500 dark:text-gray-400">{kpi.label}</span>
                 <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">{kpi.value}</span>
               </div>
               <div className={cn('flex h-12 w-12 items-center justify-center rounded-xl', kpi.iconBg)}>

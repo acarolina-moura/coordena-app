@@ -87,8 +87,9 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Título do Material</label>
+                <label htmlFor="titulo-material" className="text-sm font-medium text-gray-700 dark:text-gray-300">Título do Material</label>
                 <input
+                  id="titulo-material"
                   value={titulo}
                   onChange={(e) => setTitulo(e.target.value)}
                   required
@@ -97,8 +98,9 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Módulo</label>
+                <label htmlFor="modulo-select" className="text-sm font-medium text-gray-700 dark:text-gray-300">Módulo</label>
                 <select
+                  id="modulo-select"
                   value={moduloId}
                   onChange={(e) => setModuloId(e.target.value)}
                   required
@@ -115,8 +117,9 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Descrição (Opcional)</label>
+              <label htmlFor="descricao-material" className="text-sm font-medium text-gray-700 dark:text-gray-300">Descrição (Opcional)</label>
               <textarea
+                id="descricao-material"
                 value={descricao}
                 onChange={(e) => setDescricao(e.target.value)}
                 rows={3}
@@ -146,7 +149,7 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
       )}
 
       {materiais.length === 0 ? (
-        <div className="flex bg-white dark:bg-gray-900 flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 p-20 text-center">
+        <div className="flex bg-white dark:bg-gray-900 flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 p-8 sm:p-12 lg:p-20 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-50 dark:bg-gray-800">
             <FileText className="h-8 w-8 text-gray-300 dark:text-gray-600" />
           </div>
@@ -154,7 +157,7 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Comece por carregar materiais para os seus alunos.</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
+        <div className="overflow-x-auto overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
           <table className="w-full text-left text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800/50 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               <tr>

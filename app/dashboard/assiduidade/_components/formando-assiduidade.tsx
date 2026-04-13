@@ -123,7 +123,7 @@ function JustificarDialog({ presencaId, data, modulo }: { presencaId: string, da
                 <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 gap-1.5 border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-all font-bold text-[10px] uppercase tracking-wider rounded-lg shadow-sm"
+                    className="h-11 sm:h-8 gap-1.5 border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-all font-bold text-xs uppercase tracking-wider rounded-lg shadow-sm"
                 >
                     <FileText className="w-3.5 h-3.5" /> Justificar Falta
                 </Button>
@@ -218,76 +218,85 @@ function AulaDetailDialog({ presenca }: { presenca: any }) {
             : presenca.documentoUrl
         : null;
 
+    // Gradiente baseado no estado da presença
+    const gradientMap: Record<string, string> = {
+        PRESENTE: "from-emerald-500 to-green-600",
+        AUSENTE: "from-red-500 to-rose-600",
+        PENDENTE: "from-amber-500 to-orange-600",
+        JUSTIFICADO: "from-teal-500 to-emerald-600",
+    };
+    const headerGradient = gradientMap[presenca.status] || "from-teal-500 to-indigo-600";
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <button className="text-left w-full group">
                     <div className="flex flex-col">
-                        <span className="text-[10px] font-bold text-teal-500 uppercase tracking-widest leading-none mb-1 group-hover:text-teal-700 transition-colors">{presenca.modulo}</span>
-                        <span className="text-sm font-semibold text-slate-600 dark:text-gray-300 line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{presenca.aula}</span>
+                        <span className="text-xs font-bold text-teal-500 dark:text-teal-400 uppercase tracking-widest leading-none mb-1 group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors">{presenca.modulo}</span>
+                        <span className="text-sm font-semibold text-gray-600 dark:text-gray-300 line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{presenca.aula}</span>
                     </div>
                 </button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[520px] border-none shadow-2xl overflow-hidden rounded-[2rem] p-0">
-                <div className="bg-gradient-to-br from-teal-500 to-indigo-600 p-8 text-white relative">
+            <DialogContent className="sm:max-w-[520px] border-none shadow-2xl overflow-hidden rounded-[2rem] p-0 bg-white dark:bg-gray-900">
+                <div className={`bg-gradient-to-br ${headerGradient} p-8 text-white relative`}>
                     <div className="absolute top-4 right-4 h-24 w-24 bg-white/10 rounded-full blur-2xl" />
                     <DialogHeader className="relative z-10">
                         <DialogTitle className="text-2xl font-bold tracking-tight">Detalhes da Aula</DialogTitle>
-                        <DialogDescription className="text-teal-50 text-base leading-relaxed mt-2">
+                        <DialogDescription className="text-white/80 text-base leading-relaxed mt-2">
                             <span className="font-bold text-white">{presenca.modulo}</span>
                         </DialogDescription>
                     </DialogHeader>
                 </div>
 
-                <div className="p-8 bg-white">
+                <div className="p-8 bg-white dark:bg-gray-900">
                     <div className="flex flex-col gap-5">
                         {/* Aula */}
                         <div>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Aula</p>
-                            <p className="text-base font-bold text-slate-900">{presenca.aula}</p>
+                            <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Aula</p>
+                            <p className="text-base font-bold text-gray-900 dark:text-gray-100">{presenca.aula}</p>
                         </div>
 
                         {/* Data e Hora */}
-                        <div className="flex items-center gap-4">
+                        <div className="flex flex-col sm:flex-row gap-4">
                             <div className="flex items-center gap-2">
-                                <Calendar className="h-4 w-4 text-teal-500" />
+                                <Calendar className="h-4 w-4 text-teal-500 dark:text-teal-400 shrink-0" />
                                 <div>
-                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Data</p>
-                                    <p className="text-sm font-semibold text-slate-900">{data.toLocaleDateString("pt-PT", { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                    <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Data</p>
+                                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{data.toLocaleDateString("pt-PT", { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Clock3 className="h-4 w-4 text-teal-500" />
+                                <Clock3 className="h-4 w-4 text-teal-500 dark:text-teal-400 shrink-0" />
                                 <div>
-                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Hora</p>
-                                    <p className="text-sm font-semibold text-slate-900">{data.toLocaleTimeString("pt-PT", { hour: '2-digit', minute: '2-digit' })}</p>
+                                    <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Hora</p>
+                                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{data.toLocaleTimeString("pt-PT", { hour: '2-digit', minute: '2-digit' })}</p>
                                 </div>
                             </div>
                         </div>
 
                         {/* Estado */}
                         <div>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Estado</p>
+                            <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Estado</p>
                             <BadgeEstado estado={presenca.status as string} />
                         </div>
 
                         {/* Justificativa */}
                         {presenca.comentarioFormando && (
                             <div>
-                                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Justificativa</p>
-                                <p className="text-sm text-slate-700 bg-slate-50 rounded-xl p-3">{presenca.comentarioFormando}</p>
+                                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Justificativa</p>
+                                <p className="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-xl p-3">{presenca.comentarioFormando}</p>
                             </div>
                         )}
 
                         {/* Documento */}
                         {docLink && (
                             <div>
-                                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Comprovativo</p>
+                                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Comprovativo</p>
                                 <a
                                     href={docLink}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-100 transition-all"
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all"
                                 >
                                     <FileText className="h-3.5 w-3.5" />
                                     Abrir Arquivo
@@ -301,7 +310,7 @@ function AulaDetailDialog({ presenca }: { presenca: any }) {
                 <div className="px-8 pb-6 flex justify-end">
                     <button
                         onClick={() => setOpen(false)}
-                        className="flex items-center gap-1.5 text-sm font-medium text-slate-400 hover:text-slate-600 transition-colors"
+                        className="flex items-center gap-1.5 text-sm font-medium text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                     >
                         <X className="h-4 w-4" /> Fechar
                     </button>
@@ -470,7 +479,7 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                                                                 <FileText className="w-3.5 h-3.5" />
                                                                 <span className="text-xs font-bold uppercase tracking-wider">Em Análise</span>
                                                             </div>
-                                                            <span className="text-[10px] text-slate-400 italic truncate max-w-[200px]">
+                                                            <span className="text-xs text-slate-400 italic truncate max-w-[200px]">
                                                                 DOC: {p.documentoUrl || "Sem anexo"}
                                                             </span>
                                                         </div>
@@ -493,21 +502,21 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                                                             href={p.documentoUrl}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 transition-all font-bold text-[10px] uppercase tracking-wider"
+                                                            className="inline-flex items-center gap-1.5 h-11 sm:h-8 px-3 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 transition-all font-bold text-xs uppercase tracking-wider"
                                                             title="Baixar comprovativo"
                                                         >
                                                             <Download className="w-3.5 h-3.5" /> Baixar Comprovativo
                                                         </a>
                                                     )}
                                                     {p.status === "JUSTIFICADO" && !p.documentoUrl && (
-                                                        <span className="text-[10px] text-gray-400 italic">Sem anexo</span>
+                                                        <span className="text-xs text-gray-400 italic">Sem anexo</span>
                                                     )}
                                                     {p.status === "PENDENTE" && p.documentoUrl && (
                                                         <a
                                                             href={p.documentoUrl}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 transition-all font-bold text-[10px] uppercase tracking-wider"
+                                                            className="inline-flex items-center gap-1.5 h-11 sm:h-8 px-3 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 transition-all font-bold text-xs uppercase tracking-wider"
                                                             title="Ver documento em análise"
                                                         >
                                                             <Download className="w-3.5 h-3.5" /> Ver Documento

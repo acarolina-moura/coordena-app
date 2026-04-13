@@ -114,7 +114,7 @@ function FormadorRowItem({
         <div className="flex items-center gap-2 shrink-0">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <button className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors">
+              <button className="flex h-11 w-11 sm:h-8 sm:w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors">
                 <Trash2 className="h-4 w-4" />
               </button>
             </AlertDialogTrigger>
@@ -140,7 +140,7 @@ function FormadorRowItem({
           {formador.status === "aceite" && (
             <button
               onClick={() => setExpanded((e) => !e)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="flex h-11 w-11 sm:h-8 sm:w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </button>
