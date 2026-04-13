@@ -12,7 +12,10 @@ import {
   FileText,
   Eye,
   X,
+<<<<<<< HEAD
   Clock3,
+=======
+>>>>>>> Everton
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";

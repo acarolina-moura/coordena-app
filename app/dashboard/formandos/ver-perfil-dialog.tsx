@@ -1,14 +1,12 @@
 'use client';
 
 import {
-  Dialog, DialogContent, DialogDescription, DialogHeader,
+  Dialog, DialogContent, DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { X, Mail, BookOpen } from "lucide-react";
+import { Mail, BookOpen } from "lucide-react";
 import { useState, useEffect } from "react";
-import { getFormandoPerfil } from "@/app/dashboard/_data/coordenador";
 import type { FormandoPerfil } from "@/app/dashboard/_data/coordenador";
 import { cn } from "@/lib/utils";
 

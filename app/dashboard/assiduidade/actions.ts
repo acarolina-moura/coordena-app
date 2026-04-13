@@ -34,11 +34,11 @@ export async function justificarFalta(
     await prisma.presenca.update({
       where: { id: presencaId },
       data: {
-        status: "PENDENTE" as any,
+        status: "PENDENTE",
         comentarioFormando: comentario,
         documentoUrl: documentoUrl || null,
         justificativa: null,
-      } as any,
+      },
     });
 
     revalidatePath("/dashboard/assiduidade");
@@ -79,7 +79,7 @@ export async function aprovarJustificativa(presencaId: string) {
 
     await prisma.presenca.update({
       where: { id: presencaId },
-      data: { status: "JUSTIFICADO" as any },
+      data: { status: "JUSTIFICADO" },
     });
 
     revalidatePath("/dashboard/assiduidade");
@@ -120,7 +120,7 @@ export async function rejeitarJustificativa(presencaId: string) {
 
     await prisma.presenca.update({
       where: { id: presencaId },
-      data: { status: "AUSENTE" as any },
+      data: { status: "AUSENTE" },
     });
 
     revalidatePath("/dashboard/assiduidade");

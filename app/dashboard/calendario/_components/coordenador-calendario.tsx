@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -351,13 +351,7 @@ export default function CoordenadorCalendario() {
     today.getDate(),
   );
 
-  const fetchAulas = useCallback(async () => {
-    const res = await fetch("/api/aulas");
-    if (res.ok) setAulas(await res.json());
-  }, []);
-
   useEffect(() => {
-    setLoading(true);
     Promise.all([
       fetch("/api/aulas").then((r) => r.json()),
       fetch("/api/modulos").then((r) => r.json()),
@@ -370,6 +364,11 @@ export default function CoordenadorCalendario() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  async function fetchAulas() {
+    const res = await fetch("/api/aulas");
+    if (res.ok) setAulas(await res.json());
+  }
 
   async function handleDelete(id: string) {
     setDeleting(id);

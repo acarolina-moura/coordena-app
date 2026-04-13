@@ -1,4 +1,4 @@
-import { BookOpen, Clock, Mail, Briefcase, AlertTriangle, ArrowRight } from 'lucide-react'
+import { BookOpen, Clock, Mail, Briefcase, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { getFormadorStats, getProximasSessoesFormador, getConvitesPendentesFormador, SessaoFormador, ConvitePendente } from '@/app/dashboard/_data/formador'

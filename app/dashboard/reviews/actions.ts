@@ -16,7 +16,7 @@ export async function submeterReview(moduloId: string, nota: number, comentario:
 
         if (!formando) throw new Error("Formando não encontrado");
 
-        await (prisma as any).reviewModulo.upsert({
+        await prisma.reviewModulo.upsert({
             where: {
                 formandoId_moduloId: {
                     formandoId: formando.id,

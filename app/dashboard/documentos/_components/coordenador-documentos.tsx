@@ -3,24 +3,17 @@
 import { useState } from "react";
 import {
   Search, ChevronUp, ChevronDown, CheckCircle2,
-  AlertTriangle, Trash2, Plus,
+  AlertTriangle, Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter,
-  DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import type { FormadorComDocumentos } from "@/app/dashboard/_data/documentos";
-import { useRouter } from 'next/navigation'
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
@@ -183,7 +176,6 @@ interface CoordenadorDocumentosProps {
 
 export function CoordenadorDocumentos({ formadores: formadoresIniciais }: CoordenadorDocumentosProps) {
   const [search, setSearch] = useState("");
-  const router = useRouter()
   const [formadores, setFormadores] = useState<FormadorRow[]>(
     formadoresIniciais.map((f) => ({
       id: f.id,

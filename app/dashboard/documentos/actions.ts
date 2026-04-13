@@ -20,8 +20,8 @@ export async function registarDocumento(formData: FormData) {
     const role = session.user.role;
     const fileUrl = formData.get("fileUrl") as string;
     const tipo = formData.get("tipo") as string;
-    const nomeFicheiro = formData.get("nomeFicheiro") as string;
-    const tamanho = parseInt(formData.get("tamanho") as string) || 0;
+    const _nomeFicheiro = formData.get("nomeFicheiro") as string;
+    const _tamanho = parseInt(formData.get("tamanho") as string) || 0;
     const numero = formData.get("numero") as string | undefined;
     const dataEmissao = formData.get("dataEmissao") as string | undefined;
     const dataExpiracao = formData.get("dataExpiracao") as string | undefined;

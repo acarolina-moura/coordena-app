@@ -168,7 +168,7 @@ async function main() {
         }
     })
 
-    const item2 = await prisma.itemTemplateAvaliacao.create({
+    const _item2 = await prisma.itemTemplateAvaliacao.create({
         data: {
             nome: 'Dashboard de Finanças',
             descricao: 'Implementar a interface de um dashboard utilizando CSS Grid.',

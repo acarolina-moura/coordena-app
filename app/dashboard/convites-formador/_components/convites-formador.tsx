@@ -7,24 +7,34 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { responderConviteFormador } from "../actions";
 
+interface ConviteItem {
+    id: string;
+    status: string;
+    descricao: string | null;
+    dataEnvio: Date | string;
+    dataResposta: Date | string | null;
+    cursoNome: string | null;
+    moduloNome: string | null;
+}
+
 interface ConvitesFormadorProps {
-    initialConvites: any[];
+    initialConvites: ConviteItem[];
 }
 
 export function ConvitesFormador({ initialConvites }: ConvitesFormadorProps) {
     const [convites, setConvites] = useState(initialConvites);
     const [loadingId, setLoadingId] = useState<string | null>(null);
 
-    const pendentes = convites.filter((c: any) => c.status === "PENDENTE");
-    const historico = convites.filter((c: any) => c.status !== "PENDENTE");
+    const pendentes = convites.filter((c) => c.status === "PENDENTE");
+    const historico = convites.filter((c) => c.status !== "PENDENTE");
 
     async function handleResposta(id: string, acao: "ACEITE" | "RECUSADO") {
         setLoadingId(id);
         const res = await responderConviteFormador(id, acao);
 
         if (res.success) {
-            setConvites((prev: any) =>
-                prev.map((c: any) => c.id === id ? { ...c, status: acao, dataResposta: new Date() } : c)
+            setConvites((prev: ConviteItem[]) =>
+                prev.map((c) => c.id === id ? { ...c, status: acao, dataResposta: new Date() } : c)
             );
         }
         setLoadingId(null);
@@ -54,7 +64,7 @@ export function ConvitesFormador({ initialConvites }: ConvitesFormadorProps) {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <AnimatePresence mode="popLayout">
-                            {pendentes.map((convite: any, i: number) => (
+                            {pendentes.map((convite, i) => (
                                 <motion.div
                                     key={convite.id}
                                     layout
@@ -150,7 +160,7 @@ export function ConvitesFormador({ initialConvites }: ConvitesFormadorProps) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-                                {historico.map((convite: any) => (
+                                {historico.map((convite) => (
                                     <tr key={convite.id} className="hover:bg-gray-50/30 dark:hover:bg-gray-800/40 transition-colors">
                                         <td className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200">
                                             {convite.cursoNome || 'Curso Removido'}

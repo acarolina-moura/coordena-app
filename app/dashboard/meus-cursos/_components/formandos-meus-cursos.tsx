@@ -4,7 +4,6 @@ import {
     Clock,
     BookOpen,
     CalendarDays,
-    GraduationCap,
     ChevronDown,
     ChevronUp,
 } from "lucide-react";

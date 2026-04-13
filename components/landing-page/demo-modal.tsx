@@ -13,7 +13,6 @@ import {
     ChevronLeft,
     ChevronRight,
     BookOpen,
-    Users,
     Calendar,
     Clock,
     User,

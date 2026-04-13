@@ -69,7 +69,7 @@ export async function POST(req: Request) {
             { message: 'Utilizador criado com sucesso', userId: user.id },
             { status: 201 }
         )
-    } catch (error) {
+    } catch (_error) {
         return NextResponse.json(
             { error: 'Erro interno do servidor' },
             { status: 500 }

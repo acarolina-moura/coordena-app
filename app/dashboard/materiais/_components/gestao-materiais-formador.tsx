@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
+<<<<<<< HEAD
 import { Plus, Trash2, FileText, Upload, Loader2 } from "lucide-react";
+=======
+import { Plus, Trash2, FileText } from "lucide-react";
+>>>>>>> Everton
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { uploadMaterialApoio, deleteMaterialApoio } from "../actions";
@@ -30,7 +34,18 @@ interface GestaoMateriaisFormadorProps {
 export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisFormadorProps) {
   const [isPending, startTransition] = useTransition();
   const [showForm, setShowForm] = useState(false);
+<<<<<<< HEAD
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+=======
+  const [titulo, setTitulo] = useState("");
+  const [descricao, setDescricao] = useState("");
+  const [moduloId, setModuloId] = useState("");
+  const [_uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+
+  async function handleUploadComplete(url: string, _name: string, _size: number) {
+    if (!titulo.trim() || !moduloId) return;
+>>>>>>> Everton
 
   async function handleUpload(formData: FormData) {
     startTransition(async () => {
@@ -91,7 +106,13 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
               <div className="space-y-1.5">
                 <label htmlFor="titulo-material" className="text-sm font-medium text-gray-700 dark:text-gray-300">Título do Material</label>
                 <input
+<<<<<<< HEAD
                   name="titulo"
+=======
+                  id="titulo-material"
+                  value={titulo}
+                  onChange={(e) => setTitulo(e.target.value)}
+>>>>>>> Everton
                   required
                   placeholder="Ex: Guia de Estudo Módulo 1"
                   className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10"
@@ -100,7 +121,13 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
               <div className="space-y-1.5">
                 <label htmlFor="modulo-select" className="text-sm font-medium text-gray-700 dark:text-gray-300">Módulo</label>
                 <select
+<<<<<<< HEAD
                   name="moduloId"
+=======
+                  id="modulo-select"
+                  value={moduloId}
+                  onChange={(e) => setModuloId(e.target.value)}
+>>>>>>> Everton
                   required
                   className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10"
                 >
@@ -117,7 +144,13 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
             <div className="space-y-1.5">
               <label htmlFor="descricao-material" className="text-sm font-medium text-gray-700 dark:text-gray-300">Descrição (Opcional)</label>
               <textarea
+<<<<<<< HEAD
                 name="descricao"
+=======
+                id="descricao-material"
+                value={descricao}
+                onChange={(e) => setDescricao(e.target.value)}
+>>>>>>> Everton
                 rows={3}
                 placeholder="Breve descrição sobre o conteúdo deste material..."
                 className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10"

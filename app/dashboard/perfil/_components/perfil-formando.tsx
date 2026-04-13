@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { Save, Edit2, User, Mail, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { updateFormandoPerfil } from '../actions-formando'
@@ -50,7 +49,7 @@ export function PerfilFormando({ formando }: { formando: FormandoData }) {
       } else {
         setMensagem({ tipo: 'erro', texto: resultado.mensagem })
       }
-    } catch (error) {
+    } catch (_error) {
       setMensagem({ tipo: 'erro', texto: 'Ocorreu um erro inesperado.' })
     } finally {
       setLoading(false)

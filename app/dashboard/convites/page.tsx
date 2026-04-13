@@ -56,7 +56,7 @@ export default async function ConvitesPage() {
     where: { email: session.user.email! },
     include: { formador: true, formando: true },
   });
-  const role = session.user.role || "FORMANDO";
+  const _role = session.user.role || "FORMANDO";
 
   // Se for FORMANDO, carrega os convites
   if (!user) redirect("/login");
@@ -72,6 +72,8 @@ export default async function ConvitesPage() {
 
     const mappedConvitesFormando = convitesFormando.map((c) => ({
       ...c,
+      cursoNome: c.curso?.nome ?? null,
+      moduloNome: null,
       Curso: c.curso,
     }));
 
@@ -270,7 +272,7 @@ export default async function ConvitesPage() {
                           Curso: {convite.curso?.nome || "N/A"}
                         </span>
                         <span className="text-xs italic text-gray-400 mt-1">
-                          "{convite.descricao}"
+                          &ldquo;{convite.descricao}&rdquo;
                         </span>
                       </div>
 

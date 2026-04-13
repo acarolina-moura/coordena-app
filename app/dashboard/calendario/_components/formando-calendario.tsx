@@ -26,6 +26,15 @@ const COLORS = [
   "bg-indigo-100 text-indigo-700 border-indigo-200",
 ];
 
+interface AulaApiResponse {
+  id: string;
+  titulo: string;
+  dataHora: string;
+  duracao: number;
+  moduloId: string;
+  formador: { user: { nome: string } };
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const MONTHS     = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
@@ -43,7 +52,7 @@ export default function CalendarioFormandoPage() {
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selected,  setSelected]  = useState(toISO(today.getFullYear(), today.getMonth(), today.getDate()));
   const [minhasSessoes, setMinhasSessoes] = useState<Sessao[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchSessoes() {
@@ -52,7 +61,7 @@ export default function CalendarioFormandoPage() {
         const data = await res.json();
         
         if (Array.isArray(data)) {
-          const mapped = data.map((aula: any, index: number) => {
+          const mapped = data.map((aula: AulaApiResponse, index: number) => {
             const dt = new Date(aula.dataHora);
             return {
               id: aula.id,

@@ -470,7 +470,7 @@ function ExcluirCursoDialog({
           <DialogDescription>
             Tens a certeza que pretendes excluir o curso{" "}
             <span className="font-bold text-gray-900 dark:text-gray-100">
-              "{curso.nome}"
+              &ldquo;{curso.nome}&rdquo;
             </span>
             ? Esta ação não pode ser desfeita e removerá também todos os módulos
             associados. A ação falhará se existirem formandos inscritos.

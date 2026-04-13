@@ -15,7 +15,7 @@ export async function submeterTrabalho(itemId: string, ficheiroUrl: string, come
     if (!formando) throw new Error("Formando não encontrado");
 
     // Criar ou atualizar a submissão
-    await (prisma as any).submissaoTrabalho.upsert({
+    await prisma.submissaoTrabalho.upsert({
         where: {
             itemId_formandoId: {
                 itemId,

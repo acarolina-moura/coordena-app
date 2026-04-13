@@ -7,6 +7,11 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { updateAvatar } from "@/app/dashboard/upload-actions";
 
+interface UploadThingFile {
+  ufsUrl?: string;
+  url?: string;
+}
+
 interface AvatarUploaderProps {
   /** URL atual da imagem de perfil */
   currentImageUrl?: string;
@@ -52,7 +57,7 @@ export function AvatarUploader({
 
   const displayUrl = optimisticUrl || currentImageUrl;
 
-  async function handleUploadComplete(res: any[]) {
+  async function handleUploadComplete(res: UploadThingFile[]) {
     if (!res?.length) return;
     const url = res[0]?.ufsUrl ?? res[0]?.url;
     if (!url) return;

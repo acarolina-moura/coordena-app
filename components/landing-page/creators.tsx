@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { Github, Linkedin, ExternalLink } from "lucide-react";
-import Image from "next/image";
 
 const creators = [
     {

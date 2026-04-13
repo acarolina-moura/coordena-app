@@ -32,7 +32,7 @@ export default function NewsletterForm() {
             } else {
                 setMessage({ type: "error", text: data.message });
             }
-        } catch (error) {
+        } catch (_error) {
             setMessage({ type: "error", text: "Erro ao processar inscrição" });
         } finally {
             setLoading(false);

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { TrendingUp, Award, CheckCircle2, XCircle } from "lucide-react";
+import { TrendingUp, CheckCircle2, XCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { MinhasNotas } from "../../_data/formando";
 

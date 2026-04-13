@@ -41,12 +41,9 @@ export function Navbar() {
         }
     };
 
-    const [menuKey, setMenuKey] = useState(0);
-
     useEffect(() => {
         if (mobileMenuOpen) {
             document.body.style.overflow = "hidden";
-            setMenuKey(k => k + 1); // Force remount = fresh scroll position
             requestAnimationFrame(() => {
                 if (menuContentRef.current) menuContentRef.current.scrollTop = 0;
             });

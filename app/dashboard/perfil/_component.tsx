@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { Camera, Plus, X, Save, Edit2, Linkedin, Github, Globe, Flag } from 'lucide-react'
+import { useState } from 'react'
+import { Plus, X, Save, Edit2, Linkedin, Github, Globe, Flag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -84,7 +83,6 @@ const COMPETENCIAS = [
 ]
 
 export function PerfilClient({ formador }: { formador: FormadorData }) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const [isEditMode, setIsEditMode] = useState(false)
   const [especialidade, setEspecialidade] = useState(formador.especialidade)
   const [selectedCompetencia, setSelectedCompetencia] = useState('')
@@ -117,14 +115,6 @@ export function PerfilClient({ formador }: { formador: FormadorData }) {
 
   function removeCompetencia(competencia: string) {
     setCompetencias((prev) => prev.filter((t) => t !== competencia))
-  }
-
-  function handleFileSelect(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    // TODO: Futura implementação de upload
-    console.log('📸 Ficheiro selecionado:', file.name, file.type, file.size)
   }
 
   async function handleSave() {
