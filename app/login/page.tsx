@@ -143,7 +143,7 @@ export default function LoginPage() {
                   <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                     {feature.label}
                   </span>
-                  <span className="text-xs leading-relaxed text-gray-400 dark:text-gray-500">
+                  <span className="text-xs leading-relaxed text-gray-400 dark:text-gray-501">
                     {feature.description}
                   </span>
                 </div>
