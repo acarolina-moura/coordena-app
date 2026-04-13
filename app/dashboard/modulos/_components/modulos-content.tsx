@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Search, Puzzle, Tag, Users, AlertCircle, CheckCircle, Trash2, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Plus, Search, Puzzle, Users, AlertCircle, CheckCircle, Trash2, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -305,7 +304,7 @@ function ExcluirModuloDialog({ modulo, onClose, onConfirm }: { modulo: ModuloCom
             Excluir Módulo
           </DialogTitle>
           <DialogDescription className="text-gray-500 dark:text-gray-400">
-            Tens a certeza que pretendes excluir o módulo <span className="font-bold text-gray-900 dark:text-gray-100">"{modulo.nome}"</span>?
+            Tens a certeza que pretendes excluir o módulo <span className="font-bold text-gray-900 dark:text-gray-100">&ldquo;{modulo.nome}&rdquo;</span>?
             Esta ação não pode ser desfeita e pode falhar se existirem aulas ou avaliações associadas.
           </DialogDescription>
         </DialogHeader>

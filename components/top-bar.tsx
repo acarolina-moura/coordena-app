@@ -46,7 +46,7 @@ const TIPO_LABEL: Record<ResultadoPesquisa["tipo"], string> = {
 
 export function TopBar({
   user,
-  notificationCount = 0,
+  notificationCount: _notificationCount = 0,
   onMenuClick,
 }: TopBarProps) {
   // ── Notificações ──────────────────────────────────────────────────────────
@@ -169,7 +169,7 @@ export function TopBar({
               </div>
             ) : resultados.length === 0 ? (
               <div className="px-4 py-6 text-center text-sm text-gray-400">
-                Sem resultados para "{query}"
+                Sem resultados para &ldquo;{query}&rdquo;
               </div>
             ) : (
               <div className="flex flex-col divide-y divide-gray-50 dark:divide-gray-800">

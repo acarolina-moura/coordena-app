@@ -88,7 +88,7 @@ export async function PUT(
     }
 
     // Atualiza os dados base do módulo
-    const modulo = await prisma.modulo.update({
+    const _modulo = await prisma.modulo.update({
       where: { id },
       data: {
         nome: nome.trim(),

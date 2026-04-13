@@ -82,9 +82,9 @@ function formatarData(data: Date): string {
 function calcularSemanasDoAno(): SemanaInfo[] {
   const semanas: SemanaInfo[] = [];
   const anoAtual = new Date().getFullYear();
-  
+
   // Encontrar a primeira segunda-feira do ano
-  let data = new Date(anoAtual, 0, 1);
+  const data = new Date(anoAtual, 0, 1);
   
   // Ajustar para segunda-feira da semana
   const dayOfWeek = data.getDay();
@@ -150,7 +150,7 @@ export default function DisponibilidadesFormador({
   userId: string;
 }) {
   // Estado: todas as 52-53 semanas do ano calculadas
-  const [todasAsSemanas, setTodasAsSemanas] = useState<SemanaInfo[]>([]);
+  const [_todasAsSemanas, setTodasAsSemanas] = useState<SemanaInfo[]>([]);
   
   // Estado: semanas agrupadas por mês (Map de "ano-mes" => [semanas])
   const [semanasAgrupadas, setSemanasAgrupadas] = useState<Map<string, SemanaInfo[]>>(new Map());

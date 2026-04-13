@@ -6,7 +6,6 @@ import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { cn } from "@/lib/utils";
 
 interface Material {
   id: string;

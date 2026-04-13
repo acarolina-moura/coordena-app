@@ -1,22 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Plus, Search, CalendarDays, Clock, Puzzle, GraduationCap, X,
-} from "lucide-react";
+import { Search, CalendarDays, Clock, Puzzle, GraduationCap, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

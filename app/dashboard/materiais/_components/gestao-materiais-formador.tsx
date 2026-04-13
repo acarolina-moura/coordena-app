@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Trash2, FileText, Loader2 } from "lucide-react";
+import { Plus, Trash2, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { deleteMaterialApoio } from "../actions";
@@ -35,10 +35,10 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
   const [moduloId, setModuloId] = useState("");
-  const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
+  const [_uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
-  async function handleUploadComplete(url: string, name: string, size: number) {
+  async function handleUploadComplete(url: string, _name: string, _size: number) {
     if (!titulo.trim() || !moduloId) return;
 
     startTransition(async () => {

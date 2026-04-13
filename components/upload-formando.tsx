@@ -11,6 +11,13 @@ import { toast } from "sonner";
 
 type Endpoint = "imageUploader" | "documentUploader" | "fileUploader";
 
+interface UploadThingFile {
+  ufsUrl?: string;
+  url?: string;
+  name?: string;
+  size?: number;
+}
+
 interface UploadFormandoProps {
   /** Tipo de upload a usar */
   endpoint: Endpoint;
@@ -41,13 +48,15 @@ export function UploadFormando({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  function handleClientUploaded(res: any[]) {
+  function handleClientUploaded(res: UploadThingFile[]) {
     if (!res || res.length === 0) return;
 
     const file = res[0];
-    const url = file.ufsUrl ?? file.url;
+    const url = file.ufsUrl ?? file.url ?? "";
     const name = file.name ?? "ficheiro";
     const size = file.size ?? 0;
+
+    if (!url) return;
 
     setSuccess(name);
     setError(null);

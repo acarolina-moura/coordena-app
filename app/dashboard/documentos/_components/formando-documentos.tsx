@@ -143,7 +143,7 @@ function DocCard({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function FormandoDocumentos({ documentos: documentosIniciais, userId }: { documentos: DocumentoResult[], userId: string }) {
+export function FormandoDocumentos({ documentos: documentosIniciais, userId: _userId }: { documentos: DocumentoResult[], userId: string }) {
   const [docs, setDocs] = useState<MeuDocumento[]>(
     documentosIniciais.map((d) => ({
       id: d.id,

@@ -2,6 +2,7 @@ import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { cache } from 'react'
+import { Prisma } from '@prisma/client'
 
 /**
  * Obtém o coordenador logado a partir da sessão atual.
@@ -112,7 +113,7 @@ export async function cursoPertenceAoCoordenador(
  * @param where - Filtros adicionais opcionais
  * @returns Objeto where filtrado por coordenador
  */
-export async function filtroCursosCoordenador(where: Record<string, any> = {}) {
+export async function filtroCursosCoordenador(where: Prisma.CursoWhereInput = {}) {
   const coordenadorId = await getCoordenadorIdOrNull()
   
   if (!coordenadorId) {
@@ -130,7 +131,7 @@ export async function filtroCursosCoordenador(where: Record<string, any> = {}) {
  * @param where - Filtros adicionais opcionais
  * @returns Objeto where filtrado por cursos do coordenador
  */
-export async function filtroInscricoesCoordenador(where: Record<string, any> = {}) {
+export async function filtroInscricoesCoordenador(where: Prisma.InscricaoWhereInput = {}) {
   const coordenadorId = await getCoordenadorIdOrNull()
   
   if (!coordenadorId) {
@@ -147,7 +148,7 @@ export async function filtroInscricoesCoordenador(where: Record<string, any> = {
  * @param where - Filtros adicionais opcionais
  * @returns Objeto where filtrado por cursos do coordenador
  */
-export async function filtroModulosCoordenador(where: Record<string, any> = {}) {
+export async function filtroModulosCoordenador(where: Prisma.ModuloWhereInput = {}) {
   const coordenadorId = await getCoordenadorIdOrNull()
   
   if (!coordenadorId) {
@@ -164,7 +165,7 @@ export async function filtroModulosCoordenador(where: Record<string, any> = {}) 
  * @param where - Filtros adicionais opcionais
  * @returns Objeto where filtrado por cursos do coordenador
  */
-export async function filtroFormadoresCoordenador(where: Record<string, any> = {}) {
+export async function filtroFormadoresCoordenador(where: Prisma.FormadorWhereInput = {}) {
   const coordenadorId = await getCoordenadorIdOrNull()
 
   if (!coordenadorId) {
@@ -188,7 +189,7 @@ export async function filtroFormadoresCoordenador(where: Record<string, any> = {
  * @param where - Filtros adicionais opcionais
  * @returns Objeto where filtrado por cursos do coordenador
  */
-export async function filtroFormandosCoordenador(where: Record<string, any> = {}) {
+export async function filtroFormandosCoordenador(where: Prisma.FormandoWhereInput = {}) {
   const coordenadorId = await getCoordenadorIdOrNull()
   
   if (!coordenadorId) {

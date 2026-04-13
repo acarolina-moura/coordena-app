@@ -39,11 +39,11 @@ export async function DELETE(
     });
 
     return NextResponse.json({ message: "Formador eliminado com sucesso" });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("[DELETE /api/formadores/[id]]", error);
-    
+
     // Verificar se o erro é de restrição de chave estrangeira (P2003)
-    if ((error as any).code === "P2003") {
+    if (error instanceof Error && "code" in error && (error as { code?: string }).code === "P2003") {
       return NextResponse.json(
         { error: "Não é possível eliminar o formador porque existem registos (aulas ou avaliações) associados." },
         { status: 400 },

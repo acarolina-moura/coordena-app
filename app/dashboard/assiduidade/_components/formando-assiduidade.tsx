@@ -45,6 +45,17 @@ interface FormandoAssiduidadeProps {
     presencas: MinhasPresencas;
 }
 
+type PresencaItem = MinhasPresencas[number];
+
+interface KPIProps {
+    label: string;
+    value: string | number;
+    icon: React.ComponentType<{ className?: string }>;
+    bg: string;
+    iconBg: string;
+    iconColor: string;
+}
+
 // ---------------------------------------------------------------------------
 // Sub-componentes auxiliares
 // ---------------------------------------------------------------------------
@@ -74,7 +85,7 @@ function BadgeEstado({ estado }: { estado: string }) {
     );
 }
 
-function KPI({ label, value, icon: Icon, bg, iconBg, iconColor }: any) {
+function KPI({ label, value, icon: Icon, bg, iconBg, iconColor }: KPIProps) {
     return (
         <div className={cn('flex items-center justify-between rounded-2xl p-5', bg)}>
             <div className="flex flex-col gap-1">
@@ -208,7 +219,7 @@ function JustificarDialog({ presencaId, data, modulo }: { presencaId: string, da
 // Dialog de Detalhes da Aula
 // ---------------------------------------------------------------------------
 
-function AulaDetailDialog({ presenca }: { presenca: any }) {
+function AulaDetailDialog({ presenca }: { presenca: PresencaItem }) {
     const [open, setOpen] = useState(false);
     const data = new Date(presenca.dataHora);
 
@@ -322,9 +333,9 @@ function AulaDetailDialog({ presenca }: { presenca: any }) {
 export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
     const LIMITE_RISCO = 75; // % mínima exigida
     const totalAulas = presencas.length;
-    const totalPresencas = presencas.filter((p: any) => p.status === "PRESENTE").length;
-    const totalFaltas = presencas.filter((p: any) => p.status === "AUSENTE" || p.status === "PENDENTE").length;
-    const totalJustificadas = presencas.filter((p: any) => p.status === "JUSTIFICADO").length;
+    const totalPresencas = presencas.filter((p) => p.status === "PRESENTE").length;
+    const totalFaltas = presencas.filter((p) => p.status === "AUSENTE" || p.status === "PENDENTE").length;
+    const totalJustificadas = presencas.filter((p) => p.status === "JUSTIFICADO").length;
 
     const percentagem = totalAulas > 0
         ? Math.round(((totalPresencas + totalJustificadas) / totalAulas) * 100)
@@ -444,7 +455,7 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                                         </td>
                                     </tr>
                                 ) : (
-                                    presencas.map((p: any, i: number) => {
+                                    presencas.map((p, i) => {
                                         const data = new Date(p.dataHora);
                                         const podeJustificar =
                                             (p.status === "AUSENTE") &&

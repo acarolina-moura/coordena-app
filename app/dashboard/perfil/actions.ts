@@ -25,7 +25,7 @@ export async function updateUserPerfil(
       return { sucesso: false, mensagem: "Email já em uso por outro utilizador" };
     }
 
-    const resultado = await prisma.user.update({
+    const _resultado = await prisma.user.update({
       where: { id: session.user.id },
       data: { nome, email, telefone },
     });

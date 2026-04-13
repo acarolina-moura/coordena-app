@@ -12,12 +12,10 @@ import {
   FileText,
   Eye,
   X,
-  Clock3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { aprovarJustificativa, rejeitarJustificativa, getJustificativasFormando } from "../actions";
 import type { JustificativaFormando } from "../../_data/coordenador";

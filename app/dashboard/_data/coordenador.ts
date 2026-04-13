@@ -8,7 +8,6 @@ import {
   filtroFormadoresCoordenador,
   filtroFormandosCoordenador 
 } from "@/lib/coordenador-utils";
-import type { AssiduidadeFormando } from "../assiduidade/_components/coordenador-assiduidade";
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
 
