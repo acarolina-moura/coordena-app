@@ -17,31 +17,6 @@ async function main() {
         },
     })
 
-    // Formador
-    await prisma.user.upsert({
-        where: { email: 'formador@coordena.pt' },
-        update: {},
-        create: {
-            nome: 'Carlos',
-            email: 'formador@coordena.pt',
-            senha: await bcrypt.hash('123456', 10),
-            role: 'FORMADOR',
-            formador: { create: {} },
-        },
-    })
-
-    // Formando
-    await prisma.user.upsert({
-        where: { email: 'formando@coordena.pt' },
-        update: {},
-        create: {
-            nome: 'Everton',
-            email: 'formando@coordena.pt',
-            senha: await bcrypt.hash('123456', 10),
-            role: 'FORMANDO',
-            formando: { create: {} },
-        },
-    })
 
     console.log('✅ Seed concluído!')
 }

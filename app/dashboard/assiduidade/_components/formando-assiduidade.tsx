@@ -12,9 +12,12 @@ import {
     BarChart3,
     Send,
     Loader2,
-    FileUp,
     FileText,
-    Clock3
+    Clock3,
+    Download,
+    Calendar,
+    ExternalLink,
+    X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
@@ -32,7 +35,8 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { justificarFalta } from "../actions";
+import { UploadFormando } from "@/components/upload-formando";
+import { justificarFalta } from "@/app/dashboard/assiduidade/actions";
 
 // ---------------------------------------------------------------------------
 // Tipos
@@ -87,13 +91,14 @@ function KPI({ label, value, icon: Icon, bg, iconBg, iconColor }: any) {
 function JustificarDialog({ presencaId, data, modulo }: { presencaId: string, data: string, modulo: string }) {
     const [open, setOpen] = useState(false);
     const [justificativa, setJustificativa] = useState("");
+    const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
     const [carregando, setCarregando] = useState(false);
     const [sucesso, setSucesso] = useState(false);
 
     async function handleSubmeter() {
         if (!justificativa.trim()) return;
         setCarregando(true);
-        const result = await justificarFalta(presencaId, justificativa);
+        const result = await justificarFalta(presencaId, justificativa, uploadedFileUrl || undefined);
         setCarregando(false);
         if (result.sucesso) {
             setSucesso(true);
@@ -101,30 +106,35 @@ function JustificarDialog({ presencaId, data, modulo }: { presencaId: string, da
                 setOpen(false);
                 setSucesso(false);
                 setJustificativa("");
+                setUploadedFileUrl(null);
             }, 2000);
         } else {
             alert(result.mensagem);
         }
     }
 
+    function handleUploadComplete(url: string) {
+        setUploadedFileUrl(url);
+    }
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="mt-2 h-7 gap-1.5 border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-all font-bold text-[9px] uppercase tracking-wider rounded-lg shadow-sm"
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-11 sm:h-8 gap-1.5 border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-all font-bold text-xs uppercase tracking-wider rounded-lg shadow-sm"
                 >
-                    <RotateCcw className="w-3 h-3" /> Justificar Falta
+                    <FileText className="w-3.5 h-3.5" /> Justificar Falta
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[450px] border-none shadow-2xl overflow-hidden rounded-[2rem] p-0">
+            <DialogContent className="sm:max-w-[480px] border-none shadow-2xl overflow-hidden rounded-[2rem] p-0">
                 <div className="bg-gradient-to-br from-amber-500 to-rose-600 p-8 text-white relative">
                     <div className="absolute top-4 right-4 h-24 w-24 bg-white/10 rounded-full blur-2xl" />
                     <DialogHeader className="relative z-10">
                         <DialogTitle className="text-2xl font-bold tracking-tight">Justificar Falta</DialogTitle>
                         <DialogDescription className="text-amber-50 text-base leading-relaxed mt-2">
-                            Estás Prestes a justificar a tua ausência no módulo <span className="font-bold text-white">{modulo}</span> ({data}).
+                            Ausência no módulo <span className="font-bold text-white">{modulo}</span> — {data}
                         </DialogDescription>
                     </DialogHeader>
                 </div>
@@ -140,20 +150,29 @@ function JustificarDialog({ presencaId, data, modulo }: { presencaId: string, da
                                 <CheckCircle2 className="h-10 w-10" />
                             </div>
                             <h3 className="text-xl font-bold text-slate-900">Sucesso!</h3>
-                            <p className="text-slate-500 mt-1">A tua justificação foi registada com sucesso.</p>
+                            <p className="text-slate-500 mt-1">A tua justificação foi enviada para análise do coordenador.</p>
                         </motion.div>
                     ) : (
-                        <div className="flex flex-col gap-6">
+                        <div className="flex flex-col gap-5">
                             <div className="flex flex-col gap-2">
-                                <Label htmlFor="justificativa" className="text-sm font-bold text-slate-700 ml-1">MOTIVO DA AUSÊNCIA</Label>
+                                <Label htmlFor="justificativa" className="text-xs font-bold text-slate-700 ml-1">MOTIVO DA AUSÊNCIA</Label>
                                 <Textarea
                                     id="justificativa"
                                     placeholder="Explica brevemente o motivo da tua falta..."
                                     value={justificativa}
                                     onChange={(e) => setJustificativa(e.target.value)}
-                                    className="min-h-[120px] bg-slate-50 border-slate-100 focus:bg-white rounded-2xl resize-none p-4 text-slate-600 focus:ring-2 focus:ring-amber-500/20 transition-all"
+                                    className="min-h-[80px] bg-slate-50 border-slate-100 focus:bg-white rounded-2xl resize-none p-4 text-slate-600 focus:ring-2 focus:ring-amber-500/20 transition-all text-sm"
                                 />
                             </div>
+
+                            {/* UploadThing — Comprovativo */}
+                            <UploadFormando
+                                endpoint="documentUploader"
+                                label="Documento Comprovativo"
+                                description="PDF, JPG ou PNG (máx. 16MB)"
+                                onUploadComplete={(url) => handleUploadComplete(url)}
+                                variant="dropzone"
+                            />
 
                             <DialogFooter className="flex gap-3 sm:justify-end">
                                 <Button
@@ -185,190 +204,121 @@ function JustificarDialog({ presencaId, data, modulo }: { presencaId: string, da
     );
 }
 
-function JustificarFaltasGeral({ faltas }: { faltas: any[] }) {
+// ---------------------------------------------------------------------------
+// Dialog de Detalhes da Aula
+// ---------------------------------------------------------------------------
+
+function AulaDetailDialog({ presenca }: { presenca: any }) {
     const [open, setOpen] = useState(false);
-    const [selectedFaltaId, setSelectedFaltaId] = useState<string | null>(faltas.length === 1 ? faltas[0].id : null);
-    const [justificativa, setJustificativa] = useState("");
-    const [file, setFile] = useState<File | null>(null);
-    const [carregando, setCarregando] = useState(false);
-    const [sucesso, setSucesso] = useState(false);
+    const data = new Date(presenca.dataHora);
 
-    async function handleSubmeter() {
-        if (!selectedFaltaId || !justificativa.trim()) return;
-        setCarregando(true);
-        // Simulando o upload enviando apenas o nome do arquivo
-        const result = await justificarFalta(selectedFaltaId, justificativa, file?.name);
-        setCarregando(false);
-        if (result.sucesso) {
-            setSucesso(true);
-            setTimeout(() => {
-                setOpen(false);
-                setSucesso(false);
-                setJustificativa("");
-                setFile(null);
-                setSelectedFaltaId(faltas.length === 1 ? faltas[0].id : null);
-            }, 2000);
-        } else {
-            alert(result.mensagem);
-        }
-    }
+    const docLink = presenca.documentoUrl
+        ? presenca.documentoUrl.startsWith("/")
+            ? presenca.documentoUrl
+            : presenca.documentoUrl
+        : null;
 
-    const selecionada = faltas.find(f => f.id === selectedFaltaId);
+    // Gradiente baseado no estado da presença
+    const gradientMap: Record<string, string> = {
+        PRESENTE: "from-emerald-500 to-green-600",
+        AUSENTE: "from-red-500 to-rose-600",
+        PENDENTE: "from-amber-500 to-orange-600",
+        JUSTIFICADO: "from-teal-500 to-emerald-600",
+    };
+    const headerGradient = gradientMap[presenca.status] || "from-teal-500 to-indigo-600";
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="bg-slate-900 hover:bg-black text-white font-bold rounded-xl shadow-lg transition-all gap-2 px-6 h-11 border-none">
-                    <RotateCcw className="w-4 h-4 text-teal-400" /> Justificar Ausências
-                </Button>
+                <button className="text-left w-full group">
+                    <div className="flex flex-col">
+                        <span className="text-xs font-bold text-teal-500 dark:text-teal-400 uppercase tracking-widest leading-none mb-1 group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors">{presenca.modulo}</span>
+                        <span className="text-sm font-semibold text-gray-600 dark:text-gray-300 line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{presenca.aula}</span>
+                    </div>
+                </button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px] border-none shadow-2xl overflow-hidden rounded-[2rem] p-0">
-                <div className="bg-slate-900 p-8 text-white relative">
-                    <div className="absolute top-4 right-4 h-24 w-24 bg-teal-500/10 rounded-full blur-2xl" />
+            <DialogContent className="sm:max-w-[520px] border-none shadow-2xl overflow-hidden rounded-[2rem] p-0 bg-white dark:bg-gray-900">
+                <div className={`bg-gradient-to-br ${headerGradient} p-8 text-white relative`}>
+                    <div className="absolute top-4 right-4 h-24 w-24 bg-white/10 rounded-full blur-2xl" />
                     <DialogHeader className="relative z-10">
-                        <DialogTitle className="text-2xl font-bold tracking-tight">Justificar Faltas</DialogTitle>
-                        <DialogDescription className="text-slate-400 text-base leading-relaxed mt-2 italic">
-                            Tens <span className="font-bold text-teal-400">{faltas.length}</span> ausências pendentes de justificação.
+                        <DialogTitle className="text-2xl font-bold tracking-tight">Detalhes da Aula</DialogTitle>
+                        <DialogDescription className="text-white/80 text-base leading-relaxed mt-2">
+                            <span className="font-bold text-white">{presenca.modulo}</span>
                         </DialogDescription>
                     </DialogHeader>
                 </div>
-                
-                <div className="p-8 bg-white">
-                    {sucesso ? (
-                        <motion.div 
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className="flex flex-col items-center justify-center py-8 text-center"
-                        >
-                            <div className="h-16 w-16 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center mb-4">
-                                <CheckCircle2 className="h-10 w-10" />
-                            </div>
-                            <h3 className="text-xl font-bold text-slate-900">Sucesso!</h3>
-                            <p className="text-slate-500 mt-1">A tua justificação foi registada com sucesso.</p>
-                        </motion.div>
-                    ) : (
-                        <div className="flex flex-col gap-6">
-                            {faltas.length > 1 && (
-                                <div className="flex flex-col gap-3">
-                                    <Label className="text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-widest">Seleciona a Aula</Label>
-                                    <div className="grid grid-cols-1 gap-2 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
-                                        {faltas.map((f) => {
-                                            const d = new Date(f.dataHora);
-                                            return (
-                                                <button
-                                                    key={f.id}
-                                                    onClick={() => setSelectedFaltaId(f.id)}
-                                                    className={cn(
-                                                        "flex flex-col p-4 rounded-2xl border text-left transition-all",
-                                                        selectedFaltaId === f.id 
-                                                            ? "border-teal-500 bg-teal-50 ring-4 ring-teal-500/5 shadow-sm" 
-                                                            : "border-slate-100 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-200"
-                                                    )}
-                                                >
-                                                    <span className={cn(
-                                                        "text-[10px] font-bold uppercase tracking-wider mb-1",
-                                                        selectedFaltaId === f.id ? "text-teal-600" : "text-slate-400"
-                                                    )}>{f.modulo}</span>
-                                                    <span className="text-sm font-bold text-slate-900">{f.aula}</span>
-                                                    <span className="text-xs text-slate-500 mt-0.5">{d.toLocaleDateString("pt-PT")}</span>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
 
-                            {selectedFaltaId && (
-                                <motion.div 
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="flex flex-col gap-5"
-                                >
-                                    <div className="flex flex-col gap-2">
-                                        <Label htmlFor="justificativa" className="text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-widest leading-none">
-                                            {faltas.length === 1 ? "Comentário da Ausência" : `Comentário para ${selecionada?.modulo}`}
-                                        </Label>
-                                        <Textarea
-                                            id="justificativa"
-                                            placeholder="Explica brevemente o motivo da tua falta..."
-                                            value={justificativa}
-                                            onChange={(e) => setJustificativa(e.target.value)}
-                                            className="min-h-[100px] bg-slate-50 border-slate-100 focus:bg-white focus:border-teal-400 rounded-2xl resize-none p-4 text-slate-600 focus:ring-4 focus:ring-teal-500/5 transition-all outline-none text-sm"
-                                        />
-                                    </div>
-
-                                    {/* Mock File Upload */}
-                                    <div className="flex flex-col gap-2">
-                                        <Label className="text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-widest leading-none">Documento Comprovativo</Label>
-                                        <div className="relative">
-                                            <input 
-                                                type="file" 
-                                                id="file-upload" 
-                                                className="hidden" 
-                                                onChange={(e) => setFile(e.target.files?.[0] || null)}
-                                            />
-                                            <label 
-                                                htmlFor="file-upload"
-                                                className={cn(
-                                                    "flex items-center gap-3 w-full p-4 rounded-2xl border-2 border-dashed transition-all cursor-pointer",
-                                                    file 
-                                                        ? "border-teal-200 bg-teal-50/30 text-teal-600" 
-                                                        : "border-slate-100 bg-slate-50/50 text-slate-400 hover:border-teal-200 hover:bg-teal-50/20"
-                                                )}
-                                            >
-                                                <div className={cn(
-                                                    "h-10 w-10 rounded-xl flex items-center justify-center shrink-0",
-                                                    file ? "bg-teal-100 text-teal-600" : "bg-white text-slate-400"
-                                                )}>
-                                                    <FileUp className="w-5 h-5" />
-                                                </div>
-                                                <div className="flex flex-col min-w-0">
-                                                    <span className="text-sm font-bold truncate">
-                                                        {file ? file.name : "Selecionar Documento"}
-                                                    </span>
-                                                    <span className="text-[11px] opacity-70">
-                                                        {file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : "PDF, JPG ou PNG (máx 5MB)"}
-                                                    </span>
-                                                </div>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    
-                                    <DialogFooter className="flex gap-3 sm:justify-end pt-2">
-                                        <Button 
-                                            variant="ghost" 
-                                            onClick={() => setOpen(false)} 
-                                            disabled={carregando}
-                                            className="rounded-xl font-semibold text-slate-400 hover:text-slate-600 hover:bg-slate-50"
-                                        >
-                                            Cancelar
-                                        </Button>
-                                        <Button 
-                                            onClick={handleSubmeter} 
-                                            disabled={carregando || !justificativa.trim() || !file}
-                                            className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl px-10 font-bold shadow-lg shadow-teal-100 gap-2 h-11"
-                                        >
-                                            {carregando ? (
-                                                <Loader2 className="w-4 h-4 animate-spin" />
-                                            ) : (
-                                                <Send className="w-4 h-4" />
-                                            )}
-                                            Submeter Justificação
-                                        </Button>
-                                    </DialogFooter>
-                                </motion.div>
-                            )}
+                <div className="p-8 bg-white dark:bg-gray-900">
+                    <div className="flex flex-col gap-5">
+                        {/* Aula */}
+                        <div>
+                            <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Aula</p>
+                            <p className="text-base font-bold text-gray-900 dark:text-gray-100">{presenca.aula}</p>
                         </div>
-                    )}
+
+                        {/* Data e Hora */}
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-teal-500 dark:text-teal-400 shrink-0" />
+                                <div>
+                                    <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Data</p>
+                                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{data.toLocaleDateString("pt-PT", { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Clock3 className="h-4 w-4 text-teal-500 dark:text-teal-400 shrink-0" />
+                                <div>
+                                    <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Hora</p>
+                                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{data.toLocaleTimeString("pt-PT", { hour: '2-digit', minute: '2-digit' })}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Estado */}
+                        <div>
+                            <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Estado</p>
+                            <BadgeEstado estado={presenca.status as string} />
+                        </div>
+
+                        {/* Justificativa */}
+                        {presenca.comentarioFormando && (
+                            <div>
+                                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Justificativa</p>
+                                <p className="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-xl p-3">{presenca.comentarioFormando}</p>
+                            </div>
+                        )}
+
+                        {/* Documento */}
+                        {docLink && (
+                            <div>
+                                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Comprovativo</p>
+                                <a
+                                    href={docLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all"
+                                >
+                                    <FileText className="h-3.5 w-3.5" />
+                                    Abrir Arquivo
+                                    <ExternalLink className="h-3 w-3" />
+                                </a>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="px-8 pb-6 flex justify-end">
+                    <button
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-1.5 text-sm font-medium text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    >
+                        <X className="h-4 w-4" /> Fechar
+                    </button>
                 </div>
             </DialogContent>
         </Dialog>
     );
 }
-
-// ---------------------------------------------------------------------------
-// Componente principal
-// ---------------------------------------------------------------------------
 export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
     const LIMITE_RISCO = 75; // % mínima exigida
     const totalAulas = presencas.length;
@@ -395,16 +345,6 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
         };
     }).reverse();
 
-    const faltasPendentes = presencas.filter(p => {
-        const s = p.status as string;
-        return (
-            s !== "PRESENTE" && 
-            s !== "JUSTIFICADO" && 
-            s !== "PENDENTE" &&
-            !p.comentarioFormando
-        );
-    });
-
     return (
         <div className="flex flex-col gap-8">
             {/* Header */}
@@ -418,15 +358,6 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                     </h1>
                     <p className="mt-1 text-sm text-gray-400">Acompanha o teu registo de presenças e faltas</p>
                 </motion.div>
-
-                {faltasPendentes.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                    >
-                        <JustificarFaltasGeral faltas={faltasPendentes} />
-                    </motion.div>
-                )}
             </div>
 
             {/* KPIs */}
@@ -502,18 +433,23 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                                     <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Módulo / Aula</th>
                                     <th className="px-6 py-4 text-center text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Estado</th>
                                     <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Justificativa</th>
+                                    <th className="px-6 py-4 text-center text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Ações</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-gray-800">
                                 {presencas.length === 0 ? (
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-12 text-center text-slate-400 text-sm italic">
+                                        <td colSpan={5} className="px-6 py-12 text-center text-slate-400 text-sm italic">
                                             Ainda não tens registos de assiduidade.
                                         </td>
                                     </tr>
                                 ) : (
                                     presencas.map((p: any, i: number) => {
                                         const data = new Date(p.dataHora);
+                                        const podeJustificar =
+                                            (p.status === "AUSENTE") &&
+                                            !p.comentarioFormando;
+
                                         return (
                                             <motion.tr
                                                 key={p.id}
@@ -531,10 +467,7 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[10px] font-bold text-teal-500 uppercase tracking-widest leading-none mb-1">{p.modulo}</span>
-                                                        <span className="text-sm font-semibold text-slate-600 dark:text-gray-300 line-clamp-1">{p.aula}</span>
-                                                    </div>
+                                                    <AulaDetailDialog presenca={p} />
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
                                                     <BadgeEstado estado={p.status as string} />
@@ -546,7 +479,7 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                                                                 <FileText className="w-3.5 h-3.5" />
                                                                 <span className="text-xs font-bold uppercase tracking-wider">Em Análise</span>
                                                             </div>
-                                                            <span className="text-[10px] text-slate-400 italic truncate max-w-[200px]">
+                                                            <span className="text-xs text-slate-400 italic truncate max-w-[200px]">
                                                                 DOC: {p.documentoUrl || "Sem anexo"}
                                                             </span>
                                                         </div>
@@ -554,6 +487,40 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                                                         <span className="text-xs text-slate-400 italic">
                                                             {p.justificativa || "—"}
                                                         </span>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4 text-center">
+                                                    {podeJustificar && (
+                                                        <JustificarDialog
+                                                            presencaId={p.id}
+                                                            data={data.toLocaleDateString("pt-PT")}
+                                                            modulo={p.modulo}
+                                                        />
+                                                    )}
+                                                    {p.status === "JUSTIFICADO" && p.documentoUrl && (
+                                                        <a
+                                                            href={p.documentoUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-1.5 h-11 sm:h-8 px-3 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 transition-all font-bold text-xs uppercase tracking-wider"
+                                                            title="Baixar comprovativo"
+                                                        >
+                                                            <Download className="w-3.5 h-3.5" /> Baixar Comprovativo
+                                                        </a>
+                                                    )}
+                                                    {p.status === "JUSTIFICADO" && !p.documentoUrl && (
+                                                        <span className="text-xs text-gray-400 italic">Sem anexo</span>
+                                                    )}
+                                                    {p.status === "PENDENTE" && p.documentoUrl && (
+                                                        <a
+                                                            href={p.documentoUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-1.5 h-11 sm:h-8 px-3 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 transition-all font-bold text-xs uppercase tracking-wider"
+                                                            title="Ver documento em análise"
+                                                        >
+                                                            <Download className="w-3.5 h-3.5" /> Ver Documento
+                                                        </a>
                                                     )}
                                                 </td>
                                             </motion.tr>

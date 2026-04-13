@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs'
 
 export async function POST(req: Request) {
     try {
-        const { nome, email, senha, role } = await req.json()
+        const { nome, email, senha, role, codigoCoordenador } = await req.json()
 
         if (!nome || !email || !senha || !role) {
             return NextResponse.json(
@@ -20,6 +20,17 @@ export async function POST(req: Request) {
                 { error: 'Role inválido. Use: COORDENADOR, FORMADOR ou FORMANDO.' },
                 { status: 400 }
             )
+        }
+
+        // Se for Coordenador, exige código de segurança
+        if (role === 'COORDENADOR') {
+            const codigoEsperado = process.env.COORDENADOR_REGISTRATION_CODE || 'COORD-2026-SECRET';
+            if (codigoCoordenador !== codigoEsperado) {
+                return NextResponse.json(
+                    { error: 'Código de coordenador inválido. Contacte o administrador.' },
+                    { status: 403 },
+                );
+            }
         }
 
         const userExistente = await prisma.user.findUnique({
@@ -42,14 +53,14 @@ export async function POST(req: Request) {
                 senha: senhaHash,
                 role,
                 // Cria automaticamente o perfil conforme o role
-                ...(role === 'COORDENADOR' && {
-                    coordenador: { create: {} },
-                }),
                 ...(role === 'FORMADOR' && {
                     formador: { create: {} },
                 }),
                 ...(role === 'FORMANDO' && {
                     formando: { create: {} },
+                }),
+                ...(role === 'COORDENADOR' && {
+                    coordenador: { create: {} },
                 }),
             },
         })

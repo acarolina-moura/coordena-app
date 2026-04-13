@@ -8,12 +8,19 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
+  ExternalLink,
+  FileText,
+  Eye,
+  X,
+  Clock3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { aprovarJustificativa, rejeitarJustificativa } from "../actions";
+import { aprovarJustificativa, rejeitarJustificativa, getJustificativasFormando } from "../actions";
+import type { JustificativaFormando } from "../../_data/coordenador";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -86,6 +93,85 @@ function BarraAssiduidade({
   );
 }
 
+// ─── Dialog de Justificativas do Formando ─────────────────────────────────────
+
+function JustificativasDialog({
+  formandoNome,
+  justificativas,
+  onClose,
+}: {
+  formandoNome: string;
+  justificativas: JustificativaFormando[];
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+      <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-900 p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+            Justificativas de {formandoNome}
+          </h3>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+            <X className="h-5 w-5 text-gray-400" />
+          </button>
+        </div>
+
+        {justificativas.length === 0 ? (
+          <p className="text-center text-gray-400 py-8">Nenhuma justificativa submetida.</p>
+        ) : (
+          <div className="space-y-4">
+            {justificativas.map((j) => {
+              const docLink = j.documentoUrl
+                ? j.documentoUrl.startsWith("/")
+                  ? j.documentoUrl
+                  : `/uploads/${j.documentoUrl}`
+                : null;
+
+              return (
+                <div key={j.id} className="rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{j.aula.titulo}</p>
+                      <p className="text-xs text-gray-400">
+                        {new Date(j.aula.dataHora).toLocaleDateString("pt-PT")} · {j.aula.modulo.nome}
+                      </p>
+                    </div>
+                    <span className={cn(
+                      "rounded-full border px-2.5 py-0.5 text-xs font-semibold shrink-0",
+                      j.status === "JUSTIFICADO"
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                        : "border-indigo-200 bg-indigo-50 text-indigo-700"
+                    )}>
+                      {j.status === "JUSTIFICADO" ? "Aprovada" : "Em análise"}
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                    {j.comentarioFormando}
+                  </p>
+
+                  {docLink && (
+                    <a
+                      href={docLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-100 transition-all"
+                    >
+                      <FileText className="h-3.5 w-3.5" />
+                      Abrir Arquivo
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function CoordenadorAssiduidade({
@@ -98,6 +184,8 @@ export function CoordenadorAssiduidade({
   const [search, setSearch] = useState("");
   const [filtro, setFiltro] = useState<"TODOS" | "RISCO" | "OK">("TODOS");
   const [isPending, startTransition] = useTransition();
+  const [justificativas, setJustificativas] = useState<JustificativaFormando[] | null>(null);
+  const [formandoNome, setFormandoNome] = useState("");
   const router = useRouter();
 
   const filtrados = dados.filter((d) => {
@@ -139,6 +227,12 @@ export function CoordenadorAssiduidade({
         toast.error(result.mensagem);
       }
     });
+  }
+
+  async function handleVerJustificativas(formandoId: string, nome: string) {
+    const justs = await getJustificativasFormando(formandoId);
+    setJustificativas(justs as unknown as JustificativaFormando[]);
+    setFormandoNome(nome);
   }
 
   return (
@@ -251,9 +345,11 @@ export function CoordenadorAssiduidade({
                             href={documentoLink}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-300 dark:hover:text-indigo-100 underline"
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 transition-all"
                           >
-                            {item.documentoUrl}
+                            <FileText className="h-3.5 w-3.5" />
+                            Abrir Arquivo
+                            <ExternalLink className="h-3 w-3" />
                           </a>
                         ) : (
                           <span className="text-slate-400 italic">
@@ -367,12 +463,14 @@ export function CoordenadorAssiduidade({
                         {initials}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                    <button
+                      onClick={() => handleVerJustificativas(d.id, d.nome)}
+                      className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-left flex items-center gap-1.5"
+                      title="Ver justificativas"
+                    >
                       {d.nome}
-                    </span>
-                    {pct < 75 && d.total > 0 && (
-                      <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
-                    )}
+                      <Eye className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+                    </button>
                   </div>
 
                   {/* Curso */}
@@ -405,6 +503,15 @@ export function CoordenadorAssiduidade({
             })}
           </div>
         </div>
+      )}
+
+      {/* Dialog de Justificativas */}
+      {justificativas !== null && (
+        <JustificativasDialog
+          formandoNome={formandoNome}
+          justificativas={justificativas}
+          onClose={() => setJustificativas(null)}
+        />
       )}
     </div>
   );

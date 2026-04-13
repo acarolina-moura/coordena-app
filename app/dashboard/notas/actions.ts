@@ -4,11 +4,11 @@
  * ============================================================================
  * SERVER ACTIONS - SISTEMA DE AVALIAÇÕES COM TEMPLATES
  * ============================================================================
- * 
- * Este arquivo contém as ações do servidor para gerenciar templates de 
+ *
+ * Este arquivo contém as ações do servidor para gerenciar templates de
  * avaliação e notas parciais. Cada formador pode definir um template
  * diferente para cada módulo que leciona.
- * 
+ *
  * As operações incluem:
  * - Criar/atualizar templates de avaliação
  * - Obter template para um módulo
@@ -19,6 +19,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
+import { logError } from '@/lib/logger';
 
 /**
  * Salvar ou atualizar um template de avaliação para um módulo
@@ -104,7 +105,7 @@ export async function salvarTemplateAvaliacao(
     return { success: true, template };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Erro ao salvar template:', message);
+    logError('Erro ao salvar template:', message);
     return { success: false, error: message };
   }
 }
@@ -150,7 +151,7 @@ export async function obterTemplateAvaliacao(moduloId: string) {
     return { success: true, template };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Erro ao obter template:', message);
+    logError('Erro ao obter template:', message);
     return { success: false, error: message };
   }
 }
@@ -184,8 +185,8 @@ export async function salvarNotasParciais(
       throw new Error('Formador não encontrado');
     }
 
-    // Buscar template
-    const template = await prisma.templateAvaliacao.findUnique({
+    // Buscar ou criar template
+    let template = await prisma.templateAvaliacao.findUnique({
       where: {
         formadorId_moduloId: {
           formadorId: formador.id,
@@ -195,47 +196,91 @@ export async function salvarNotasParciais(
       include: { items: true },
     });
 
+    let templateWasJustCreated = false;
+
+    // Se não existe template, criar um automaticamente
     if (!template) {
-      throw new Error('Template não encontrado para este módulo');
+      templateWasJustCreated = true;
+      template = await prisma.templateAvaliacao.create({
+        data: {
+          formadorId: formador.id,
+          moduloId: moduloId,
+          items: {
+            create: Object.entries(notas).map(([_, valor], index) => {
+              const peso = Math.round((100 / Object.keys(notas).length) * 100) / 100;
+              return {
+                nome: `Componente ${index + 1}`,
+                peso,
+                ordem: index,
+              };
+            }),
+          },
+        },
+        include: { items: true },
+      });
     }
 
     // Salvar ou atualizar notas parciais
-    for (const [itemId, valor] of Object.entries(notas)) {
-      // Validar valor
-      if (valor < 0 || valor > 20) {
-        throw new Error(`Nota deve estar entre 0 e 20. Recebido: ${valor}`);
+    if (templateWasJustCreated) {
+      // Se template foi criado agora, guardar as notas em ordem dos items criados
+      const notasArray = Object.values(notas);
+      for (let i = 0; i < template.items.length && i < notasArray.length; i++) {
+        const valor = notasArray[i];
+        if (typeof valor === 'number' && valor >= 0 && valor <= 20) {
+          await prisma.notaParcial.upsert({
+            where: {
+              formandoId_itemId: {
+                formandoId: formandoId,
+                itemId: template.items[i].id,
+              },
+            },
+            update: { valor: valor },
+            create: {
+              formandoId: formandoId,
+              itemId: template.items[i].id,
+              templateId: template.id,
+              valor: valor,
+            },
+          });
+        }
       }
+    } else {
+      // Se template já existia, validar itemIds como de costume
+      for (const [itemId, valor] of Object.entries(notas)) {
+        // Validar valor
+        if (valor < 0 || valor > 20) {
+          throw new Error(`Nota deve estar entre 0 e 20. Recebido: ${valor}`);
+        }
 
-      // Verificar se item existe no template
-      const itemExists = template.items.some((item) => item.id === itemId);
-      if (!itemExists) {
-        throw new Error(`Item ${itemId} não encontrado no template`);
-      }
+        // Verificar se item existe no template
+        const itemExists = template.items.some((item) => item.id === itemId);
+        if (!itemExists) {
+          throw new Error(`Item ${itemId} não encontrado no template`);
+        }
 
-      // Upsert nota parcial
-      await prisma.notaParcial.upsert({
-        where: {
-          formandoId_itemId: {
+        // Upsert nota parcial
+        await prisma.notaParcial.upsert({
+          where: {
+            formandoId_itemId: {
+              formandoId: formandoId,
+              itemId: itemId,
+            },
+          },
+          update: { valor: valor },
+          create: {
             formandoId: formandoId,
             itemId: itemId,
+            templateId: template.id,
+            valor: valor,
           },
-        },
-        update: {
-          valor: valor,
-        },
-        create: {
-          formandoId: formandoId,
-          itemId: itemId,
-          templateId: template.id,
-          valor: valor,
-        },
-      });
+        });
+      }
     }
 
     return { success: true };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Erro ao salvar notas:', message);
+    logError('Erro ao salvar notas:', message);
     return { success: false, error: message };
   }
 }
@@ -259,22 +304,30 @@ export async function obterNotasParciaisAluno(
     }
 
     // Buscar todas as notas parciais deste aluno neste módulo
+    // Procura em QUALQUER template do módulo, não apenas do formador atual
     const notas = await prisma.notaParcial.findMany({
       where: {
         formandoId: formandoId,
-        template: {
-          moduloId: moduloId,
+        item: {
+          template: {
+            moduloId: moduloId,
+          },
         },
       },
       include: {
-        item: true,
+        item: {
+          include: {
+            template: true,
+          },
+        },
       },
+      orderBy: { createdAt: "asc" },
     });
 
     return { success: true, notas };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Erro ao obter notas:', message);
+    logError('Erro ao obter notas:', message);
     return { success: false, error: message };
   }
 }
@@ -359,10 +412,47 @@ export async function calcularNotaFinal(
     const notaFinal =
       notaAssiduidade * 0.2 + mediaComponentes * 0.8;
 
-    return { success: true, notaFinal: Math.round(notaFinal * 10) / 10 };
+    const notaFinalArredondada = Math.round(notaFinal * 10) / 10;
+
+    // Guardar a nota final na tabela Avaliacao
+    const formador = await prisma.formador.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    if (formador) {
+      // Verificar se já existe avaliação para este módulo/formando
+      const avaliacaoExistente = await prisma.avaliacao.findFirst({
+        where: {
+          moduloId: moduloId,
+          formandoId: formandoId,
+          formadorId: formador.id,
+        },
+      });
+
+      if (avaliacaoExistente) {
+        // Atualizar avaliação existente
+        await prisma.avaliacao.update({
+          where: { id: avaliacaoExistente.id },
+          data: { nota: notaFinalArredondada },
+        });
+      } else {
+        // Criar nova avaliação
+        await prisma.avaliacao.create({
+          data: {
+            nota: notaFinalArredondada,
+            moduloId: moduloId,
+            formandoId: formandoId,
+            formadorId: formador.id,
+            descricao: `Nota final calculada automaticamente (${percentualAssiduidade}% assiduidade + componentes)`,
+          },
+        });
+      }
+    }
+
+    return { success: true, notaFinal: notaFinalArredondada };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Erro ao calcular nota final:', message);
+    logError('Erro ao calcular nota final:', message);
     return { success: false, error: message };
   }
 }
@@ -425,14 +515,28 @@ export async function obterModulosComAlunos() {
         });
 
         // Para cada aluno, calcular presenças a partir das aulas
-        const alunos = inscricoes.map((insc) => {
-          return {
-            id: insc.formando.id,
-            nome: insc.formando.user.nome,
-            presencas: 0, // Placeholder - pode ser preenchido dinamicamente
-            totalSessoes: totalAulas,
-          };
-        });
+        const alunos = await Promise.all(
+          inscricoes.map(async (insc) => {
+            // Contar presenças PRESENTE deste aluno nas aulas deste módulo/formador
+            const presencasPresente = await prisma.presenca.count({
+              where: {
+                formandoId: insc.formando.id,
+                status: "PRESENTE",
+                aula: {
+                  moduloId: fm.modulo.id,
+                  formadorId: formador.id,
+                },
+              },
+            });
+
+            return {
+              id: insc.formando.id,
+              nome: insc.formando.user.nome,
+              presencas: presencasPresente,
+              totalSessoes: totalAulas,
+            };
+          })
+        );
 
         return {
           id: fm.modulo.id,
@@ -445,7 +549,121 @@ export async function obterModulosComAlunos() {
     return { success: true, modulos: modulosComDetalhes };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Erro ao obter módulos:', message);
+    logError('Erro ao obter módulos:', message);
     return { success: false, error: message, modulos: [] };
+  }
+}
+
+/**
+ * Obter todas as notas finais (Avaliacao) de um formador para seus módulos
+ * 
+ * @returns Mapa de { formandoId: notaFinal }
+ */
+export async function obterNotasFinais() {
+  try {
+    // Validar autenticação
+    const session = await auth();
+    if (!session?.user?.id || session.user.role !== 'FORMADOR') {
+      throw new Error('Não autorizado');
+    }
+
+    // Buscar formador
+    const formador = await prisma.formador.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    if (!formador) {
+      throw new Error('Formador não encontrado');
+    }
+
+    // Buscar todas as avaliações (notas finais) deste formador
+    const avaliacoes = await prisma.avaliacao.findMany({
+      where: {
+        formadorId: formador.id,
+      },
+    });
+
+    // Mapear para formato { moduloId_formandoId: notaFinal }
+    const notasFinaisMap: Record<string, number> = {};
+    avaliacoes.forEach((av) => {
+      const key = `${av.moduloId}_${av.formandoId}`; // Chave composta por módulo
+      notasFinaisMap[key] = av.nota;
+    });
+
+    return { success: true, notasFinais: notasFinaisMap };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Erro desconhecido';
+    console.error('Erro ao obter notas finais:', message);
+    return { success: false, error: message, notasFinais: {} };
+  }
+}
+
+/**
+ * Obter trabalhos entregues por um aluno num módulo
+ * 
+ * @param formandoId - ID do aluno
+ * @param moduloId - ID do módulo
+ * @returns Array de items com status de entrega
+ */
+export async function obterTrabalhosPorAluno(
+  formandoId: string,
+  moduloId: string
+) {
+  try {
+    // Validar autenticação
+    const session = await auth();
+    if (!session?.user?.id) {
+      throw new Error('Não autorizado');
+    }
+
+    // Buscar template do módulo
+    const template = await prisma.templateAvaliacao.findFirst({
+      where: {
+        moduloId: moduloId,
+      },
+      include: {
+        items: {
+          orderBy: { ordem: 'asc' },
+        },
+      },
+    });
+
+    if (!template) {
+      return { success: true, trabalhos: [] };
+    }
+
+    // Buscar submissões do aluno
+    const submissoes = await prisma.submissaoTrabalho.findMany({
+      where: {
+        formandoId: formandoId,
+        item: {
+          templateId: template.id,
+        },
+      },
+      include: {
+        item: true,
+      },
+    });
+
+    // Mapear items com status de entrega
+    const trabalhos = template.items.map((item) => {
+      const submissao = submissoes.find((sub) => sub.itemId === item.id);
+      return {
+        itemId: item.id,
+        nome: item.nome,
+        ordem: item.ordem,
+        peso: item.peso,
+        entregue: !!submissao,
+        dataEntrega: submissao?.dataEntrega?.toISOString() || null,
+        ficheiro: submissao?.ficheiroUrl || null,
+        comentario: submissao?.comentario || null,
+      };
+    });
+
+    return { success: true, trabalhos };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Erro desconhecido';
+    console.error('Erro ao obter trabalhos:', message);
+    return { success: false, error: message, trabalhos: [] };
   }
 }

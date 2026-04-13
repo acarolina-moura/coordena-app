@@ -17,7 +17,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { FormadorComDetalhes } from "@/app/dashboard/_data/coordenador";
+import { toast } from "sonner";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -200,6 +202,164 @@ function CriarContaDialog({ onCreated }: { onCreated: () => void }) {
   );
 }
 
+// ─── Enviar Convite Dialog ────────────────────────────────────────────────────
+
+function EnviarConviteDialog({
+  formadorId,
+  formadorNome,
+}: {
+  formadorId: string;
+  formadorNome: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [cursoId, setCursoId] = useState("");
+  const [moduloId, setModuloId] = useState("");
+  const [descricao, setDescricao] = useState("");
+  const [cursos, setCursos] = useState<{ id: string; nome: string }[]>([]);
+  const [modulos, setModulos] = useState<{ id: string; nome: string }[]>([]);
+
+  React.useEffect(() => {
+    if (open) {
+      fetch("/api/cursos")
+        .then((r) => r.json())
+        .then((data) => setCursos(data))
+        .catch(() => {});
+    }
+  }, [open]);
+
+  React.useEffect(() => {
+    if (cursoId) {
+      fetch(`/api/cursos/${cursoId}/modulos`)
+        .then((r) => r.json())
+        .then((data) => setModulos(data))
+        .catch(() => setModulos([]));
+      setModuloId("");
+    } else {
+      setModulos([]);
+      setModuloId("");
+    }
+  }, [cursoId]);
+
+  async function handleSubmit() {
+    if (!cursoId) {
+      toast.error("Seleciona um curso.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/convites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          formadorId,
+          cursoId,
+          moduloId: moduloId || undefined,
+          descricao: descricao.trim() || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error ?? "Erro ao enviar convite.");
+        return;
+      }
+      toast.success(`Convite enviado a ${formadorNome}!`);
+      setCursoId("");
+      setModuloId("");
+      setDescricao("");
+      setOpen(false);
+    } catch {
+      toast.error("Erro de rede. Tenta novamente.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1.5 rounded-xl">
+          <Mail className="h-3.5 w-3.5" /> Enviar Convite
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Enviar Convite</DialogTitle>
+          <DialogDescription>
+            Convidar <strong>{formadorNome}</strong> para lecionar um curso ou
+            módulo.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col gap-4 py-2">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="curso">
+              Curso <span className="text-red-500">*</span>
+            </Label>
+            <select
+              id="curso"
+              value={cursoId}
+              onChange={(e) => setCursoId(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="">Seleciona um curso</option>
+              {cursos.map((c) => (
+                <option key={c.id} value={c.id}>{c.nome}</option>
+              ))}
+            </select>
+          </div>
+          {modulos.length > 0 && (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="modulo">Módulo (opcional)</Label>
+              <select
+                id="modulo"
+                value={moduloId}
+                onChange={(e) => setModuloId(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">Seleciona um módulo</option>
+                {modulos.map((m) => (
+                  <option key={m.id} value={m.id}>{m.nome}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="descricao">Mensagem (opcional)</Label>
+            <Textarea
+              id="descricao"
+              placeholder="Ex: Precisamos de um formador para o módulo de React..."
+              value={descricao}
+              onChange={(e) => setDescricao(e.target.value)}
+              disabled={loading}
+              rows={3}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
+            Cancelar
+          </Button>
+          <Button
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />A enviar...
+              </>
+            ) : (
+              <>
+                <Mail className="h-4 w-4 mr-1.5" /> Enviar Convite
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─── Formador Card ────────────────────────────────────────────────────────────
 
 function FormadorCard({
@@ -319,12 +479,18 @@ function FormadorCard({
         >
           {formador.status === "aceite" ? "Aceite" : "Pendente"}
         </span>
-        <Link
-          href={`/dashboard/formadores/${formador.id}`}
-          className="rounded-full border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
-        >
-          Ver Perfil
-        </Link>
+        <div className="flex items-center gap-2">
+          <EnviarConviteDialog
+            formadorId={formador.id}
+            formadorNome={formador.nome}
+          />
+          <Link
+            href={`/dashboard/formadores/${formador.id}`}
+            className="rounded-full border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
+          >
+            Ver Perfil
+          </Link>
+        </div>
       </div>
 
       {/* Confirmação de eliminação */}

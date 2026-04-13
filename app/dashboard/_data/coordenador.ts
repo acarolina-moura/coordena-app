@@ -128,22 +128,20 @@ export type DocumentoEmFalta = {
 };
 
 export async function getDocumentosEmFalta(): Promise<DocumentoEmFalta[]> {
-  const formadoresFilter = await filtroFormadoresCoordenador();
-  
-  const docs = await prisma.documentoFormador.findMany({
-    where: { 
+  const docs = await prisma.documento.findMany({
+    where: {
       status: { in: ["EM_FALTA", "EXPIRADO", "A_EXPIRAR"] },
-      Formador: formadoresFilter
+      formadorId: { not: null }
     },
-    include: { Formador: { include: { user: { select: { nome: true } } } } },
-    orderBy: [{ status: "asc" }, { dataExpiracao: "asc" }],
+    include: { formador: { include: { user: { select: { nome: true } } } } },
+    orderBy: [{ status: "desc" }, { dataExpiracao: "asc" }],
     take: 6,
   });
 
   return docs.map((d) => ({
     id: d.id,
-    formadorId: d.formadorId,
-    formadorNome: d.Formador.user.nome,
+    formadorId: d.formadorId!,
+    formadorNome: d.formador?.user.nome ?? "Desconhecido",
     tipo: d.tipo,
     status: d.status as "EM_FALTA" | "EXPIRADO" | "A_EXPIRAR",
     dataExpiracao: d.dataExpiracao,
@@ -239,7 +237,7 @@ export async function getFormadorById(
           modulo: { include: { curso: { select: { id: true, nome: true } } } },
         },
       },
-      DocumentoFormador: {
+      documentos: {
         select: { id: true, tipo: true, status: true, dataExpiracao: true },
         orderBy: { tipo: "asc" },
       },
@@ -264,7 +262,7 @@ export async function getFormadorById(
       cargaHoraria: fm.modulo.cargaHoraria,
       curso: fm.modulo.curso,
     })),
-    documentos: formador.DocumentoFormador.map((d) => ({
+    documentos: formador.documentos.map((d) => ({
       id: d.id,
       tipo: d.tipo,
       status: d.status,
@@ -286,13 +284,13 @@ export type FormadorComDisponibilidades = FormadorComDetalhes & {
 };
 
 /**
- * MODIFICADO: Busca disponibilidades de todos os formadores
- * NOVO: Agora inclui o campo 'semana' (número 1-53 da semana do ano)
+ * Busca disponibilidades de todos os formadores.
+ * Inclui o campo 'semana' (numero 1-53 da semana do ano).
  *
- * Utilizado na página de disponibilidades do coordenador para ver
- * que horários cada formador tem marcado como disponível
+ * Utilizado na pagina de disponibilidades do coordenador para ver
+ * que horarios cada formador tem marcado como disponivel.
  *
- * Retorna array com formador + lista de suas disponibilidades
+ * Retorna array com formador + lista de suas disponibilidades.
  */
 export async function getDisponibilidadesFormadores(): Promise<
   FormadorComDisponibilidades[]
@@ -319,7 +317,6 @@ export async function getDisponibilidadesFormadores(): Promise<
       },
       disponibilidades: {
         where: { disponivel: true },
-        // NOVO: Agora seleciona também o campo 'semana'
         select: {
           diaSemana: true,
           hora: true,
@@ -515,12 +512,13 @@ export async function getCursos(): Promise<CursoComDetalhes[]> {
   
   const cursos = await prisma.curso.findMany({
     where: cursosFilter,
-    include: { modulos: true, inscricoes: true },
+    include: { _count: { select: { modulos: true, inscricoes: true } } },
     orderBy: { createdAt: "desc" },
   });
   return cursos.map((curso) => ({
     ...curso,
-    formandos: curso.inscricoes.length,
+    modulos: [],
+    formandos: curso._count.inscricoes,
   }));
 }
 
@@ -541,30 +539,40 @@ export type FormandoComDetalhes = {
 
 export async function getFormandos(): Promise<FormandoComDetalhes[]> {
   const formandosFilter = await filtroFormandosCoordenador();
-  
+  const modulosFilter = await filtroModulosCoordenador();
+
   const formandos = await prisma.formando.findMany({
     where: formandosFilter,
     include: {
       user: { select: { id: true, nome: true, email: true } },
-      inscricoes: { 
+      inscricoes: {
         where: await filtroInscricoesCoordenador(),
-        include: { curso: true } 
+        include: {
+          curso: {
+            include: {
+              modulos: {
+                where: modulosFilter
+              }
+            }
+          }
+        }
       },
-      avaliacoes: true,
+      avaliacoes: {
+        where: {
+          modulo: modulosFilter
+        }
+      },
     },
     orderBy: { user: { nome: "asc" } },
   });
 
   return formandos.map((f) => {
     const negativos = f.avaliacoes.filter((a) => a.nota < 10).length;
+    const totalModulosCurso = f.inscricoes[0]?.curso.modulos?.length ?? 0;
+    const modulosConcluidos = f.avaliacoes.length;
     const progresso =
-      f.avaliacoes.length > 0
-        ? Math.round(
-            (f.avaliacoes.reduce((sum, a) => sum + a.nota, 0) /
-              f.avaliacoes.length /
-              20) *
-              100,
-          )
+      totalModulosCurso > 0
+        ? Math.round((modulosConcluidos / totalModulosCurso) * 100)
         : 0;
     let status: "ATIVO" | "INATIVO" | "CONCLUÍDO" = "ATIVO";
     if (progresso === 100) status = "CONCLUÍDO";
@@ -695,3 +703,51 @@ export type FormandoEmRisco = Awaited<
   ReturnType<typeof getFormandosEmRisco>
 >[number];
 export type FormadorItem = FormadorComDetalhes;
+
+// ─── Todas as Justificativas de um Formando ───────────────────────────────────
+
+export type JustificativaFormando = {
+  id: string;
+  status: string;
+  comentarioFormando: string | null;
+  documentoUrl: string | null;
+  justificativa: string | null;
+  aula: {
+    titulo: string;
+    dataHora: Date;
+    modulo: { nome: string };
+  };
+};
+
+export async function getJustificativasDoFormando(
+  formandoId: string,
+): Promise<JustificativaFormando[]> {
+  const presencas = await prisma.presenca.findMany({
+    where: {
+      formandoId,
+      status: { in: ["JUSTIFICADO", "PENDENTE"] },
+      comentarioFormando: { not: null },
+    },
+    include: {
+      aula: {
+        include: {
+          modulo: { select: { nome: true } },
+        },
+      },
+    },
+    orderBy: { aula: { dataHora: "desc" } },
+  });
+
+  return presencas.map((p) => ({
+    id: p.id,
+    status: p.status,
+    comentarioFormando: p.comentarioFormando,
+    documentoUrl: p.documentoUrl,
+    justificativa: p.justificativa,
+    aula: {
+      titulo: p.aula.titulo,
+      dataHora: p.aula.dataHora,
+      modulo: p.aula.modulo,
+    },
+  }));
+}

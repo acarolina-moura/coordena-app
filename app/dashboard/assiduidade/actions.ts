@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import { logError } from "@/lib/logger";
 
 export async function justificarFalta(
   presencaId: string,
@@ -46,7 +47,7 @@ export async function justificarFalta(
       mensagem: "Pedido de justificação enviado para análise!",
     };
   } catch (erro) {
-    console.error("Erro ao justificar falta:", erro);
+    logError("Erro ao justificar falta:", erro);
     return {
       sucesso: false,
       mensagem:
@@ -87,7 +88,7 @@ export async function aprovarJustificativa(presencaId: string) {
       mensagem: "Justificativa aceite e falta justificada",
     };
   } catch (erro) {
-    console.error("Erro ao aprovar justificativa:", erro);
+    logError("Erro ao aprovar justificativa:", erro);
     return {
       sucesso: false,
       mensagem:
@@ -128,11 +129,52 @@ export async function rejeitarJustificativa(presencaId: string) {
       mensagem: "Justificativa recusada e falta mantida",
     };
   } catch (erro) {
-    console.error("Erro ao rejeitar justificativa:", erro);
+    logError("Erro ao rejeitar justificativa:", erro);
     return {
       sucesso: false,
       mensagem:
         erro instanceof Error ? erro.message : "Erro ao rejeitar justificativa",
     };
+  }
+}
+
+export async function getJustificativasFormando(formandoId: string) {
+  try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "COORDENADOR") {
+      return [];
+    }
+
+    const presencas = await prisma.presenca.findMany({
+      where: {
+        formandoId,
+        status: { in: ["JUSTIFICADO", "PENDENTE"] },
+        comentarioFormando: { not: null },
+      },
+      include: {
+        aula: {
+          include: {
+            modulo: { select: { nome: true } },
+          },
+        },
+      },
+      orderBy: { aula: { dataHora: "desc" } },
+    });
+
+    return presencas.map((p) => ({
+      id: p.id,
+      status: p.status,
+      comentarioFormando: p.comentarioFormando,
+      documentoUrl: p.documentoUrl,
+      justificativa: p.justificativa,
+      aula: {
+        titulo: p.aula.titulo,
+        dataHora: p.aula.dataHora.toISOString(),
+        modulo: p.aula.modulo,
+      },
+    }));
+  } catch (erro) {
+    logError("Erro ao buscar justificativas:", erro);
+    return [];
   }
 }

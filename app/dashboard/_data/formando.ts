@@ -47,6 +47,10 @@ export async function getFormandoStats(userId: string) {
         where: {
             formandoId: formando.id,
             nota: { gte: 10 },
+            // CORREÇÃO: Filtrar apenas módulos dos cursos do formando
+            modulo: {
+                cursoId: { in: cursoIds }
+            }
         },
     });
 
@@ -71,9 +75,7 @@ export async function getCursoFormando(userId: string) {
                             modulos: {
                                 orderBy: { ordem: "asc" },
                                 include: {
-                                    avaliacoes: {
-                                        where: { formando: { userId } },
-                                    },
+                                    avaliacoes: true,
                                     aulas: true,
                                 },
                             },
@@ -85,13 +87,16 @@ export async function getCursoFormando(userId: string) {
     });
 
     if (!formando || formando.inscricoes.length === 0) return null;
+    const formandoId = formando.id;
 
+    // Filter avaliacoes by formandoId in memory since we can't reference it in the query
     const inscricao = formando.inscricoes[0];
     const curso = inscricao.curso;
     const hoje = new Date();
 
     const modulos = curso.modulos.map((m) => {
-        const notas = m.avaliacoes.map((a) => a.nota);
+        const avaliacoesDoFormando = m.avaliacoes.filter((a) => a.formandoId === formandoId);
+        const notas = avaliacoesDoFormando.map((a) => a.nota);
         const media =
             notas.length > 0
                 ? notas.reduce((s, n) => s + n, 0) / notas.length
@@ -178,14 +183,15 @@ export async function getProximasSessoesFormando(userId: string) {
 
     if (!formando) return [];
 
-    const inicioDoDia = new Date();
-    inicioDoDia.setHours(0, 0, 0, 0);
+    // CORREÇÃO: Comparar com a hora atual, não com o início do dia
+    // para que sessões já terminadas não apareçam
+    const agora = new Date();
 
     const cursoIds = formando.inscricoes.map((i) => i.cursoId);
 
     const aulas = await prisma.aula.findMany({
         where: {
-            dataHora: { gte: inicioDoDia },
+            dataHora: { gte: agora },
             modulo: { cursoId: { in: cursoIds } },
         },
         orderBy: { dataHora: "asc" },
@@ -218,9 +224,7 @@ export async function getMeusCursos(userId: string) {
                             modulos: {
                                 orderBy: { ordem: "asc" },
                                 include: {
-                                    avaliacoes: {
-                                        where: { formando: { userId } },
-                                    },
+                                    avaliacoes: true,
                                     aulas: true,
                                 },
                             },
@@ -233,6 +237,7 @@ export async function getMeusCursos(userId: string) {
     });
 
     if (!formando) return [];
+    const formandoId = formando.id;
 
     const hoje = new Date();
 
@@ -240,7 +245,8 @@ export async function getMeusCursos(userId: string) {
         const curso = insc.curso;
 
         const modulos = curso.modulos.map((m) => {
-            const notas = m.avaliacoes.map((a) => a.nota);
+            const avaliacoesDoFormando = m.avaliacoes.filter((a) => a.formandoId === formandoId);
+            const notas = avaliacoesDoFormando.map((a) => a.nota);
             const media =
                 notas.length > 0
                     ? notas.reduce((s, n) => s + n, 0) / notas.length
@@ -514,43 +520,29 @@ export async function getMeusTrabalhos(userId: string) {
 
 // ------------------- CONVITES & REVIEWS -------------------
 export async function getMeusConvites(userId: string) {
-    const formando = await prisma.formando.findUnique({
-        where: { userId },
-    });
+  const formando = await prisma.formando.findUnique({
+    where: { userId },
+  });
+  if (!formando) return [];
 
-    if (!formando) {
-        console.log("[getMeusConvites] Formando not found for userId:", userId);
-        return [];
-    }
+  const convites = await prisma.convite.findMany({
+    where: { formandoId: formando.id },
+    include: {
+      curso: { select: { nome: true } },
+      modulo: { select: { nome: true } },
+    },
+    orderBy: { dataEnvio: "desc" },
+  });
 
-    const convites = await prisma.convite.findMany({
-        where: {
-            formandoId: formando.id,
-        },
-        include: {
-            curso: {
-                select: { id: true, nome: true },
-            },
-            modulo: {
-                select: { id: true, nome: true },
-            },
-        },
-        orderBy: { dataEnvio: "desc" },
-    });
-
-    console.log("[getMeusConvites] Found convites:", convites.length, "for formandoId:", formando.id);
-
-    return convites.map((c) => ({
-        id: c.id,
-        cursoId: c.cursoId,
-        moduloId: c.moduloId,
-        status: c.status,
-        dataEnvio: c.dataEnvio,
-        dataResposta: c.dataResposta,
-        descricao: c.descricao,
-        Curso: c.curso,
-        Modulo: c.modulo,
-    }));
+  return convites.map((c) => ({
+    id: c.id,
+    status: c.status,
+    descricao: c.descricao,
+    dataEnvio: c.dataEnvio,
+    dataResposta: c.dataResposta,
+    cursoNome: c.curso?.nome ?? null,
+    moduloNome: c.modulo?.nome ?? null,
+  }));
 }
 
 export async function getModulosParaReview(userId: string) {
@@ -564,9 +556,7 @@ export async function getModulosParaReview(userId: string) {
                             modulos: {
                                 orderBy: { ordem: "asc" },
                                 include: {
-                                    reviews: {
-                                        where: { formando: { userId } },
-                                    },
+                                    reviews: true,
                                 },
                             },
                         },
@@ -577,21 +567,25 @@ export async function getModulosParaReview(userId: string) {
     });
 
     if (!formando) return [];
+    const formandoId = formando.id;
 
     return formando.inscricoes.flatMap((insc) =>
-        insc.curso.modulos.map((m) => ({
-            id: m.id,
-            nome: m.nome,
-            cursoNome: insc.curso.nome,
-            hasReview: m.reviews.length > 0,
-            review: m.reviews[0]
-                ? {
-                      nota: m.reviews[0].nota,
-                      comentario: m.reviews[0].comentario ?? "",
-                      data: m.reviews[0].createdAt,
-                  }
-                : undefined,
-        })),
+        insc.curso.modulos.map((m) => {
+            const reviewsDoFormando = m.reviews.filter((r) => r.formandoId === formandoId);
+            return {
+                id: m.id,
+                nome: m.nome,
+                cursoNome: insc.curso.nome,
+                hasReview: reviewsDoFormando.length > 0,
+                review: reviewsDoFormando[0]
+                    ? {
+                          nota: reviewsDoFormando[0].nota,
+                          comentario: reviewsDoFormando[0].comentario ?? "",
+                          data: reviewsDoFormando[0].createdAt,
+                      }
+                    : undefined,
+            };
+        }),
     );
 }
 

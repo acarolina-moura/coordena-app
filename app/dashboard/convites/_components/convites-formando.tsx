@@ -74,7 +74,7 @@ export function ConvitesFormando({ initialConvites }: ConvitesFormandoProps) {
                                                 <BookOpen className="h-6 w-6" />
                                             </div>
                                             <div className="min-w-0">
-                                                <h3 className="font-bold text-gray-900 dark:text-gray-100 truncate pr-6">{convite.Curso?.nome || 'Novo Curso'}</h3>
+                                                <h3 className="font-bold text-gray-900 dark:text-gray-100 truncate pr-6">{convite.cursoNome || convite.Curso?.nome || 'Novo Curso'}</h3>
                                                 <p className="text-[10px] font-bold text-teal-600 uppercase tracking-widest leading-none mt-1">Convite Aberto</p>
                                             </div>
                                         </div>
@@ -136,6 +136,7 @@ export function ConvitesFormando({ initialConvites }: ConvitesFormandoProps) {
                     </div>
 
                     <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+                    <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
                             <thead>
                                 <tr className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
@@ -149,7 +150,7 @@ export function ConvitesFormando({ initialConvites }: ConvitesFormandoProps) {
                                 {historico.map((convite: any) => (
                                     <tr key={convite.id} className="hover:bg-gray-50/30 dark:hover:bg-gray-800/40 transition-colors">
                                         <td className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200">
-                                            {convite.Curso?.nome || 'Curso Removido'}
+                                            {convite.cursoNome || convite.Curso?.nome || 'Curso Removido'}
                                         </td>
                                         <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
                                             {new Date(convite.dataEnvio).toLocaleDateString()}
@@ -176,6 +177,7 @@ export function ConvitesFormando({ initialConvites }: ConvitesFormandoProps) {
                                 ))}
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             )}

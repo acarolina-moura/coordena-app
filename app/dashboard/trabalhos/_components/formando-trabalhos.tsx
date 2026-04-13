@@ -10,7 +10,6 @@ import {
     ChevronDown,
     ChevronUp,
     Download,
-    FileUp
 } from "lucide-react";
 import { cn } from "../../../../lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -25,10 +24,10 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { submeterTrabalho } from "../actions";
+import { UploadFormando } from "@/components/upload-formando";
+import { registarSubmissao } from "@/app/dashboard/upload-actions";
 
 interface Props {
     trabalhos: MeusTrabalhos;
@@ -85,13 +84,10 @@ export default function FormandoTrabalhos({ trabalhos }: Props) {
         return acc;
     }, {} as Record<string, { nome: string, items: MeusTrabalhos }>);
 
-    const handleSubmeter = async (itemId: string, formData: FormData) => {
+    const handleSubmeter = async (itemId: string, fileUrl: string, comentario: string) => {
         setSubmetendo(true);
         try {
-            const file = formData.get("ficheiro") as File;
-            const comentario = formData.get("comentario") as string;
-            const fileUrl = file ? file.name : "trabalho_entregue.pdf";
-            await submeterTrabalho(itemId, fileUrl, comentario);
+            await registarSubmissao(itemId, fileUrl, comentario);
             alert("Trabalho entregue com sucesso!");
         } catch {
             alert("Ocorreu um erro ao submeter o trabalho.");
@@ -231,7 +227,10 @@ export default function FormandoTrabalhos({ trabalhos }: Props) {
     );
 }
 
-function TrabalhoCard({ trabalho, onSubmeter, loading, moduloNome }: { trabalho: MeusTrabalhos[number], onSubmeter: (id: string, fd: FormData) => void, loading: boolean, moduloNome: string }) {
+function TrabalhoCard({ trabalho, onSubmeter, loading, moduloNome }: { trabalho: MeusTrabalhos[number], onSubmeter: (id: string, fileUrl: string, comentario: string) => void, loading: boolean, moduloNome: string }) {
+    const [comentario, setComentario] = useState("");
+    const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
+
     const statusConfig = {
         PENDENTE: { icon: Clock3, color: "bg-indigo-50 text-indigo-700 border-indigo-100/50", label: "Pendente" },
         ENTREGUE: { icon: CheckCircle2, color: "bg-emerald-50 text-emerald-700 border-emerald-100/50", label: "Entregue" },
@@ -241,6 +240,11 @@ function TrabalhoCard({ trabalho, onSubmeter, loading, moduloNome }: { trabalho:
 
     const config = statusConfig[trabalho.status as keyof typeof statusConfig] || statusConfig.PENDENTE;
     const StatusIcon = config.icon;
+
+    async function handleSubmit() {
+        if (!uploadedFileUrl) return;
+        await onSubmeter(trabalho.id, uploadedFileUrl, comentario);
+    }
 
     return (
         <div className="p-4 rounded-xl border border-slate-100 dark:border-gray-800 bg-slate-50/30 dark:bg-gray-900/50 flex flex-col gap-4">
@@ -289,7 +293,7 @@ function TrabalhoCard({ trabalho, onSubmeter, loading, moduloNome }: { trabalho:
                                 </DialogDescription>
                             </DialogHeader>
 
-                            <form action={(fd) => onSubmeter(trabalho.id, fd)} className="flex flex-col gap-6 py-4">
+                            <div className="flex flex-col gap-6 py-4">
                                 {trabalho.descricao && (
                                     <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
                                         <p className="text-xs font-semibold text-slate-600 leading-relaxed italic">
@@ -304,7 +308,7 @@ function TrabalhoCard({ trabalho, onSubmeter, loading, moduloNome }: { trabalho:
                                             <FileText className="w-5 h-5 text-slate-400 shrink-0" />
                                             <span className="text-xs font-bold text-slate-700 truncate">Enunciado / Apoio</span>
                                         </div>
-                                        <Button variant="ghost" size="sm" className="h-8 text-teal-600 font-bold shrink-0" asChild>
+                                        <Button variant="ghost" size="sm" className="h-11 sm:h-8 text-teal-600 font-bold shrink-0" asChild>
                                             <a href={trabalho.ficheiroAnexoUrl} download><Download className="w-4 h-4 mr-2" /> Baixar</a>
                                         </Button>
                                     </div>
@@ -333,37 +337,31 @@ function TrabalhoCard({ trabalho, onSubmeter, loading, moduloNome }: { trabalho:
 
                                 {trabalho.status !== 'ENTREGUE' && (
                                     <>
-                                        <div className="grid w-full items-center gap-2">
-                                            <Label htmlFor="ficheiro" className="text-xs font-black uppercase tracking-widest text-slate-400">Ficheiro (PDF/ZIP)</Label>
-                                            <div className="relative group cursor-pointer">
-                                                <Input
-                                                    id="ficheiro"
-                                                    name="ficheiro"
-                                                    type="file"
-                                                    className="h-24 opacity-0 absolute inset-0 z-10 cursor-pointer"
-                                                    required
-                                                />
-                                                <div className="h-24 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-1 group-hover:border-teal-500 group-hover:bg-teal-50 transition-all text-center px-4">
-                                                    <FileUp className="w-6 h-6 text-slate-300 group-hover:text-teal-500" />
-                                                    <span className="text-xs font-bold text-slate-400 group-hover:text-teal-600">Seleciona ou arrasta o ficheiro para aqui</span>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <UploadFormando
+                                            endpoint="fileUploader"
+                                            label="Ficheiro do Trabalho"
+                                            description="PDF, ZIP, DOC, XLS (máx. 32MB)"
+                                            onUploadComplete={(url) => {
+                                                setUploadedFileUrl(url);
+                                            }}
+                                            variant="dropzone"
+                                        />
 
                                         <div className="grid w-full items-center gap-2">
                                             <Label htmlFor="comentario" className="text-xs font-black uppercase tracking-widest text-slate-400">Comentário (opcional)</Label>
                                             <Textarea
                                                 id="comentario"
-                                                name="comentario"
                                                 placeholder="Deixa uma nota para o formador..."
+                                                value={comentario}
+                                                onChange={(e) => setComentario(e.target.value)}
                                                 className="rounded-2xl border-slate-200 focus:ring-teal-500/10 focus:border-teal-500 min-h-[80px] text-sm"
                                             />
                                         </div>
 
                                         <DialogFooter>
                                             <Button
-                                                type="submit"
-                                                disabled={loading}
+                                                onClick={handleSubmit}
+                                                disabled={loading || !uploadedFileUrl}
                                                 className="w-full h-12 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-black text-sm transition-all shadow-lg shadow-teal-600/20 active:scale-95"
                                             >
                                                 {loading ? 'A enviar...' : 'Submeter Trabalho'}
@@ -371,7 +369,7 @@ function TrabalhoCard({ trabalho, onSubmeter, loading, moduloNome }: { trabalho:
                                         </DialogFooter>
                                     </>
                                 )}
-                            </form>
+                            </div>
                         </DialogContent>
                     </Dialog>
                 </div>

@@ -30,19 +30,19 @@ export function Footer() {
     };
 
     return (
-        <footer className="bg-slate-900 text-slate-300 pt-20 pb-10 overflow-hidden">
-            <div className="max-w-7xl mx-auto px-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+        <footer className="bg-slate-900 text-slate-300 pt-16 sm:pt-20 pb-8 sm:pb-10 overflow-hidden">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 sm:gap-12 mb-12 sm:mb-16">
                     {/* Brand Column */}
-                    <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-4 sm:gap-6">
                         <Link
                             href="/"
                             className="flex items-center gap-2 group w-fit"
                         >
-                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-emerald-500 flex items-center justify-center text-white shadow-lg shadow-blue-600/20 group-hover:scale-110 transition-transform">
-                                <GraduationCap className="w-6 h-6" />
+                            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-emerald-500 flex items-center justify-center text-white shadow-lg shadow-blue-600/20 group-hover:scale-110 transition-transform">
+                                <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6" />
                             </div>
-                            <span className="text-2xl font-bold tracking-tight text-white">
+                            <span className="text-xl sm:text-2xl font-bold tracking-tight text-white">
                                 Coordena
                                 <span className="text-blue-600">App</span>
                             </span>
@@ -52,7 +52,7 @@ export function Footer() {
                             inteligente. Revolucionando a educação digital um
                             módulo de cada vez.
                         </p>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3 sm:gap-4">
                             {[Facebook, Twitter, Instagram, Linkedin].map(
                                 (Icon, i) => (
                                     <a
@@ -62,7 +62,7 @@ export function Footer() {
                                         rel="noopener noreferrer"
                                         className="h-10 w-10 rounded-full border border-slate-700 flex items-center justify-center hover:bg-blue-600 hover:border-blue-600 hover:text-white transition-all transform hover:-translate-y-1"
                                     >
-                                        <Icon className="w-5 h-5" />
+                                        <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </a>
                                 ),
                             )}
@@ -70,11 +70,11 @@ export function Footer() {
                     </div>
 
                     {/* Links Column 1 */}
-                    <div className="flex flex-col gap-6">
-                        <h4 className="text-white font-bold text-lg">
+                    <div className="flex flex-col gap-4 sm:gap-6">
+                        <h4 className="text-white font-bold text-base sm:text-lg">
                             Produto
                         </h4>
-                        <ul className="flex flex-col gap-3 text-sm font-medium">
+                        <ul className="flex flex-col gap-2.5 sm:gap-3 text-sm font-medium">
                             <li>
                                 <Link
                                     href="#home"
@@ -121,11 +121,11 @@ export function Footer() {
                     </div>
 
                     {/* Links Column 2 */}
-                    <div className="flex flex-col gap-6">
-                        <h4 className="text-white font-bold text-lg">
+                    <div className="flex flex-col gap-4 sm:gap-6">
+                        <h4 className="text-white font-bold text-base sm:text-lg">
                             Suporte
                         </h4>
-                        <ul className="flex flex-col gap-3 text-sm font-medium">
+                        <ul className="flex flex-col gap-2.5 sm:gap-3 text-sm font-medium">
                             <li>
                                 <Link
                                     href="#"
@@ -162,33 +162,33 @@ export function Footer() {
                     </div>
 
                     {/* Contact Column */}
-                    <div className="flex flex-col gap-6">
-                        <h4 className="text-white font-bold text-lg">
+                    <div className="flex flex-col gap-4 sm:gap-6 sm:col-span-2 lg:col-span-1">
+                        <h4 className="text-white font-bold text-base sm:text-lg">
                             Contacto
                         </h4>
-                        <ul className="flex flex-col gap-4 text-sm font-medium">
+                        <ul className="flex flex-col gap-3 sm:gap-4 text-sm font-medium">
                             <li className="flex items-center gap-3">
-                                <Mail className="w-5 h-5 text-blue-500" />
-                                <span>suporte@coordenaapp.com</span>
+                                <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 shrink-0" />
+                                <span className="text-xs sm:text-sm">suporte@coordenaapp.com</span>
                             </li>
                             <li className="flex items-center gap-3">
-                                <Phone className="w-5 h-5 text-blue-500" />
-                                <span>+351 123 456 789</span>
+                                <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 shrink-0" />
+                                <span className="text-xs sm:text-sm">+351 123 456 789</span>
                             </li>
                             <li className="flex items-center gap-3">
-                                <MapPin className="w-5 h-5 text-blue-500" />
-                                <span>Lisboa, Portugal</span>
+                                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 shrink-0" />
+                                <span className="text-xs sm:text-sm">Lisboa, Portugal</span>
                             </li>
                         </ul>
                     </div>
                 </div>
 
-                <div className="pt-10 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6 text-xs font-bold uppercase tracking-widest text-slate-500">
-                    <p>
+                <div className="pt-8 sm:pt-10 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-4 sm:gap-6 text-xs font-bold uppercase tracking-widest text-slate-500">
+                    <p className="text-center sm:text-left">
                         © {currentYear} CoordenaApp. Todos os direitos
                         reservados.
                     </p>
-                    <div className="flex items-center gap-8">
+                    <div className="flex flex-wrap items-center justify-center gap-x-6 sm:gap-x-8 gap-y-2">
                         <Link
                             href="#"
                             className="hover:text-white transition-colors"

@@ -31,13 +31,13 @@ export async function FormadorDashboard({ userName, userId }: { userName: string
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 xl:grid-cols-4">
         {kpis.map((kpi) => {
           const Icon = kpi.icon
           return (
             <div key={kpi.label} className={cn('flex items-center justify-between rounded-2xl p-5', kpi.bg)}>
               <div className="flex flex-col gap-1">
-                <span className="text-[11px] font-semibold tracking-widest text-gray-500 dark:text-gray-400">{kpi.label}</span>
+                <span className="text-xs sm:text-[11px] font-semibold tracking-widest text-gray-500 dark:text-gray-400">{kpi.label}</span>
                 <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">{kpi.value}</span>
               </div>
               <div className={cn('flex h-12 w-12 items-center justify-center rounded-xl', kpi.iconBg)}>
@@ -52,10 +52,15 @@ export async function FormadorDashboard({ userName, userId }: { userName: string
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Próximas Sessões */}
         <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
-          <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-gray-100">
-            <Clock className="h-4 w-4 text-purple-400" />
-            Próximas Sessões
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-gray-100">
+              <Clock className="h-4 w-4 text-purple-400" />
+              Próximas Sessões
+            </h2>
+            <Link href="/dashboard/calendario" className="flex items-center gap-1 text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700">
+              Ver todas <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
           <div className="flex flex-col gap-3">
             {sessoes.length === 0 && (
               <p className="text-sm text-gray-400 text-center py-4">Sem sessões agendadas</p>

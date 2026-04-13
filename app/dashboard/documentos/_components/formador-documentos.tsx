@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { CheckCircle2, AlertTriangle, Clock, Upload, CalendarDays, Loader2 } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Clock, Upload, CalendarDays, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DocumentoFormador as DocumentoResult } from "@/app/dashboard/_data/documentos";
-import { uploadDocumentoFormador } from "../actions";
+import { uploadDocumentoFormador, registarDocumento } from "../actions";
+import { UploadFormando } from "@/components/upload-formando";
+import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -44,10 +46,12 @@ function DocCard({
   doc,
   onUpload,
   isUploading,
+  onUploadThing,
 }: {
   doc: MeuDocumento;
   onUpload: (nome: string, file: File, validade: string) => void;
   isUploading: boolean;
+  onUploadThing?: (docNome: string) => void;
 }) {
   const cfg = STATUS_CONFIG[doc.status];
   const Icon = cfg.icon;
@@ -83,8 +87,9 @@ function DocCard({
       <div className="flex flex-col gap-3">
         {temValidade && (
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Data de validade</label>
+            <label htmlFor="data-validade" className="text-xs font-semibold text-gray-600 dark:text-gray-400">Data de validade</label>
             <input
+              id="data-validade"
               type="date"
               value={validadeInput}
               onChange={(e) => setValidadeInput(e.target.value)}
@@ -101,26 +106,40 @@ function DocCard({
         )}
       </div>
 
-      {/* Upload button */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        className="hidden"
-        accept=".pdf,.jpg,.jpeg,.png"
-      />
-      <button 
-        disabled={isUploading}
-        onClick={() => fileInputRef.current?.click()}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:border-purple-300 dark:hover:border-purple-700 hover:text-purple-600 dark:hover:text-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        {isUploading ? (
-          <Loader2 className="h-4 w-4 animate-spin text-purple-500" />
-        ) : (
-          <Upload className="h-4 w-4" />
+      {/* Upload buttons */}
+      <div className="flex flex-col gap-2">
+        {/* UploadThing */}
+        {onUploadThing && (
+          <button
+            onClick={() => onUploadThing(doc.nome)}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 py-2.5 text-sm font-medium text-white hover:bg-purple-700 transition-colors shadow-sm"
+          >
+            <Upload className="h-4 w-4" />
+            {doc.status === "em falta" ? "Enviar com UploadThing" : "Substituir via UploadThing"}
+          </button>
         )}
-        {doc.status === "em falta" ? "Fazer upload" : "Substituir ficheiro"}
-      </button>
+
+        {/* Legacy upload */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="hidden"
+          accept=".pdf,.jpg,.jpeg,.png"
+        />
+        <button
+          disabled={isUploading}
+          onClick={() => fileInputRef.current?.click()}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:border-purple-300 dark:hover:border-purple-700 hover:text-purple-600 dark:hover:text-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {isUploading ? (
+            <Loader2 className="h-4 w-4 animate-spin text-purple-500" />
+          ) : (
+            <Upload className="h-4 w-4" />
+          )}
+          {doc.status === "em falta" ? "Fazer upload" : "Substituir ficheiro"}
+        </button>
+      </div>
     </div>
   )
 }
@@ -137,6 +156,7 @@ export function FormadorDocumentos({ documentos: documentosIniciais }: { documen
     }))
   )
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
+  const [docUploadThing, setDocUploadThing] = useState<string | null>(null);
 
   async function handleUpload(nome: string, file: File, validade: string) {
     setUploadingDoc(nome);
@@ -169,6 +189,44 @@ export function FormadorDocumentos({ documentos: documentosIniciais }: { documen
       alert("Ocorreu um erro inesperado ao enviar o ficheiro.");
     } finally {
       setUploadingDoc(null);
+    }
+  }
+
+  // Handler para abrir modal de UploadThing
+  function handleOpenUploadThing(docNome: string) {
+    setDocUploadThing(docNome);
+  }
+
+  // Callback quando UploadThing completa o upload
+  async function handleUploadThingComplete(url: string, nome: string, tamanho: number) {
+    if (!docUploadThing) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("fileUrl", url);
+      formData.append("tipo", docUploadThing);
+      formData.append("nomeFicheiro", nome);
+      formData.append("tamanho", String(tamanho));
+
+      const result = await registarDocumento(formData);
+
+      if (result.success) {
+        toast.success(result.mensagem ?? "Documento registado!");
+        setDocs((prev) =>
+          prev.map((d) =>
+            d.nome === docUploadThing
+              ? { ...d, status: "válido" }
+              : d
+          )
+        );
+      } else {
+        toast.error(result.error ?? "Erro ao registar documento");
+      }
+    } catch (err) {
+      console.error("[handleUploadThingComplete]", err);
+      toast.error("Erro ao registar documento na base de dados");
+    } finally {
+      setDocUploadThing(null);
     }
   }
 
@@ -206,9 +264,54 @@ export function FormadorDocumentos({ documentos: documentosIniciais }: { documen
             doc={doc}
             onUpload={handleUpload}
             isUploading={uploadingDoc === doc.nome}
+            onUploadThing={handleOpenUploadThing}
           />
         ))}
       </div>
+
+      {/* Dialog de UploadThing */}
+      {docUploadThing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="relative w-full max-w-lg rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-xl">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                  Enviar: {docUploadThing}
+                </h3>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  PDF (máx. 16MB)
+                </p>
+              </div>
+              <button
+                onClick={() => setDocUploadThing(null)}
+                className="h-11 w-11 sm:h-8 sm:w-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* UploadThing Dropzone */}
+            <UploadFormando
+              endpoint="documentUploader"
+              label={`Documento: ${docUploadThing}`}
+              description="Arrasta o ficheiro ou clica para selecionar"
+              onUploadComplete={handleUploadThingComplete}
+              variant="dropzone"
+            />
+
+            {/* Cancel */}
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setDocUploadThing(null)}
+                className="rounded-xl border border-gray-200 dark:border-gray-800 px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

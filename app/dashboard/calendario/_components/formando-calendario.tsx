@@ -102,17 +102,17 @@ export default function CalendarioFormandoPage() {
         <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{sessoesMes.length} sessões este mês</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_380px]">
+      <div className="grid grid-cols-2 gap-6 lg:grid-cols-2 xl:grid-cols-[1fr_380px] items-start">
         {/* Calendar */}
-        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 self-start">
           {/* Nav */}
           <div className="flex items-center justify-between mb-6">
-            <button onClick={prevMonth} className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-              <ChevronLeft className="h-4 w-4 text-gray-600" />
+            <button onClick={prevMonth} aria-label="Mês anterior" className="flex h-11 w-11 sm:h-8 sm:w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <ChevronLeft className="h-4 w-4 text-gray-600" aria-hidden="true" />
             </button>
             <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">{MONTHS[viewMonth]} {viewYear}</h2>
-            <button onClick={nextMonth} className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-              <ChevronRight className="h-4 w-4 text-gray-600" />
+            <button onClick={nextMonth} aria-label="Mês seguinte" className="flex h-11 w-11 sm:h-8 sm:w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <ChevronRight className="h-4 w-4 text-gray-600" aria-hidden="true" />
             </button>
           </div>
 
@@ -165,13 +165,13 @@ export default function CalendarioFormandoPage() {
               <div className="flex flex-col gap-3">
                 {sessoesDia.map(s => (
                   <div key={s.id} className={cn("rounded-xl border p-4 flex flex-col gap-2", s.cor)}>
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-semibold leading-tight">{s.titulo}</p>
-                      <span className="shrink-0 rounded-lg bg-white/50 px-2 py-0.5 text-[11px] font-medium">{s.ufcd}</span>
+                    <div className="flex items-start justify-between gap-2 min-w-0">
+                      <p className="text-sm font-semibold leading-tight truncate flex-1 min-w-0">{s.titulo}</p>
+                      <span className="shrink-0 rounded-lg bg-white/50 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap">{s.ufcd}</span>
                     </div>
-                    <div className="flex flex-wrap gap-3 text-xs opacity-80">
-                      <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{s.horaInicio} · {s.duracao}</span>
-                      <span className="flex items-center gap-1"><User className="h-3 w-3" />{s.formador}</span>
+                    <div className="flex flex-wrap gap-y-2 gap-x-3 text-xs opacity-80 min-w-0">
+                      <span className="flex items-center gap-1 truncate"><Clock className="h-3 w-3 shrink-0" />{s.horaInicio} · {s.duracao}</span>
+                      <span className="flex items-center gap-1 truncate"><User className="h-3 w-3 shrink-0" />{s.formador}</span>
                     </div>
                   </div>
                 ))}

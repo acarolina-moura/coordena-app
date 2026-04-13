@@ -113,14 +113,14 @@ function DetalhesDialog({ curso, onClose }: { curso: Curso; onClose: () => void 
           </div>
           <button
             onClick={onClose}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-100 transition-colors"
+            className="flex h-11 w-11 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-100 transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 px-6 pb-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 px-6 pb-5">
           {[
             { value: `${curso.cargaHoraria}h`, label: "Carga Horária" },
             { value: curso.modulos.length,      label: "Módulos" },

@@ -579,7 +579,7 @@ export function ModulosContent({ modulos, cursos, formadores }: { modulos: Modul
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-3 sm:grid-cols-1">
         {modulosFiltrados.length > 0 ? (
           modulosFiltrados.map((modulo) => (
             <ModuloCard 

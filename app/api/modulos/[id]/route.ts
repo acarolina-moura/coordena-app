@@ -1,11 +1,17 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { auth } from "@/auth";
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "COORDENADOR") {
+      return Response.json({ error: "Não autorizado" }, { status: 403 });
+    }
+
     const { id } = await params;
     const body = await request.json();
 
@@ -93,21 +99,9 @@ export async function PUT(
       },
     });
 
-    // ✅ CORREÇÃO: Atualizar de facto o formador no Módulo (limpar o antigo e associar o novo)
-    if (formadorId) {
-      // 1. Apaga qualquer formador antigo associado a este módulo
-      await prisma.formadorModulo.deleteMany({
-        where: { moduloId: id },
-      });
-
-      // 2. Cria a associação com o novo formador escolhido
-      await prisma.formadorModulo.create({
-        data: {
-          formadorId: formadorId,
-          moduloId: id,
-        },
-      });
-    }
+    // ✅ NÃO associar o formador a FormadorModulo aqui!
+    // Isso só deve acontecer quando o formador ACEITA o convite
+    // Apenas remove se não há mais nenhum convite pendente/aceite
 
     // Busca o módulo atualizado com os formadores
     const moduloAtualizado = await prisma.modulo.findUnique({
@@ -149,6 +143,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "COORDENADOR") {
+      return Response.json({ error: "Não autorizado" }, { status: 403 });
+    }
+
     const { id } = await params;
 
     // 1. Verificar se existem dependências (Aulas, Avaliações)

@@ -37,7 +37,7 @@ export async function getFormadorStats(userId: string) {
         }),
     ]);
 
-    // Get the first course from the first module
+    // Obtem o primeiro curso do primeiro modulo
     const cursoNome = formador.modulosLecionados[0]?.modulo?.curso?.nome || null;
 
     return {
@@ -141,23 +141,21 @@ export async function getFormadorPerfil(userId: string) {
         idioma: user.formador.idioma || '',
         nacionalidade: user.formador.nacionalidade || '',
         userId: user.id,
+        image: user.image ?? null,
     };
 }
 
 /**
- * Fetches all modules assigned to a trainer (formador)
- * @param userId - The user ID of the trainer
- * @returns Array of assigned modules with course information and enrolled students
+ * Obtem todos os modulos atribuidos a um formador
+ * @param userId - O user ID do formador
+ * @returns Array de modulos com informacoes do curso e alunos inscritos
  */
 export async function getModulosAtribuidosFormador(userId: string) {
-    // Find the trainer by userId
     const formador = await prisma.formador.findUnique({
         where: { userId },
         include: {
-            // Include the relationship between trainer and modules
             modulosLecionados: {
                 include: {
-                    // Include module details and course information
                     modulo: {
                         include: {
                             curso: true,
@@ -168,54 +166,55 @@ export async function getModulosAtribuidosFormador(userId: string) {
         },
     });
 
-    // Return empty array if trainer not found
     if (!formador) return [];
 
-    // For each module, also get the inscriptions (students enrolled in the course)
-    const modulosComFormandos = await Promise.all(
-        formador.modulosLecionados.map(async (fm) => {
-            // Get all students enrolled in this course
-            const inscricoes = await prisma.inscricao.findMany({
-                where: { cursoId: fm.modulo.curso.id },
+    // Query unica: buscar todas as inscricoes de todos os cursos de uma vez
+    const cursoIds = formador.modulosLecionados.map((fm) => fm.modulo.curso.id);
+    const todasInscricoes = await prisma.inscricao.findMany({
+        where: { cursoId: { in: cursoIds } },
+        include: {
+            formando: {
                 include: {
-                    formando: {
-                        include: {
-                            user: true,
-                        },
-                    },
+                    user: true,
                 },
-            });
+            },
+        },
+    });
 
-            return {
-                id: fm.modulo.id,
-                nome: fm.modulo.nome,
-                // Generate a code from the module ID
-                codigo: fm.modulo.id.substring(0, 8).toUpperCase(),
-                // Get the course name
-                curso: fm.modulo.curso.nome,
-                // Tags - empty for now (can be expanded later)
-                tags: [],
-                // Get actual count of students from inscriptions
-                formandos: inscricoes.length,
-                // Default status is active
-                status: 'Ativo' as const,
-                // Add list of students enrolled in this course
-                estudantes: inscricoes.map((insc) => ({
-                    id: insc.formando.id,
-                    nome: insc.formando.user.nome,
-                    email: insc.formando.user.email,
-                    dataInscricao: insc.dataInicio,
-                })),
-            };
-        })
-    );
+    // Agrupar inscricoes por cursoId em memoria
+    const inscricoesPorCurso = new Map<string, typeof todasInscricoes>();
+    for (const insc of todasInscricoes) {
+        const existing = inscricoesPorCurso.get(insc.cursoId);
+        if (existing) existing.push(insc);
+        else inscricoesPorCurso.set(insc.cursoId, [insc]);
+    }
+
+    const modulosComFormandos = formador.modulosLecionados.map((fm) => {
+        const inscricoes = inscricoesPorCurso.get(fm.modulo.curso.id) || [];
+
+        return {
+            id: fm.modulo.id,
+            nome: fm.modulo.nome,
+            codigo: fm.modulo.id.substring(0, 8).toUpperCase(),
+            curso: fm.modulo.curso.nome,
+            tags: [],
+            formandos: inscricoes.length,
+            status: 'Ativo' as const,
+            estudantes: inscricoes.map((insc) => ({
+                id: insc.formando.id,
+                nome: insc.formando.user.nome,
+                email: insc.formando.user.email,
+                dataInscricao: insc.dataInicio,
+            })),
+        };
+    });
 
     return modulosComFormandos;
 }
 
 /**
- * Obtém módulos com alunos e informações de presenças para a página de notas
- * Retorna dados necessários para mostrar a tabela de notas mesmo sem template
+ * Obtem modulos com alunos e informacoes de presencas para a pagina de notas
+ * Retorna dados necessarios para mostrar a tabela de notas mesmo sem template
  */
 export async function getModulosComAlunos(userId: string) {
     const formador = await prisma.formador.findUnique({
@@ -296,31 +295,29 @@ export async function getModulosComAlunos(userId: string) {
     return modulosComDetalhes;
 }
 
-export async function getAulasFormador(userId: string) {
-    const formador = await prisma.formador.findUnique({
-        where: { userId },
-        include: {
-            user: true,
-            aulas: {
-                include: {
-                    modulo: true,
-                },
-                orderBy: { dataHora: "asc" },
-            },
-        },
-    });
+// ------------------- MEUS CONVITES (FORMADOR) -------------------
+export async function getMeusConvitesFormador(userId: string) {
+  const formador = await prisma.formador.findUnique({
+    where: { userId },
+  });
+  if (!formador) return [];
 
-    if (!formador) return [];
+  const convites = await prisma.convite.findMany({
+    where: { formadorId: formador.id },
+    include: {
+      curso: { select: { nome: true } },
+      modulo: { select: { nome: true } },
+    },
+    orderBy: { dataEnvio: "desc" },
+  });
 
-    return formador.aulas.map((aula) => ({
-        id: aula.id,
-        titulo: aula.titulo,
-        formador: formador.user.nome,
-        data: aula.dataHora.toISOString().split("T")[0],
-        horaInicio: `${String(aula.dataHora.getHours()).padStart(2, "0")}:${String(aula.dataHora.getMinutes()).padStart(2, "0")}`,
-        duracao: `${aula.duracao}h`,
-        ufcd: aula.modulo.nome,
-        cor: "bg-indigo-100 text-indigo-700 border-indigo-200",
-        moduloId: aula.modulo.id,
-    }));
+  return convites.map((c) => ({
+    id: c.id,
+    status: c.status,
+    descricao: c.descricao,
+    dataEnvio: c.dataEnvio,
+    dataResposta: c.dataResposta,
+    cursoNome: c.curso?.nome ?? null,
+    moduloNome: c.modulo?.nome ?? null,
+  }));
 }

@@ -30,6 +30,7 @@ interface GestaoMateriaisFormadorProps {
 export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisFormadorProps) {
   const [isPending, startTransition] = useTransition();
   const [showForm, setShowForm] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   async function handleUpload(formData: FormData) {
     startTransition(async () => {
@@ -39,8 +40,23 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
       } else {
         toast.success("Material carregado com sucesso!");
         setShowForm(false);
+        setSelectedFile(null);
       }
     });
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  }
+
+  function handleCancelForm() {
+    setShowForm(!showForm);
+    if (!showForm) {
+      setSelectedFile(null);
+    }
   }
 
   async function handleDelete(id: string) {
@@ -61,7 +77,7 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Gerir Materiais de Apoio</h2>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={handleCancelForm}
           className="flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-purple-600/20 transition-all hover:bg-purple-700 hover:shadow-purple-700/30 active:scale-95"
         >
           {showForm ? "Cancelar" : <><Plus className="h-4 w-4" /> Novo Material</>}
@@ -73,7 +89,7 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
           <form action={handleUpload} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Título do Material</label>
+                <label htmlFor="titulo-material" className="text-sm font-medium text-gray-700 dark:text-gray-300">Título do Material</label>
                 <input
                   name="titulo"
                   required
@@ -82,7 +98,7 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Módulo</label>
+                <label htmlFor="modulo-select" className="text-sm font-medium text-gray-700 dark:text-gray-300">Módulo</label>
                 <select
                   name="moduloId"
                   required
@@ -99,7 +115,7 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Descrição (Opcional)</label>
+              <label htmlFor="descricao-material" className="text-sm font-medium text-gray-700 dark:text-gray-300">Descrição (Opcional)</label>
               <textarea
                 name="descricao"
                 rows={3}
@@ -110,18 +126,37 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Ficheiro</label>
-              <div className="relative flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800 transition-colors hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50/50 dark:hover:bg-purple-900/10">
+              <div className={`relative flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed transition-colors ${
+                selectedFile 
+                  ? 'border-green-400 dark:border-green-500 bg-green-50 dark:bg-green-900/10' 
+                  : 'border-gray-200 dark:border-gray-800 hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50/50 dark:hover:bg-purple-900/10'
+              }`}>
                 <input
                   type="file"
                   name="file"
                   required
+                  onChange={handleFileChange}
                   className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                 />
-                <Upload className="h-8 w-8 text-gray-400 dark:text-gray-600" />
-                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  Clique ou arraste um ficheiro para carregar
-                </p>
-                <p className="text-xs text-gray-400 dark:text-gray-500">PDF, ZIP, DOC (Máx: 10MB)</p>
+                {selectedFile ? (
+                  <>
+                    <FileText className="h-8 w-8 text-green-500 dark:text-green-400" />
+                    <p className="mt-2 text-sm font-medium text-green-700 dark:text-green-400">
+                      {selectedFile.name}
+                    </p>
+                    <p className="text-xs text-green-600 dark:text-green-500">
+                      {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-8 w-8 text-gray-400 dark:text-gray-600" />
+                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                      Clique ou arraste um ficheiro para carregar
+                    </p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">PDF, ZIP, DOC (Máx: 10MB)</p>
+                  </>
+                )}
               </div>
             </div>
 
@@ -129,10 +164,19 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
               <button
                 type="submit"
                 disabled={isPending}
-                className="flex items-center gap-2 rounded-xl bg-purple-600 px-6 py-2 text-sm font-semibold text-white transition-all hover:bg-purple-700 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-xl bg-purple-600 px-6 py-2 text-sm font-semibold text-white transition-all hover:bg-purple-700 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                Carregar Material
+                {isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    A carregar...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4" />
+                    Carregar Material
+                  </>
+                )}
               </button>
             </div>
           </form>
@@ -140,7 +184,7 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
       )}
 
       {materiais.length === 0 ? (
-        <div className="flex bg-white dark:bg-gray-900 flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 p-20 text-center">
+        <div className="flex bg-white dark:bg-gray-900 flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 p-8 sm:p-12 lg:p-20 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-50 dark:bg-gray-800">
             <FileText className="h-8 w-8 text-gray-300 dark:text-gray-600" />
           </div>
@@ -148,7 +192,7 @@ export function GestaoMateriaisFormador({ materiais, modulos }: GestaoMateriaisF
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Comece por carregar materiais para os seus alunos.</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
+        <div className="overflow-x-auto overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
           <table className="w-full text-left text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800/50 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               <tr>
