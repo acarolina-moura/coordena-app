@@ -22,6 +22,7 @@ import { useState, useEffect } from 'react';
 import { Search, Plus, Save, Eye, Download, X, BookOpen } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { TemplateAvaliacoeModal } from './template-avaliacoes-modal';
 import {
   obterTemplateAvaliacao,
@@ -118,6 +119,9 @@ export default function FormadorNotasPage() {
           const novosTemplates: Record<string, Template | null> = {};
           for (const modulo of resultado.modulos) {
             const resultadoTemplate = await obterTemplateAvaliacao(modulo.id);
+            if (!resultadoTemplate.success) {
+              console.error(`Erro ao carregar template do módulo ${modulo.id}:`, resultadoTemplate.error);
+            }
             novosTemplates[modulo.id] = resultadoTemplate.template || null;
           }
           setTemplates(novosTemplates);
@@ -573,17 +577,32 @@ export default function FormadorNotasPage() {
                                       max="20"
                                       step="0.5"
                                       value={valor ?? ''}
-                                      onChange={(e) =>
-                                        atualizarNota(
-                                          aluno.id,
-                                          item.id,
-                                          e.target.value
-                                            ? parseFloat(e.target.value)
-                                            : 0
-                                        )
-                                      }
+                                      onChange={(e) => {
+                                        const valorInput = e.target.value ? parseFloat(e.target.value) : 0;
+                                        
+                                        if (valorInput > 20) {
+                                          toast.error('Nota máxima é 20');
+                                          e.target.value = '20';
+                                          setNotas((prev) => ({
+                                            ...prev,
+                                            [`${modulo.id}_${aluno.id}`]: {
+                                              ...(prev[`${modulo.id}_${aluno.id}`] || {}),
+                                              [item.id]: 20,
+                                            },
+                                          }));
+                                          return;
+                                        }
+                                        
+                                        setNotas((prev) => ({
+                                          ...prev,
+                                          [`${modulo.id}_${aluno.id}`]: {
+                                            ...(prev[`${modulo.id}_${aluno.id}`] || {}),
+                                            [item.id]: valorInput,
+                                          },
+                                        }));
+                                      }}
                                       placeholder="—"
-                                    className="w-16 text-center text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                      className="w-16 text-center text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-purple-500"
                                     />
                                   </td>
                                 );
