@@ -103,6 +103,7 @@ function JustificarDialog({ presencaId, data, modulo }: { presencaId: string, da
     const [open, setOpen] = useState(false);
     const [justificativa, setJustificativa] = useState("");
     const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
+    const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
     const [carregando, setCarregando] = useState(false);
     const [sucesso, setSucesso] = useState(false);
 
@@ -118,61 +119,71 @@ function JustificarDialog({ presencaId, data, modulo }: { presencaId: string, da
                 setSucesso(false);
                 setJustificativa("");
                 setUploadedFileUrl(null);
+                setUploadedFileName(null);
             }, 2000);
         } else {
             alert(result.mensagem);
         }
     }
 
-    function handleUploadComplete(url: string) {
+    function handleUploadComplete(url: string, name: string) {
         setUploadedFileUrl(url);
+        setUploadedFileName(name);
     }
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(val) => {
+            setOpen(val);
+            if (!val) {
+                setJustificativa("");
+                setUploadedFileUrl(null);
+                setUploadedFileName(null);
+                setSucesso(false);
+            }
+        }}>
             <DialogTrigger asChild>
                 <Button
                     variant="outline"
                     size="sm"
-                    className="h-11 sm:h-8 gap-1.5 border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-all font-bold text-xs uppercase tracking-wider rounded-lg shadow-sm"
+                    className="h-11 sm:h-8 gap-1.5 border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 hover:text-rose-700 dark:hover:text-rose-300 transition-all font-bold text-xs uppercase tracking-wider rounded-lg shadow-sm"
                 >
                     <FileText className="w-3.5 h-3.5" /> Justificar Falta
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[480px] border-none shadow-2xl overflow-hidden rounded-[2rem] p-0">
-                <div className="bg-gradient-to-br from-amber-500 to-rose-600 p-8 text-white relative">
-                    <div className="absolute top-4 right-4 h-24 w-24 bg-white/10 rounded-full blur-2xl" />
+            <DialogContent className="sm:max-w-[480px] border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden rounded-2xl p-0 bg-white dark:bg-gray-900">
+                <div className="bg-gradient-to-br from-amber-500 to-rose-600 dark:from-amber-600 dark:to-rose-700 p-6 text-white relative">
+                    <div className="absolute top-4 right-4 h-20 w-20 bg-white/10 rounded-full blur-2xl" />
                     <DialogHeader className="relative z-10">
-                        <DialogTitle className="text-2xl font-bold tracking-tight">Justificar Falta</DialogTitle>
-                        <DialogDescription className="text-amber-50 text-base leading-relaxed mt-2">
+                        <DialogTitle className="text-xl font-bold tracking-tight">Justificar Falta</DialogTitle>
+                        <DialogDescription className="text-amber-50 text-sm leading-relaxed mt-1">
                             Ausência no módulo <span className="font-bold text-white">{modulo}</span> — {data}
                         </DialogDescription>
                     </DialogHeader>
                 </div>
 
-                <div className="p-8 bg-white">
+                <div className="p-6 bg-white dark:bg-gray-900">
                     {sucesso ? (
                         <motion.div
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             className="flex flex-col items-center justify-center py-8 text-center"
                         >
-                            <div className="h-16 w-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4">
+                            <div className="h-16 w-16 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mb-4">
                                 <CheckCircle2 className="h-10 w-10" />
                             </div>
-                            <h3 className="text-xl font-bold text-slate-900">Sucesso!</h3>
-                            <p className="text-slate-500 mt-1">A tua justificação foi enviada para análise do coordenador.</p>
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-gray-100">Sucesso!</h3>
+                            <p className="text-slate-500 dark:text-gray-400 mt-1">A tua justificação foi enviada para análise do coordenador.</p>
                         </motion.div>
                     ) : (
                         <div className="flex flex-col gap-5">
                             <div className="flex flex-col gap-2">
-                                <Label htmlFor="justificativa" className="text-xs font-bold text-slate-700 ml-1">MOTIVO DA AUSÊNCIA</Label>
+                                <Label htmlFor="justificativa" className="text-xs font-bold text-slate-700 dark:text-gray-300 ml-1">MOTIVO DA AUSÊNCIA</Label>
                                 <Textarea
                                     id="justificativa"
                                     placeholder="Explica brevemente o motivo da tua falta..."
                                     value={justificativa}
                                     onChange={(e) => setJustificativa(e.target.value)}
-                                    className="min-h-[80px] bg-slate-50 border-slate-100 focus:bg-white rounded-2xl resize-none p-4 text-slate-600 focus:ring-2 focus:ring-amber-500/20 transition-all text-sm"
+                                    className="min-h-[80px] bg-slate-50 dark:bg-gray-800 border-slate-100 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-800 rounded-xl resize-none p-4 text-slate-600 dark:text-gray-200 focus:ring-2 focus:ring-amber-500/20 transition-all text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
                                 />
                             </div>
 
@@ -181,23 +192,30 @@ function JustificarDialog({ presencaId, data, modulo }: { presencaId: string, da
                                 endpoint="documentUploader"
                                 label="Documento Comprovativo"
                                 description="PDF, JPG ou PNG (máx. 16MB)"
-                                onUploadComplete={(url) => handleUploadComplete(url)}
+                                onUploadComplete={handleUploadComplete}
                                 variant="dropzone"
                             />
+
+                            {uploadedFileName && (
+                                <div className="flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-3 py-2">
+                                    <FileText className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                    <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300 truncate">{uploadedFileName}</span>
+                                </div>
+                            )}
 
                             <DialogFooter className="flex gap-3 sm:justify-end">
                                 <Button
                                     variant="ghost"
                                     onClick={() => setOpen(false)}
                                     disabled={carregando}
-                                    className="rounded-xl font-semibold text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+                                    className="rounded-xl font-semibold text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-800"
                                 >
                                     Cancelar
                                 </Button>
                                 <Button
                                     onClick={handleSubmeter}
                                     disabled={carregando || !justificativa.trim()}
-                                    className="bg-slate-900 hover:bg-black text-white rounded-xl px-6 font-bold shadow-lg shadow-slate-200 gap-2 h-11"
+                                    className="bg-slate-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-black dark:hover:bg-white text-white rounded-xl px-6 font-bold shadow-lg dark:shadow-none gap-2 h-11"
                                 >
                                     {carregando ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -490,9 +508,19 @@ export function FormandoAssiduidade({ presencas }: FormandoAssiduidadeProps) {
                                                                 <FileText className="w-3.5 h-3.5" />
                                                                 <span className="text-xs font-bold uppercase tracking-wider">Em Análise</span>
                                                             </div>
-                                                            <span className="text-xs text-slate-400 italic truncate max-w-[200px]">
-                                                                DOC: {p.documentoUrl || "Sem anexo"}
-                                                            </span>
+                                                            {p.documentoUrl ? (
+                                                                <a
+                                                                    href={p.documentoUrl}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                                                                >
+                                                                    <ExternalLink className="h-3 w-3" />
+                                                                    Ver documento
+                                                                </a>
+                                                            ) : (
+                                                                <span className="text-xs text-slate-400 italic">Sem anexo</span>
+                                                            )}
                                                         </div>
                                                     ) : (
                                                         <span className="text-xs text-slate-400 italic">

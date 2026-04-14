@@ -7,12 +7,13 @@ import {
     CheckCircle2,
     AlertCircle,
     Clock3,
-    ChevronDown,
-    ChevronUp,
     Download,
+    BookOpen,
+    Circle,
+    Calendar,
 } from "lucide-react";
 import { cn } from "../../../../lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { MeusTrabalhos } from "../../_data/formando";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +29,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { UploadFormando } from "@/components/upload-formando";
 import { registarSubmissao } from "@/app/dashboard/upload-actions";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface Props {
     trabalhos: MeusTrabalhos;
@@ -61,13 +63,7 @@ function KPI({ label, value, icon: Icon, bg, iconBg, iconColor }: KPIProps) {
 
 export default function FormandoTrabalhos({ trabalhos }: Props) {
     const [submetendo, setSubmetendo] = useState(false);
-    const [expandedModules, setExpandedModules] = useState<string[]>([]);
-
-    const toggleModule = (id: string) => {
-        setExpandedModules(prev =>
-            prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
-        );
-    };
+    const [openModules, setOpenModules] = useState<string[]>([]);
 
     const stats = {
         total: trabalhos.length,
@@ -153,51 +149,96 @@ export default function FormandoTrabalhos({ trabalhos }: Props) {
                 />
             </motion.div>
 
-            {/* Modules List */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                className="flex flex-col gap-6"
+            {/* Modules List - Accordion estilo Cronograma */}
+            <Accordion
+                type="multiple"
+                value={openModules}
+                onValueChange={setOpenModules}
+                className="flex flex-col gap-3"
             >
                 {Object.entries(groupedTrabalhos).map(([modId, mod], idx) => {
-                    const isExpanded = expandedModules.includes(modId) || (expandedModules.length === 0 && idx === 0);
                     const itemsPendentes = mod.items.filter((i) => i.status === 'PENDENTE' || i.status === 'EM_FALTA' || i.status === 'ATRASADO').length;
+                    const itemsEntregues = mod.items.filter((i) => i.status === 'ENTREGUE').length;
+                    const totalItems = mod.items.length;
+                    const isCompleto = itemsEntregues === totalItems && totalItems > 0;
+                    const isAtivo = itemsPendentes > 0 && !isCompleto;
 
                     return (
-                        <div key={modId} className="bg-white dark:bg-gray-900 rounded-[32px] border border-slate-100/50 dark:border-gray-800 overflow-hidden shadow-xl shadow-slate-200/50 dark:shadow-none transition-all">
-                            <button
-                                onClick={() => toggleModule(modId)}
-                                className="w-full flex items-center justify-between p-6 hover:bg-slate-50/50 dark:hover:bg-gray-800/40 transition-colors"
+                        <motion.div
+                            key={modId}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.04 }}
+                        >
+                            <AccordionItem
+                                value={modId}
+                                className={cn(
+                                    "rounded-2xl border transition-all",
+                                    isCompleto
+                                        ? "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900"
+                                        : isAtivo
+                                            ? "border-amber-200 dark:border-amber-800 bg-white dark:bg-gray-900"
+                                            : "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
+                                )}
                             >
-                                <div className="flex items-center gap-5">
-                                    <div className="h-12 w-12 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600 shrink-0 shadow-inner">
-                                        <FileText className="w-6 h-6" />
-                                    </div>
-                                    <div className="text-left min-w-0">
-                                        <h3 className="font-bold text-slate-900 dark:text-gray-100 text-lg truncate">{mod.nome}</h3>
-                                        {itemsPendentes > 0 ? (
-                                            <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100/50">{itemsPendentes} {itemsPendentes === 1 ? 'Tarefa pendente' : 'Tarefas pendentes'}</span>
-                                        ) : (
-                                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100/50">Tudo entregue</span>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="h-10 w-10 rounded-full flex items-center justify-center hover:bg-slate-100 transition-colors">
-                                    {isExpanded ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
-                                </div>
-                            </button>
+                                <AccordionTrigger className="px-5 py-4 [&>svg]:text-gray-400 hover:no-underline">
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-left flex-1 min-w-0">
+                                        {/* Icon */}
+                                        <div className={cn(
+                                            "h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border-2",
+                                            isCompleto ? "bg-emerald-500 border-emerald-400 text-white" :
+                                            isAtivo ? "bg-white dark:bg-gray-800 border-amber-500 text-amber-600" :
+                                            "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400"
+                                        )}>
+                                            {isCompleto ? <CheckCircle2 className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
+                                        </div>
 
-                            <AnimatePresence initial={false}>
-                                {isExpanded && (
-                                    <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: "auto", opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        transition={{ duration: 0.2, ease: "easeInOut" }}
-                                        className="border-t border-slate-100 dark:border-gray-800 overflow-hidden"
-                                    >
-                                        <div className="p-4 flex flex-col gap-3">
+                                        {/* Info */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <h3 className={cn(
+                                                    "text-base font-black truncate",
+                                                    isCompleto ? "text-gray-400 dark:text-gray-500" : "text-gray-900 dark:text-gray-100"
+                                                )}>
+                                                    {mod.nome}
+                                                </h3>
+                                                {isAtivo && (
+                                                    <span className="bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest shrink-0">
+                                                        {itemsPendentes} {itemsPendentes === 1 ? 'Pendente' : 'Pendentes'}
+                                                    </span>
+                                                )}
+                                                {isCompleto && (
+                                                    <span className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest shrink-0">
+                                                        Concluído
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-4 mt-1 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                                                <span className="flex items-center gap-1"><FileText className="w-3 h-3" /> {totalItems} trabalho{totalItems !== 1 ? 's' : ''}</span>
+                                                <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> {itemsEntregues} entregue{itemsEntregues !== 1 ? 's' : ''}</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Progress bar */}
+                                        <div className="hidden sm:flex flex-col items-end gap-1 shrink-0 w-24">
+                                            <span className="text-[10px] font-black text-gray-500 dark:text-gray-400">{totalItems > 0 ? Math.round((itemsEntregues / totalItems) * 100) : 0}%</span>
+                                            <div className="w-full h-1.5 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                                                <div
+                                                    className={cn(
+                                                        "h-full rounded-full transition-all",
+                                                        isCompleto ? "bg-emerald-500" : isAtivo ? "bg-amber-400" : "bg-gray-300 dark:bg-gray-700"
+                                                    )}
+                                                    style={{ width: `${totalItems > 0 ? (itemsEntregues / totalItems) * 100 : 0}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </AccordionTrigger>
+
+                                <AccordionContent>
+                                    <div className="px-5 pb-4">
+                                        <div className="border-t border-gray-100 dark:border-gray-800 mb-4" />
+                                        <div className="flex flex-col gap-3">
                                             {mod.items.map((trabalho) => (
                                                 <TrabalhoCard
                                                     key={trabalho.id}
@@ -208,28 +249,22 @@ export default function FormandoTrabalhos({ trabalhos }: Props) {
                                                 />
                                             ))}
                                         </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        </motion.div>
                     );
                 })}
-
-                {Object.keys(groupedTrabalhos).length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-gray-900 rounded-3xl border border-dashed border-slate-200 dark:border-gray-700">
-                        <FileText className="w-12 h-12 text-slate-200 mb-4" />
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-gray-100">Sem trabalhos atribuídos</h3>
-                        <p className="text-sm text-slate-500 dark:text-gray-400">Ainda não tens trabalhos para entregar de momento.</p>
-                    </div>
-                )}
-            </motion.div>
+            </Accordion>
         </div>
     );
 }
 
 function TrabalhoCard({ trabalho, onSubmeter, loading, moduloNome }: { trabalho: MeusTrabalhos[number], onSubmeter: (id: string, fileUrl: string, comentario: string) => void, loading: boolean, moduloNome: string }) {
+    const [open, setOpen] = useState(false);
     const [comentario, setComentario] = useState("");
     const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
+    const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
     const statusConfig = {
         PENDENTE: { icon: Clock3, color: "bg-indigo-50 text-indigo-700 border-indigo-100/50", label: "Pendente" },
@@ -244,6 +279,10 @@ function TrabalhoCard({ trabalho, onSubmeter, loading, moduloNome }: { trabalho:
     async function handleSubmit() {
         if (!uploadedFileUrl) return;
         await onSubmeter(trabalho.id, uploadedFileUrl, comentario);
+        setOpen(false);
+        setComentario("");
+        setUploadedFileUrl(null);
+        setUploadedFileName(null);
     }
 
     return (
@@ -270,7 +309,14 @@ function TrabalhoCard({ trabalho, onSubmeter, loading, moduloNome }: { trabalho:
                         </span>
                     </div>
 
-                    <Dialog>
+                    <Dialog open={open} onOpenChange={(val) => {
+                        setOpen(val);
+                        if (!val) {
+                            // Reset form when dialog closes
+                            setComentario("");
+                            setUploadedFileName(null);
+                        }
+                    }}>
                         <DialogTrigger asChild>
                             <Button
                                 variant={trabalho.status === 'ENTREGUE' ? "outline" : "default"}
@@ -327,7 +373,14 @@ function TrabalhoCard({ trabalho, onSubmeter, loading, moduloNome }: { trabalho:
                                         </div>
                                         <div className="flex items-center gap-3 bg-white p-2 rounded-lg border border-emerald-100 min-w-0">
                                             <FileText className="w-4 h-4 text-emerald-400 shrink-0" />
-                                            <span className="text-xs font-medium text-slate-700 truncate">{trabalho.submissao.ficheiroUrl}</span>
+                                            <a
+                                                href={trabalho.submissao.ficheiroUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-xs font-medium text-teal-600 dark:text-teal-400 hover:underline truncate"
+                                            >
+                                                Abrir ficheiro submetido
+                                            </a>
                                         </div>
                                         {trabalho.submissao.comentario && (
                                             <p className="text-xs text-slate-600 italic">&quot;{trabalho.submissao.comentario}&quot;</p>
@@ -341,11 +394,19 @@ function TrabalhoCard({ trabalho, onSubmeter, loading, moduloNome }: { trabalho:
                                             endpoint="fileUploader"
                                             label="Ficheiro do Trabalho"
                                             description="PDF, ZIP, DOC, XLS (máx. 32MB)"
-                                            onUploadComplete={(url) => {
+                                            onUploadComplete={(url, name) => {
                                                 setUploadedFileUrl(url);
+                                                setUploadedFileName(name);
                                             }}
                                             variant="dropzone"
                                         />
+
+                                        {uploadedFileName && (
+                                            <div className="flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 px-3 py-2">
+                                                <FileText className="h-4 w-4 text-emerald-600 shrink-0" />
+                                                <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400 truncate">{uploadedFileName}</span>
+                                            </div>
+                                        )}
 
                                         <div className="grid w-full items-center gap-2">
                                             <Label htmlFor="comentario" className="text-xs font-black uppercase tracking-widest text-slate-400">Comentário (opcional)</Label>

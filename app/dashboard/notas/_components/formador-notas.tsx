@@ -19,7 +19,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Search, Plus, Save, Eye, Download, X } from 'lucide-react';
+import { Search, Plus, Save, Eye, Download, X, BookOpen } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { TemplateAvaliacoeModal } from './template-avaliacoes-modal';
@@ -346,17 +346,41 @@ export default function FormadorNotasPage() {
   }
 
   /**
-   * Quando template é salvo, recarregar
+   * Quando template é salvo, recarregar módulos + templates + notas completamente
    */
-  function aoSalvarTemplate() {
-    const modulo = modulos.find((m) => m.id === modalModuloId);
-    if (modulo) {
-      obterTemplateAvaliacao(modulo.id).then((resultado) => {
-        setTemplates((prev) => ({
-          ...prev,
-          [modulo.id]: resultado.template || null,
-        }));
-      });
+  async function aoSalvarTemplate() {
+    try {
+      // Recarregar módulos e templates do zero
+      const resultado = await obterModulosComAlunos();
+      if (resultado.success && resultado.modulos) {
+        setModulos(resultado.modulos);
+
+        // Recarregar templates para cada módulo
+        const novosTemplates: Record<string, Template | null> = {};
+        for (const modulo of resultado.modulos) {
+          const resultadoTemplate = await obterTemplateAvaliacao(modulo.id);
+          novosTemplates[modulo.id] = resultadoTemplate.template || null;
+        }
+        setTemplates(novosTemplates);
+
+        // Recarregar notas para os novos módulos
+        const novasNotas: NotasState = {};
+        for (const modulo of resultado.modulos) {
+          for (const aluno of modulo.alunos) {
+            const resultadoNotas = await obterNotasParciaisAluno(aluno.id, modulo.id);
+            if (resultadoNotas.notas && resultadoNotas.notas.length > 0) {
+              const chaveAluno = `${modulo.id}_${aluno.id}`;
+              novasNotas[chaveAluno] = {};
+              resultadoNotas.notas.forEach((nota: { item: { id: string }; valor: number }) => {
+                novasNotas[chaveAluno][nota.item.id] = nota.valor;
+              });
+            }
+          }
+        }
+        setNotas(novasNotas);
+      }
+    } catch (error) {
+      console.error('Erro ao recarregar dados após salvar template:', error);
     }
   }
 
@@ -396,9 +420,15 @@ export default function FormadorNotasPage() {
 
       {/* Módulos */}
       <div className="space-y-4">
-        {modulosFiltrados.length === 0 ? (
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 text-center text-gray-500 dark:text-gray-400">
-            <p>Nenhum módulo encontrado.</p>
+        {modulosFiltrados.length === 0 && !loading ? (
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-12 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-50 dark:bg-gray-800 mx-auto mb-4">
+              <BookOpen className="h-8 w-8 text-gray-300 dark:text-gray-600" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Nenhum módulo encontrado</h3>
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+              Para lecionar um módulo, o coordenador deve associar-te a um módulo. Após a associação, o módulo aparecerá aqui com os alunos inscritos.
+            </p>
           </div>
         ) : (
           modulosFiltrados.map((modulo) => {
@@ -435,10 +465,10 @@ export default function FormadorNotasPage() {
 
                 {/* Tabela */}
                 <div className="overflow-x-auto">
-                  {!template && Object.keys(notas).length > 0 && (
+                  {!template && (
                     <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-4 mx-6 mt-4">
                       <p className="text-sm text-amber-800 dark:text-amber-200">
-                        ⚠️ Existem notas registadas mas nenhum template definido. Defina um template para poder editar as notas.
+                        ⚠️ Nenhum template de avaliação definido para este módulo. Clica em &quot;Definir Template&quot; para poderes inserir notas.
                       </p>
                     </div>
                   )}
@@ -482,9 +512,11 @@ export default function FormadorNotasPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                       {alunosFiltrados.map((aluno) => {
-                        const assiduidade = Math.round(
-                          (aluno.presencas / aluno.totalSessoes) * 100
-                        );
+                        const assiduidade = aluno.totalSessoes > 0
+                          ? Math.round(
+                              (aluno.presencas / aluno.totalSessoes) * 100
+                            )
+                          : 0;
 
                         return (
                           <tr key={aluno.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">

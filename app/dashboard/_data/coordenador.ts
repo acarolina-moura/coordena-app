@@ -508,15 +508,18 @@ export type CursoComDetalhes = {
 
 export async function getCursos(): Promise<CursoComDetalhes[]> {
   const cursosFilter = await filtroCursosCoordenador();
-  
+
   const cursos = await prisma.curso.findMany({
     where: cursosFilter,
-    include: { _count: { select: { modulos: true, inscricoes: true } } },
+    include: {
+      modulos: { orderBy: { ordem: "asc" } },
+      _count: { select: { inscricoes: true } },
+    },
     orderBy: { createdAt: "desc" },
   });
   return cursos.map((curso) => ({
     ...curso,
-    modulos: [],
+    modulos: curso.modulos,
     formandos: curso._count.inscricoes,
   }));
 }

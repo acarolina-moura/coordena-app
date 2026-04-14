@@ -1,15 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { Notificacao } from "./types";
 
-export type Notificacao = {
-  id: string;
-  tipo: "DOCUMENTO" | "ALUNO_RISCO";
-  titulo: string;
-  descricao: string;
-  href: string;
-  urgente: boolean;
-};
 
 export async function GET() {
   try {

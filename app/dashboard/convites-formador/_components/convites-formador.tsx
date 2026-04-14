@@ -36,6 +36,8 @@ export function ConvitesFormador({ initialConvites }: ConvitesFormadorProps) {
             setConvites((prev: ConviteItem[]) =>
                 prev.map((c) => c.id === id ? { ...c, status: acao, dataResposta: new Date() } : c)
             );
+        } else {
+            alert(res.mensagem || res.error || "Erro ao processar resposta. Tente novamente.");
         }
         setLoadingId(null);
     }

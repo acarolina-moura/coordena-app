@@ -120,7 +120,11 @@ export async function rejeitarJustificativa(presencaId: string) {
 
     await prisma.presenca.update({
       where: { id: presencaId },
-      data: { status: "AUSENTE" },
+      data: {
+        status: "AUSENTE",
+        comentarioFormando: null,
+        documentoUrl: null,
+      },
     });
 
     revalidatePath("/dashboard/assiduidade");

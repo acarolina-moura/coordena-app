@@ -17,8 +17,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import type { Notificacao } from "@/app/api/notificacoes/route";
-import type { ResultadoPesquisa } from "@/app/api/search/route";
+import type { Notificacao } from "@/app/api/notificacoes/types";
+import type { ResultadoPesquisa } from "@/app/api/search/types";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 interface TopBarProps {

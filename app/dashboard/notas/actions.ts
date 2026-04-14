@@ -473,30 +473,55 @@ export async function obterModulosComAlunos() {
 
     const formador = await prisma.formador.findUnique({
       where: { userId: session.user.id },
-      include: {
-        modulosLecionados: {
-          include: {
-            modulo: {
-              include: {
-                curso: true,
-                aulas: true,
-              },
-            },
-          },
-        },
-      },
     });
 
     if (!formador) {
       return { success: true, modulos: [], message: 'Formador não encontrado' };
     }
 
+    // Obter módulos via FormadorModulo (convites aceites)
+    const modulosFormadorModulo = await prisma.formadorModulo.findMany({
+      where: { formadorId: formador.id },
+      include: {
+        modulo: {
+          include: {
+            curso: true,
+          },
+        },
+      },
+    });
+
+    // Obter módulos via Aulas (associação direta pelo coordenador)
+    const aulasModulos = await prisma.aula.findMany({
+      where: { formadorId: formador.id },
+      select: { moduloId: true },
+      distinct: ['moduloId'],
+    });
+
+    // Combinar IDs únicos de módulos
+    const moduloIdsSet = new Set<string>();
+    modulosFormadorModulo.forEach((fm) => moduloIdsSet.add(fm.modulo.id));
+    aulasModulos.forEach((a) => moduloIdsSet.add(a.moduloId));
+
+    if (moduloIdsSet.size === 0) {
+      return { success: true, modulos: [], message: 'Nenhum módulo encontrado para este formador' };
+    }
+
+    // Buscar todos os módulos com detalhes
+    const modulos = await prisma.modulo.findMany({
+      where: { id: { in: Array.from(moduloIdsSet) } },
+      include: {
+        curso: true,
+      },
+      orderBy: { nome: 'asc' },
+    });
+
     // Para cada módulo, obter alunos inscritos no curso e suas presenças
     const modulosComDetalhes = await Promise.all(
-      formador.modulosLecionados.map(async (fm) => {
+      modulos.map(async (modulo) => {
         // Obter alunos inscritos neste curso
         const inscricoes = await prisma.inscricao.findMany({
-          where: { cursoId: fm.modulo.curso.id },
+          where: { cursoId: modulo.cursoId },
           include: {
             formando: {
               include: {
@@ -509,7 +534,7 @@ export async function obterModulosComAlunos() {
         // Contar total de aulas deste módulo com este formador
         const totalAulas = await prisma.aula.count({
           where: {
-            moduloId: fm.modulo.id,
+            moduloId: modulo.id,
             formadorId: formador.id,
           },
         });
@@ -521,9 +546,9 @@ export async function obterModulosComAlunos() {
             const presencasPresente = await prisma.presenca.count({
               where: {
                 formandoId: insc.formando.id,
-                status: "PRESENTE",
+                status: 'PRESENTE',
                 aula: {
-                  moduloId: fm.modulo.id,
+                  moduloId: modulo.id,
                   formadorId: formador.id,
                 },
               },
@@ -539,8 +564,8 @@ export async function obterModulosComAlunos() {
         );
 
         return {
-          id: fm.modulo.id,
-          nome: fm.modulo.nome,
+          id: modulo.id,
+          nome: modulo.nome,
           alunos,
         };
       })

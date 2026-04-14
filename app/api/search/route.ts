@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { ResultadoPesquisa } from "./types";
 
-export type ResultadoPesquisa = {
-  id: string;
-  tipo: "curso" | "formador" | "formando" | "modulo";
-  titulo: string;
-  subtitulo: string;
-  href: string;
-};
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -21,7 +15,7 @@ export async function GET(req: NextRequest) {
 
   const resultados: ResultadoPesquisa[] = [];
 
-  // Apenas o coordenador pesquisa tudo
+  // Coordenador pesquisa tudo
   if (session.user.role === "COORDENADOR") {
     const [cursos, formadores, formandos, modulos] = await Promise.all([
       prisma.curso.findMany({
@@ -91,6 +85,102 @@ export async function GET(req: NextRequest) {
         href: "/dashboard/modulos",
       }),
     );
+  }
+
+  // Formador pesquisa os seus módulos, cursos e formandos
+  if (session.user.role === "FORMADOR") {
+    const formador = await prisma.formador.findUnique({
+      where: { userId: session.user.id },
+    });
+    if (formador) {
+      const [modulos, cursos] = await Promise.all([
+        prisma.modulo.findMany({
+          where: {
+            nome: { contains: q, mode: "insensitive" },
+            formadores: { some: { formadorId: formador.id } },
+          },
+          include: { curso: { select: { nome: true } } },
+          take: 6,
+        }),
+        prisma.curso.findMany({
+          where: {
+            nome: { contains: q, mode: "insensitive" },
+            modulos: { some: { formadores: { some: { formadorId: formador.id } } } },
+          },
+          select: { id: true, nome: true },
+          take: 4,
+        }),
+      ]);
+
+      modulos.forEach((m) =>
+        resultados.push({
+          id: m.id,
+          tipo: "modulo",
+          titulo: m.nome,
+          subtitulo: m.curso.nome,
+          href: "/dashboard/modulos-atribuidos",
+        }),
+      );
+
+      cursos.forEach((c) =>
+        resultados.push({
+          id: c.id,
+          tipo: "curso",
+          titulo: c.nome,
+          subtitulo: "Meu curso",
+          href: "/dashboard/meus-cursos",
+        }),
+      );
+    }
+  }
+
+  // Formando pesquisa os seus cursos e módulos
+  if (session.user.role === "FORMANDO") {
+    const formando = await prisma.formando.findUnique({
+      where: { userId: session.user.id },
+      include: {
+        inscricoes: {
+          include: {
+            curso: {
+              include: {
+                modulos: { select: { id: true, nome: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+    if (formando) {
+      const cursos = formando.inscricoes
+        .map((ins) => ins.curso)
+        .filter((c) => c.nome.toLowerCase().includes(q.toLowerCase()))
+        .slice(0, 4);
+
+      const modulos = formando.inscricoes
+        .flatMap((ins) => ins.curso.modulos)
+        .filter((m) => m.nome.toLowerCase().includes(q.toLowerCase()))
+        .slice(0, 6);
+
+      cursos.forEach((c) =>
+        resultados.push({
+          id: c.id,
+          tipo: "curso",
+          titulo: c.nome,
+          subtitulo: "Meu curso",
+          href: "/dashboard/meus-cursos-formando",
+        }),
+      );
+
+      modulos.forEach((m) =>
+        resultados.push({
+          id: m.id,
+          tipo: "modulo",
+          titulo: m.nome,
+          subtitulo: "Meu módulo",
+          href: "/dashboard/cronograma",
+        }),
+      );
+    }
   }
 
   return NextResponse.json(resultados);
