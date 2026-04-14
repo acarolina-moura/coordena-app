@@ -193,7 +193,7 @@ const NAV_ITEMS: NavItem[] = [
     label: "O Meu Perfil",
     href: "/dashboard/perfil",
     icon: User,
-    roles: ["FORMADOR", "FORMANDO"],
+    roles: ["COORDENADOR", "FORMADOR", "FORMANDO"],
     group: "CONTA",
   },
 ];
@@ -239,23 +239,32 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname();
   const cfg = ROLE_CONFIG[user.role];
 
-  const visible = useMemo(() => 
-    NAV_ITEMS.filter((item) => item.roles.includes(user.role)),
-  [user.role]);
+  const visible = useMemo(
+    () => NAV_ITEMS.filter((item) => item.roles.includes(user.role)),
+    [user.role],
+  );
 
-  const groupedItems = useMemo(() => visible.reduce(
-    (acc, item) => {
-      const group = item.group || "OUTROS";
-      if (!acc[group]) acc[group] = [];
-      acc[group].push(item);
-      return acc;
-    },
-    {} as Record<string, NavItem[]>,
-  ), [visible]);
+  const groupedItems = useMemo(
+    () =>
+      visible.reduce(
+        (acc, item) => {
+          const group = item.group || "OUTROS";
+          if (!acc[group]) acc[group] = [];
+          acc[group].push(item);
+          return acc;
+        },
+        {} as Record<string, NavItem[]>,
+      ),
+    [visible],
+  );
 
-  const sortedGroups = useMemo(() => Object.keys(groupedItems).sort((a, b) => {
-    return GROUP_ORDER.indexOf(a) - GROUP_ORDER.indexOf(b);
-  }), [groupedItems]);
+  const sortedGroups = useMemo(
+    () =>
+      Object.keys(groupedItems).sort((a, b) => {
+        return GROUP_ORDER.indexOf(a) - GROUP_ORDER.indexOf(b);
+      }),
+    [groupedItems],
+  );
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const initialState: Record<string, boolean> = {};

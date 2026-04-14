@@ -1,5 +1,6 @@
 "use server";
 
+import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
@@ -10,6 +11,7 @@ export async function updateUserPerfil(
   nome: string,
   email: string,
   telefone: string,
+  novaSenha?: string,
 ) {
   try {
     const session = await auth();
@@ -22,12 +24,30 @@ export async function updateUserPerfil(
       where: { email },
     });
     if (existingUser && existingUser.id !== session.user.id) {
-      return { sucesso: false, mensagem: "Email já em uso por outro utilizador" };
+      return {
+        sucesso: false,
+        mensagem: "Email já em uso por outro utilizador",
+      };
     }
 
-    const _resultado = await prisma.user.update({
+    const data: {
+      nome: string;
+      email: string;
+      telefone: string;
+      senha?: string;
+    } = {
+      nome,
+      email,
+      telefone,
+    };
+
+    if (novaSenha && novaSenha.trim() !== "") {
+      data.senha = await bcrypt.hash(novaSenha, 10);
+    }
+
+    await prisma.user.update({
       where: { id: session.user.id },
-      data: { nome, email, telefone },
+      data,
     });
 
     revalidatePath("/dashboard/perfil");
@@ -36,7 +56,8 @@ export async function updateUserPerfil(
     logError("Erro em updateUserPerfil:", erro);
     return {
       sucesso: false,
-      mensagem: erro instanceof Error ? erro.message : "Erro ao actualizar perfil",
+      mensagem:
+        erro instanceof Error ? erro.message : "Erro ao actualizar perfil",
     };
   }
 }
@@ -56,7 +77,10 @@ export async function updateFormadorPerfil(
       return { sucesso: false, mensagem: "Não autorizado" };
     }
     // Só o próprio formador ou um coordenador podem editar
-    if (session.user.role !== "FORMADOR" && session.user.role !== "COORDENADOR") {
+    if (
+      session.user.role !== "FORMADOR" &&
+      session.user.role !== "COORDENADOR"
+    ) {
       return { sucesso: false, mensagem: "Não autorizado" };
     }
     // Se for formador, só pode editar o seu próprio perfil
@@ -78,7 +102,14 @@ export async function updateFormadorPerfil(
 
     await prisma.formador.update({
       where: { id: formador.id },
-      data: { especialidade, competencias, linkedin, github, idioma, nacionalidade },
+      data: {
+        especialidade,
+        competencias,
+        linkedin,
+        github,
+        idioma,
+        nacionalidade,
+      },
     });
 
     revalidatePath("/dashboard/perfil");
@@ -87,7 +118,8 @@ export async function updateFormadorPerfil(
     logError("Erro em updateFormadorPerfil:", erro);
     return {
       sucesso: false,
-      mensagem: erro instanceof Error ? erro.message : "Erro ao actualizar perfil",
+      mensagem:
+        erro instanceof Error ? erro.message : "Erro ao actualizar perfil",
     };
   }
 }
