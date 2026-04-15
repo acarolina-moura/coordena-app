@@ -1,5 +1,5 @@
 "use client";
- 
+
 import { useState, useEffect } from "react";
 import {
     ChevronLeft,
@@ -9,7 +9,6 @@ import {
     Check,
     X,
     UserCheck,
-    User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -20,9 +19,9 @@ import {
     obterAlunosComPresenca,
     guardarPresenca,
 } from "../actions";
- 
+
 // ─── Types ────────────────────────────────────────────────────────────────────
- 
+
 interface Sessao {
     id: string;
     titulo: string;
@@ -34,15 +33,15 @@ interface Sessao {
     ufcd: string;
     cor: string;
 }
- 
+
 interface AlunoPresenca {
     id: string;
     nome: string;
     status: "PRESENTE" | "AUSENTE" | "JUSTIFICADO" | "PENDENTE";
 }
- 
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
- 
+
 const MONTHS = [
     "Janeiro",
     "Fevereiro",
@@ -58,7 +57,7 @@ const MONTHS = [
     "Dezembro",
 ];
 const DAYS_SHORT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
- 
+
 function getDaysInMonth(year: number, month: number) {
     return new Date(year, month + 1, 0).getDate();
 }
@@ -68,7 +67,7 @@ function getFirstDayOfMonth(year: number, month: number) {
 function toISO(year: number, month: number, day: number) {
     return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
- 
+
 function podeMarcarPresenca(
     horaInicio: string,
     durationMinutes?: number,
@@ -76,13 +75,13 @@ function podeMarcarPresenca(
     const agora = new Date();
     const [hInicio, minInicio] = horaInicio.split(":").map(Number);
     const durMinutos = durationMinutes || 0;
- 
+
     const dataInicio = new Date();
     dataInicio.setHours(hInicio, minInicio, 0);
- 
+
     const dataFim = new Date(dataInicio);
     dataFim.setMinutes(dataFim.getMinutes() + durMinutos);
- 
+
     if (agora < dataInicio) {
         return { pode: false, motivo: `Aula começa às ${horaInicio}` };
     }
@@ -92,12 +91,12 @@ function podeMarcarPresenca(
             motivo: `Aula terminou às ${dataFim.getHours().toString().padStart(2, "0")}:${dataFim.getMinutes().toString().padStart(2, "0")}`,
         };
     }
- 
+
     return { pode: true };
 }
- 
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
- 
+
 export default function FormadorCalendarioPage() {
     const today = new Date();
     const [viewYear, setViewYear] = useState(today.getFullYear());
@@ -107,10 +106,6 @@ export default function FormadorCalendarioPage() {
     );
     const [sessoes, setSessoes] = useState<Sessao[]>([]);
     const [loading, setLoading] = useState(true);
- 
-    // Pagination for daily sessions
-    const [sessionsPage, setSessionsPage] = useState(0);
-    const itemsPerPage = 4;
 
     // Presença
     const [aulaAberta, setAulaAberta] = useState<string | null>(null);
@@ -119,7 +114,7 @@ export default function FormadorCalendarioPage() {
     const [presencasAlteradas, setPresencasAlteradas] = useState<
         Record<string, StatusPresenca>
     >({});
- 
+
     // Assiduidade - Aulas de hoje
     const [aulaHojeAberta, setAulaHojeAberta] = useState<string | null>(null);
     const [alunosHoje, setAlunosHoje] = useState<AlunoPresenca[]>([]);
@@ -127,7 +122,7 @@ export default function FormadorCalendarioPage() {
     const [presencasHojeAlteradas, setPresencasHojeAlteradas] = useState<
         Record<string, StatusPresenca>
     >({});
- 
+
     useEffect(() => {
         async function carregarAulas() {
             try {
@@ -146,7 +141,7 @@ export default function FormadorCalendarioPage() {
         }
         carregarAulas();
     }, []);
- 
+
     const abrirAula = async (aulaId: string) => {
         try {
             setLoadingPresenca(true);
@@ -162,17 +157,17 @@ export default function FormadorCalendarioPage() {
             setLoadingPresenca(false);
         }
     };
- 
+
     const fecharAula = () => {
         setAulaAberta(null);
         setAlunos([]);
         setPresencasAlteradas({});
     };
- 
+
     const alterarPresenca = (alunoId: string, status: StatusPresenca) => {
         setPresencasAlteradas((prev) => ({ ...prev, [alunoId]: status }));
     };
- 
+
     const guardarPresencas = async () => {
         try {
             if (!aulaAberta) return;
@@ -190,7 +185,7 @@ export default function FormadorCalendarioPage() {
             console.error("Erro ao guardar presenças:", error);
         }
     };
- 
+
     const abrirAulaHoje = async (aulaId: string) => {
         try {
             setLoadingPresencaHoje(true);
@@ -206,17 +201,17 @@ export default function FormadorCalendarioPage() {
             setLoadingPresencaHoje(false);
         }
     };
- 
+
     const fecharAulaHoje = () => {
         setAulaHojeAberta(null);
         setAlunosHoje([]);
         setPresencasHojeAlteradas({});
     };
- 
+
     const alterarPresencaHoje = (alunoId: string, status: StatusPresenca) => {
         setPresencasHojeAlteradas((prev) => ({ ...prev, [alunoId]: status }));
     };
- 
+
     const guardarPresencasHoje = async () => {
         try {
             if (!aulaHojeAberta) return;
@@ -234,7 +229,7 @@ export default function FormadorCalendarioPage() {
             console.error("Erro ao guardar presenças:", error);
         }
     };
- 
+
     const daysInMonth = getDaysInMonth(viewYear, viewMonth);
     const firstDay = getFirstDayOfMonth(viewYear, viewMonth);
     const todayISO = toISO(
@@ -242,7 +237,7 @@ export default function FormadorCalendarioPage() {
         today.getMonth(),
         today.getDate(),
     );
- 
+
     const prevMonth = () => {
         if (viewMonth === 0) {
             setViewMonth(11);
@@ -255,7 +250,7 @@ export default function FormadorCalendarioPage() {
             setViewYear((y) => y + 1);
         } else setViewMonth((m) => m + 1);
     };
- 
+
     const sessoesDoMes = sessoes.filter((s) =>
         s.data.startsWith(
             `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}`,
@@ -263,14 +258,10 @@ export default function FormadorCalendarioPage() {
     );
     const sessoesDoDia = sessoes.filter((s) => s.data === selectedDate);
     const sessoesHoje = sessoes.filter((s) => s.data === todayISO);
-    
-    const totalPages = Math.ceil(sessoesDoDia.length / itemsPerPage);
-    const sessoesDoDiaPaginadas = sessoesDoDia.slice(sessionsPage * itemsPerPage, (sessionsPage + 1) * itemsPerPage);
-
     const diasComSessoes = new Set(
         sessoesDoMes.map((s) => parseInt(s.data.split("-")[2])),
     );
- 
+
     const selectedDateLabel = selectedDate
         ? new Date(selectedDate + "T12:00:00").toLocaleDateString("pt-PT", {
               weekday: "long",
@@ -279,11 +270,6 @@ export default function FormadorCalendarioPage() {
           })
         : null;
 
-    const handleDateSelect = (iso: string) => {
-        setSelectedDate(iso);
-        setSessionsPage(0);
-    };
- 
     return (
         <div className="flex flex-col gap-6">
             {loading && (
@@ -291,7 +277,7 @@ export default function FormadorCalendarioPage() {
                     <Loader className="h-6 w-6 animate-spin text-indigo-600" />
                 </div>
             )}
- 
+
             {!loading && (
                 <>
                     {/* Header */}
@@ -305,96 +291,147 @@ export default function FormadorCalendarioPage() {
                             </p>
                         </div>
                     </div>
- 
-                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 items-start">
-                        {/* Main Column (Calendar + Próximas) */}
-                        <div className="flex flex-col gap-6">
-                            {/* Calendar grid */}
-                            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
-                                <div className="flex items-center justify-between mb-6">
-                                    <button
-                                        onClick={prevMonth}
-                                        aria-label="Mês anterior"
-                                        className="flex h-11 w-11 sm:h-8 sm:w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                                    >
-                                        <ChevronLeft className="h-4 w-4 text-gray-600 dark:text-gray-400" aria-hidden="true" />
-                                    </button>
-                                    <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
-                                        {MONTHS[viewMonth]} {viewYear}
-                                    </h2>
-                                    <button
-                                        onClick={nextMonth}
-                                        aria-label="Mês seguinte"
-                                        className="flex h-11 w-11 sm:h-8 sm:w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                                    >
-                                        <ChevronRight className="h-4 w-4 text-gray-600 dark:text-gray-400" aria-hidden="true" />
-                                    </button>
-                                </div>
- 
-                                <div className="grid grid-cols-7 mb-2">
-                                    {DAYS_SHORT.map((d) => (
-                                        <div
-                                            key={d}
-                                            className="text-center text-xs font-semibold text-gray-400 dark:text-gray-500 py-1"
-                                        >
-                                            {d}
-                                        </div>
-                                    ))}
-                                </div>
- 
-                                <div className="grid grid-cols-7 gap-1">
-                                    {Array.from({ length: firstDay }).map(
-                                        (_, i) => (
-                                            <div key={`empty-${i}`} />
-                                        ),
-                                    )}
-                                    {Array.from({ length: daysInMonth }).map(
-                                        (_, i) => {
-                                            const day = i + 1;
-                                            const iso = toISO(
-                                                viewYear,
-                                                viewMonth,
-                                                day,
-                                            );
-                                            const isToday = iso === todayISO;
-                                            const isSelected = iso === selectedDate;
-                                            const hasSessao =
-                                                diasComSessoes.has(day);
- 
-                                            return (
-                                                <button
-                                                    key={day}
-                                                    onClick={() =>
-                                                        handleDateSelect(iso)
-                                                    }
-                                                    className={cn(
-                                                        "relative flex flex-col items-center justify-center rounded-xl py-2 text-sm font-medium transition-all",
-                                                        isSelected
-                                                            ? "bg-indigo-600 text-white shadow-sm"
-                                                            : isToday
-                                                              ? "bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400 font-bold"
-                                                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800",
-                                                    )}
-                                                >
-                                                    {day}
-                                                    {hasSessao && (
-                                                        <span
-                                                            className={cn(
-                                                                "mt-0.5 h-1 w-1 rounded-full",
-                                                                isSelected
-                                                                    ? "bg-white/60"
-                                                                    : "bg-indigo-400",
-                                                            )}
-                                                        />
-                                                    )}
-                                                </button>
-                                            );
-                                        },
-                                    )}
-                                </div>
+
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[1fr_380px] items-start">
+                        {/* Calendar grid */}
+                        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 self-start">
+                            <div className="flex items-center justify-between mb-6">
+                                <button
+                                    onClick={prevMonth}
+                                    aria-label="Mês anterior"
+                                    className="flex h-11 w-11 sm:h-8 sm:w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                >
+                                    <ChevronLeft className="h-4 w-4 text-gray-600 dark:text-gray-400" aria-hidden="true" />
+                                </button>
+                                <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
+                                    {MONTHS[viewMonth]} {viewYear}
+                                </h2>
+                                <button
+                                    onClick={nextMonth}
+                                    aria-label="Mês seguinte"
+                                    className="flex h-11 w-11 sm:h-8 sm:w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                >
+                                    <ChevronRight className="h-4 w-4 text-gray-600 dark:text-gray-400" aria-hidden="true" />
+                                </button>
                             </div>
 
-                            {/* Próximas sessões (Moved here) */}
+                            <div className="grid grid-cols-7 mb-2">
+                                {DAYS_SHORT.map((d) => (
+                                    <div
+                                        key={d}
+                                        className="text-center text-xs font-semibold text-gray-400 dark:text-gray-500 py-1"
+                                    >
+                                        {d}
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="grid grid-cols-7 gap-1">
+                                {Array.from({ length: firstDay }).map(
+                                    (_, i) => (
+                                        <div key={`empty-${i}`} />
+                                    ),
+                                )}
+                                {Array.from({ length: daysInMonth }).map(
+                                    (_, i) => {
+                                        const day = i + 1;
+                                        const iso = toISO(
+                                            viewYear,
+                                            viewMonth,
+                                            day,
+                                        );
+                                        const isToday = iso === todayISO;
+                                        const isSelected = iso === selectedDate;
+                                        const hasSessao =
+                                            diasComSessoes.has(day);
+
+                                        return (
+                                            <button
+                                                key={day}
+                                                onClick={() =>
+                                                    setSelectedDate(iso)
+                                                }
+                                                className={cn(
+                                                    "relative flex flex-col items-center justify-center rounded-xl py-2 text-sm font-medium transition-all",
+                                                    isSelected
+                                                        ? "bg-indigo-600 text-white shadow-sm"
+                                                        : isToday
+                                                          ? "bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400 font-bold"
+                                                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800",
+                                                )}
+                                            >
+                                                {day}
+                                                {hasSessao && (
+                                                    <span
+                                                        className={cn(
+                                                            "mt-0.5 h-1 w-1 rounded-full",
+                                                            isSelected
+                                                                ? "bg-white/60"
+                                                                : "bg-indigo-400",
+                                                        )}
+                                                    />
+                                                )}
+                                            </button>
+                                        );
+                                    },
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Session list for selected day */}
+                        <div className="flex flex-col gap-4">
+                            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+                                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-1 capitalize">
+                                    {selectedDateLabel ?? "Seleciona um dia"}
+                                </h3>
+                                <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
+                                    {sessoesDoDia.length > 0
+                                        ? `${sessoesDoDia.length} sessão(ões)`
+                                        : "Sem sessões"}
+                                </p>
+
+                                {sessoesDoDia.length > 0 ? (
+                                    <div className="flex flex-col gap-3">
+                                        {sessoesDoDia.map((sessao) => (
+                                            <div
+                                                key={sessao.id}
+                                                className={cn(
+                                                    "rounded-xl border p-4 flex flex-col gap-2",
+                                                    sessao.cor,
+                                                )}
+                                            >
+                                                <div className="flex items-start justify-between gap-2 min-w-0">
+                                                    <p className="text-sm font-semibold leading-tight truncate flex-1 min-w-0">
+                                                        {sessao.titulo}
+                                                    </p>
+                                                    <span className="shrink-0 rounded-lg bg-white/60 border border-current/10 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap">
+                                                        {sessao.ufcd}
+                                                    </span>
+                                                </div>
+                                                <div className="flex flex-wrap gap-y-2 gap-x-3 text-xs opacity-80 min-w-0">
+                                                    <span className="flex items-center gap-1 truncate">
+                                                        <Clock className="h-3 w-3 shrink-0" />{" "}
+                                                        {sessao.horaInicio} ·{" "}
+                                                        {sessao.duracao}
+                                                    </span>
+                                                    <span className="truncate block">
+                                                        {sessao.formador}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                                        <Clock className="h-8 w-8 text-gray-200 dark:text-gray-800 mb-2" />
+                                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                                            Nenhuma sessão neste dia
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Próximas sessões */}
                             <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
                                 <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4">
                                     Próximas Sessões
@@ -410,10 +447,9 @@ export default function FormadorCalendarioPage() {
                                             const [, month, day] =
                                                 sessao.data.split("-");
                                             return (
-                                                <button
+                                                <div
                                                     key={sessao.id}
-                                                    onClick={() => handleDateSelect(sessao.data)}
-                                                    className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/40 px-3 py-2.5 text-left hover:border-indigo-200 dark:hover:border-indigo-800 hover:bg-indigo-50/40 dark:hover:bg-indigo-900/20 transition-colors"
+                                                    className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/40 px-3 py-2.5 text-left transition-colors"
                                                 >
                                                     <div className="flex items-center gap-3 min-w-0 flex-1">
                                                         <div className="flex w-10 shrink-0 flex-col items-center rounded-lg bg-indigo-100 dark:bg-indigo-900/40 py-1.5">
@@ -445,129 +481,36 @@ export default function FormadorCalendarioPage() {
                                                             </span>
                                                         </div>
                                                     </div>
-                                                </button>
+                                                </div>
                                             );
                                         })}
-                                    {sessoes.filter((s) => s.data >= todayISO).length === 0 && (
-                                        <p className="text-xs text-gray-400 text-center py-4">Sem sessões futuras</p>
-                                    )}
                                 </div>
                             </div>
-                        </div>
- 
-                        {/* Right panel (Selected Day) */}
-                        <div className="flex flex-col gap-4">
-                            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 min-h-[400px] flex flex-col">
-                                <div className="flex items-start justify-between mb-4">
-                                    <div>
-                                        <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 capitalize">
-                                            {selectedDateLabel ?? "Seleciona um dia"}
-                                        </h3>
-                                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                            {sessoesDoDia.length > 0
-                                                ? `${sessoesDoDia.length} sessão(ões)`
-                                                : "Sem sessões"}
-                                        </p>
-                                    </div>
-                                    
-                                    {/* Pagination Controls */}
-                                    {totalPages > 1 && (
-                                        <div className="flex gap-1">
-                                            <button 
-                                                onClick={() => setSessionsPage(p => Math.max(0, p - 1))}
-                                                disabled={sessionsPage === 0}
-                                                className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-100 dark:border-gray-800 disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
-                                            >
-                                                <ChevronLeft className="h-4 w-4" />
-                                            </button>
-                                            <button 
-                                                onClick={() => setSessionsPage(p => Math.min(totalPages - 1, p + 1))}
-                                                disabled={sessionsPage === totalPages - 1}
-                                                className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-100 dark:border-gray-800 disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
-                                            >
-                                                <ChevronRight className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
- 
-                                <div className="flex-1">
-                                    {sessoesDoDia.length > 0 ? (
-                                        <div className="flex flex-col gap-3">
-                                            {sessoesDoDiaPaginadas.map((sessao) => (
-                                                <div
-                                                    key={sessao.id}
-                                                    onClick={() => abrirAula(sessao.id)}
-                                                    className={cn(
-                                                        "rounded-xl border p-4 flex flex-col gap-2 cursor-pointer transition-all hover:ring-2 hover:ring-indigo-400/20",
-                                                        sessao.cor,
-                                                    )}
-                                                >
-                                                    <div className="flex items-start justify-between gap-2 min-w-0">
-                                                        <p className="text-sm font-semibold leading-tight truncate flex-1 min-w-0">
-                                                            {sessao.titulo}
-                                                        </p>
-                                                        <span className="shrink-0 rounded-lg bg-white/60 border border-current/10 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap">
-                                                            {sessao.ufcd}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex flex-wrap gap-y-2 gap-x-3 text-xs opacity-80 min-w-0">
-                                                        <span className="flex items-center gap-1 truncate">
-                                                            <Clock className="h-3 w-3 shrink-0" />{" "}
-                                                            {sessao.horaInicio} ·{" "}
-                                                            {sessao.duracao}
-                                                        </span>
-                                                        <span className="truncate block">
-                                                            {sessao.formador}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col items-center justify-center h-full py-8 text-center">
-                                            <Clock className="h-8 w-8 text-gray-200 dark:text-gray-800 mb-2" />
-                                            <p className="text-xs text-gray-400 dark:text-gray-500">
-                                                Nenhuma sessão neste dia
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
 
-                                {/* Page indicator */}
-                                {totalPages > 1 && (
-                                    <div className="mt-4 flex justify-center gap-1">
-                                        {Array.from({ length: totalPages }).map((_, i) => (
-                                            <div key={i} className={cn("h-1 w-4 rounded-full transition-colors", i === sessionsPage ? "bg-indigo-600" : "bg-gray-200 dark:bg-gray-800")} />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
- 
-                            {/* Marcar Presença (Painel Flutuante/Condicional na direita) */}
+                            {/* Marcar Presença */}
                             {aulaAberta && (
-                                <div className="rounded-2xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/30 dark:bg-indigo-900/10 p-6">
+                                <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
                                     <div className="flex items-center justify-between mb-4">
                                         <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">
                                             Registar Presença
                                         </h3>
                                         <Button
-                                            variant="ghost"
+                                            variant="outline"
                                             size="sm"
                                             onClick={fecharAula}
-                                            className="h-8 w-8 p-0 rounded-full"
+                                            className="rounded-xl"
                                         >
-                                            <X className="h-4 w-4" />
+                                            Fechar
                                         </Button>
                                     </div>
- 
+
                                     {loadingPresenca ? (
                                         <div className="flex items-center justify-center py-8">
                                             <Loader className="h-5 w-5 animate-spin text-indigo-600" />
                                         </div>
                                     ) : alunos.length > 0 ? (
                                         <>
-                                            <div className="flex flex-col gap-3 mb-4 max-h-60 overflow-y-auto pr-1">
+                                            <div className="flex flex-col gap-3 mb-4 max-h-60 overflow-y-auto">
                                                 {alunos.map((aluno) => {
                                                     const statusAtual =
                                                         presencasAlteradas[
@@ -576,39 +519,60 @@ export default function FormadorCalendarioPage() {
                                                     return (
                                                         <div
                                                             key={aluno.id}
-                                                            className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800"
+                                                            className="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"
                                                         >
-                                                            <div className="flex items-center gap-2 min-w-0">
-                                                                <div className="h-7 w-7 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
-                                                                    <User className="h-3.5 w-3.5 text-indigo-600" />
-                                                                </div>
-                                                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                                                                    {aluno.nome}
-                                                                </span>
-                                                            </div>
-                                                            <div className="flex gap-1.5 ml-2">
-                                                                <button
-                                                                    onClick={() => alterarPresenca(aluno.id, "PRESENTE")}
+                                                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                                {aluno.nome}
+                                                            </span>
+                                                            <div className="flex gap-2">
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant={
+                                                                        statusAtual ===
+                                                                        "PRESENTE"
+                                                                            ? "default"
+                                                                            : "outline"
+                                                                    }
                                                                     className={cn(
-                                                                        "h-7 w-7 flex items-center justify-center rounded-lg transition-colors border",
-                                                                        statusAtual === "PRESENTE" 
-                                                                            ? "bg-green-600 border-green-600 text-white" 
-                                                                            : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-400 hover:text-green-600 hover:border-green-600"
+                                                                        "gap-1",
+                                                                        statusAtual ===
+                                                                            "PRESENTE" &&
+                                                                            "bg-green-600 hover:bg-green-700 text-white",
                                                                     )}
+                                                                    onClick={() =>
+                                                                        alterarPresenca(
+                                                                            aluno.id,
+                                                                            "PRESENTE",
+                                                                        )
+                                                                    }
                                                                 >
-                                                                    <Check className="h-3.5 w-3.5" />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => alterarPresenca(aluno.id, "AUSENTE")}
+                                                                    <Check className="h-3 w-3" />{" "}
+                                                                    Presente
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant={
+                                                                        statusAtual ===
+                                                                        "AUSENTE"
+                                                                            ? "default"
+                                                                            : "outline"
+                                                                    }
                                                                     className={cn(
-                                                                        "h-7 w-7 flex items-center justify-center rounded-lg transition-colors border",
-                                                                        statusAtual === "AUSENTE" 
-                                                                            ? "bg-red-600 border-red-600 text-white" 
-                                                                            : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-400 hover:text-red-600 hover:border-red-600"
+                                                                        "gap-1",
+                                                                        statusAtual ===
+                                                                            "AUSENTE" &&
+                                                                            "bg-red-600 hover:bg-red-700 text-white",
                                                                     )}
+                                                                    onClick={() =>
+                                                                        alterarPresenca(
+                                                                            aluno.id,
+                                                                            "AUSENTE",
+                                                                        )
+                                                                    }
                                                                 >
-                                                                    <X className="h-3.5 w-3.5" />
-                                                                </button>
+                                                                    <X className="h-3 w-3" />{" "}
+                                                                    Ausente
+                                                                </Button>
                                                             </div>
                                                         </div>
                                                     );
@@ -618,23 +582,23 @@ export default function FormadorCalendarioPage() {
                                                 .length > 0 && (
                                                 <Button
                                                     onClick={guardarPresencas}
-                                                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+                                                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
                                                 >
-                                                    Guardar Alterações
+                                                    Guardar Presenças
                                                 </Button>
                                             )}
                                         </>
                                     ) : (
-                                        <p className="text-sm text-gray-400 dark:text-gray-500 py-4 text-center">
-                                            Nenhum aluno nesta aula.
+                                        <p className="text-sm text-gray-400 dark:text-gray-500 py-4">
+                                            Nenhum aluno encontrado nesta aula.
                                         </p>
                                     )}
                                 </div>
                             )}
                         </div>
                     </div>
- 
-                    {/* Aulas Hoje - Marcar Assiduidade (Mantido intacto conforme pedido) */}
+
+                    {/* Aulas Hoje - Marcar Assiduidade */}
                     {sessoesHoje.length > 0 && (
                         <Accordion
                             type="single"
@@ -657,7 +621,7 @@ export default function FormadorCalendarioPage() {
                                 <AccordionContent>
                                     <div className="px-6 pb-5">
                                         <div className="border-t border-gray-100 dark:border-gray-800 mb-4" />
- 
+
                                         {aulaHojeAberta ? (
                                             <div className="space-y-4">
                                                 <div className="flex items-center justify-between p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800">
@@ -698,7 +662,7 @@ export default function FormadorCalendarioPage() {
                                             Fechar
                                         </Button>
                                     </div>
- 
+
                                     <div className="rounded-lg border border-gray-200 dark:border-gray-800">
                                         {loadingPresencaHoje ? (
                                             <div className="flex items-center justify-center py-8">
@@ -836,9 +800,16 @@ export default function FormadorCalendarioPage() {
                                                             Aberto
                                                         </span>
                                                     ) : (
-                                                        <span className="px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs font-medium italic">
-                                                            {podeMarcar.motivo}
-                                                        </span>
+                                                        <div className="text-right">
+                                                            <span className="px-2 py-1 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-400 text-xs font-medium block mb-1">
+                                                                Fechado
+                                                            </span>
+                                                            <p className="text-xs text-gray-500 dark:text-gray-500">
+                                                                {
+                                                                    podeMarcar.motivo
+                                                                }
+                                                            </p>
+                                                        </div>
                                                     )}
                                                 </div>
                                             </button>

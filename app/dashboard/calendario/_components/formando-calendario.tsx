@@ -1,13 +1,13 @@
 "use client";
- 
+
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Clock, User } from "lucide-react";
 import { cn } from "@/lib/utils";
- 
+
 import { useEffect } from "react";
- 
+
 // ─── Types ────────────────────────────────────────────────────────────────────
- 
+
 interface Sessao {
   id: string;
   titulo: string;
@@ -18,14 +18,14 @@ interface Sessao {
   ufcd: string;
   cor: string;
 }
- 
+
 const COLORS = [
   "bg-teal-100 text-teal-700 border-teal-200",
   "bg-purple-100 text-purple-700 border-purple-200",
   "bg-blue-100 text-blue-700 border-blue-200",
   "bg-indigo-100 text-indigo-700 border-indigo-200",
 ];
- 
+
 interface AulaApiResponse {
   id: string;
   titulo: string;
@@ -34,18 +34,18 @@ interface AulaApiResponse {
   moduloId: string;
   formador: { user: { nome: string } };
 }
- 
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
- 
+
 const MONTHS     = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 const DAYS_SHORT = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
- 
+
 function toISO(y: number, m: number, d: number) {
   return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
- 
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
- 
+
 export default function CalendarioFormandoPage() {
   const today = new Date();
   const [viewYear,  setViewYear]  = useState(today.getFullYear());
@@ -53,11 +53,7 @@ export default function CalendarioFormandoPage() {
   const [selected,  setSelected]  = useState(toISO(today.getFullYear(), today.getMonth(), today.getDate()));
   const [minhasSessoes, setMinhasSessoes] = useState<Sessao[]>([]);
   const [_loading, setLoading] = useState(true);
-  
-  // Pagination for daily sessions
-  const [sessionsPage, setSessionsPage] = useState(0);
-  const itemsPerPage = 4;
- 
+
   useEffect(() => {
     async function fetchSessoes() {
       try {
@@ -88,34 +84,25 @@ export default function CalendarioFormandoPage() {
     }
     fetchSessoes();
   }, []);
- 
+
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
   const firstDay    = new Date(viewYear, viewMonth, 1).getDay();
   const todayISO    = toISO(today.getFullYear(), today.getMonth(), today.getDate());
- 
+
   const prevMonth = () => viewMonth === 0  ? (setViewMonth(11), setViewYear(y => y - 1)) : setViewMonth(m => m - 1);
   const nextMonth = () => viewMonth === 11 ? (setViewMonth(0),  setViewYear(y => y + 1)) : setViewMonth(m => m + 1);
- 
+
   const sessoesMes = minhasSessoes.filter(s =>
     s.data.startsWith(`${viewYear}-${String(viewMonth + 1).padStart(2, "0")}`)
   );
-  
-  const sessoesDia = minhasSessoes.filter(s => s.data === selected);
-  const totalPages = Math.ceil(sessoesDia.length / itemsPerPage);
-  const sessoesDiaPaginadas = sessoesDia.slice(sessionsPage * itemsPerPage, (sessionsPage + 1) * itemsPerPage);
-
+  const sessoesDia    = minhasSessoes.filter(s => s.data === selected);
   const diasComSessao = new Set(sessoesMes.map(s => parseInt(s.data.split("-")[2])));
-  const proximas      = minhasSessoes.filter(s => s.data >= todayISO).sort((a, b) => a.data.localeCompare(b.data)).slice(0, 4);
- 
+  const proximas      = minhasSessoes.filter(s => s.data >= todayISO).sort((a, b) => a.data.localeCompare(b.data)).slice(0, 5);
+
   const selectedLabel = selected
     ? new Date(selected + "T12:00:00").toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long" })
     : null;
 
-  const handleDaySelect = (iso: string) => {
-    setSelected(iso);
-    setSessionsPage(0);
-  };
- 
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
@@ -123,68 +110,97 @@ export default function CalendarioFormandoPage() {
         <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">O Meu Calendário</h1>
         <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{sessoesMes.length} sessões este mês</p>
       </div>
- 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 items-start">
-        {/* Main Column (Calendar + Próximas) */}
-        <div className="flex flex-col gap-6">
-          {/* Calendar */}
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
-            {/* Nav */}
-            <div className="flex items-center justify-between mb-6">
-              <button onClick={prevMonth} aria-label="Mês anterior" className="flex h-11 w-11 sm:h-8 sm:w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                <ChevronLeft className="h-4 w-4 text-gray-600" aria-hidden="true" />
-              </button>
-              <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">{MONTHS[viewMonth]} {viewYear}</h2>
-              <button onClick={nextMonth} aria-label="Mês seguinte" className="flex h-11 w-11 sm:h-8 sm:w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                <ChevronRight className="h-4 w-4 text-gray-600" aria-hidden="true" />
-              </button>
-            </div>
-  
-            {/* Day headers */}
-            <div className="grid grid-cols-7 mb-2">
-              {DAYS_SHORT.map(d => (
-                <div key={d} className="text-center text-xs font-semibold text-gray-400 py-1">{d}</div>
-              ))}
-            </div>
-  
-            {/* Days */}
-            <div className="grid grid-cols-7 gap-1">
-              {Array.from({ length: firstDay }).map((_, i) => <div key={`e-${i}`} />)}
-              {Array.from({ length: daysInMonth }).map((_, i) => {
-                const day        = i + 1;
-                const iso        = toISO(viewYear, viewMonth, day);
-                const isToday    = iso === todayISO;
-                const isSelected = iso === selected;
-                const hasSessao  = diasComSessao.has(day);
-                return (
-                  <button
-                    key={day}
-                    onClick={() => handleDaySelect(iso)}
-                    className={cn(
-                      "relative flex flex-col items-center justify-center rounded-xl py-2 text-sm font-medium transition-all",
-                      isSelected ? "bg-teal-500 text-white shadow-sm"
-                      : isToday  ? "bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 font-bold"
-                      :            "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-                    )}
-                  >
-                    {day}
-                    {hasSessao && (
-                      <span className={cn("mt-0.5 h-1 w-1 rounded-full", isSelected ? "bg-white/60" : "bg-teal-400")} />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+
+      <div className="grid grid-cols-2 gap-6 lg:grid-cols-2 xl:grid-cols-[1fr_380px] items-start">
+        {/* Calendar */}
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 self-start">
+          {/* Nav */}
+          <div className="flex items-center justify-between mb-6">
+            <button onClick={prevMonth} aria-label="Mês anterior" className="flex h-11 w-11 sm:h-8 sm:w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <ChevronLeft className="h-4 w-4 text-gray-600" aria-hidden="true" />
+            </button>
+            <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">{MONTHS[viewMonth]} {viewYear}</h2>
+            <button onClick={nextMonth} aria-label="Mês seguinte" className="flex h-11 w-11 sm:h-8 sm:w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <ChevronRight className="h-4 w-4 text-gray-600" aria-hidden="true" />
+            </button>
           </div>
 
-          {/* Card Próximas Sessões (Moved here) */}
+          {/* Day headers */}
+          <div className="grid grid-cols-7 mb-2">
+            {DAYS_SHORT.map(d => (
+              <div key={d} className="text-center text-xs font-semibold text-gray-400 py-1">{d}</div>
+            ))}
+          </div>
+
+          {/* Days */}
+          <div className="grid grid-cols-7 gap-1">
+            {Array.from({ length: firstDay }).map((_, i) => <div key={`e-${i}`} />)}
+            {Array.from({ length: daysInMonth }).map((_, i) => {
+              const day        = i + 1;
+              const iso        = toISO(viewYear, viewMonth, day);
+              const isToday    = iso === todayISO;
+              const isSelected = iso === selected;
+              const hasSessao  = diasComSessao.has(day);
+              return (
+                <button
+                  key={day}
+                  onClick={() => setSelected(iso)}
+                  className={cn(
+                    "relative flex flex-col items-center justify-center rounded-xl py-2 text-sm font-medium transition-all",
+                    isSelected ? "bg-teal-500 text-white shadow-sm"
+                    : isToday  ? "bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 font-bold"
+                    :            "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  )}
+                >
+                  {day}
+                  {hasSessao && (
+                    <span className={cn("mt-0.5 h-1 w-1 rounded-full", isSelected ? "bg-white/60" : "bg-teal-400")} />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Right panel */}
+        <div className="flex flex-col gap-4">
+          {/* Sessions for selected day */}
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-1 capitalize">{selectedLabel ?? "Seleciona um dia"}</h3>
+            <p className="text-xs text-gray-400 mb-4">
+              {sessoesDia.length > 0 ? `${sessoesDia.length} sessão(ões)` : "Sem sessões"}
+            </p>
+            {sessoesDia.length > 0 ? (
+              <div className="flex flex-col gap-3">
+                {sessoesDia.map(s => (
+                  <div key={s.id} className={cn("rounded-xl border p-4 flex flex-col gap-2", s.cor)}>
+                    <div className="flex items-start justify-between gap-2 min-w-0">
+                      <p className="text-sm font-semibold leading-tight truncate flex-1 min-w-0">{s.titulo}</p>
+                      <span className="shrink-0 rounded-lg bg-white/50 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap">{s.ufcd}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-y-2 gap-x-3 text-xs opacity-80 min-w-0">
+                      <span className="flex items-center gap-1 truncate"><Clock className="h-3 w-3 shrink-0" />{s.horaInicio} · {s.duracao}</span>
+                      <span className="flex items-center gap-1 truncate"><User className="h-3 w-3 shrink-0" />{s.formador}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8">
+                <Clock className="h-8 w-8 text-gray-200 mb-2" />
+                <p className="text-xs text-gray-400">Nenhuma sessão neste dia</p>
+              </div>
+            )}
+          </div>
+
+          {/* Próximas */}
           <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
             <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4">Próximas Sessões</h3>
             <div className="flex flex-col gap-2">
               {proximas.map(s => {
                 const [, month, day] = s.data.split("-");
                 return (
-                  <button key={s.id} onClick={() => handleDaySelect(s.data)}
+                  <button key={s.id} onClick={() => setSelected(s.data)}
                     className="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2.5 text-left hover:border-teal-200 hover:bg-teal-50/30 dark:hover:border-teal-800 dark:hover:bg-teal-900/20 transition-colors"
                   >
                     <div className="flex w-10 shrink-0 flex-col items-center rounded-lg bg-teal-100 py-1.5">
@@ -198,77 +214,7 @@ export default function CalendarioFormandoPage() {
                   </button>
                 );
               })}
-              {proximas.length === 0 && (
-                <p className="text-xs text-center text-gray-400 py-4">Nenhuma sessão agendada em breve.</p>
-              )}
             </div>
-          </div>
-        </div>
- 
-        {/* Right panel (Selected Day) */}
-        <div className="flex flex-col gap-4">
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 min-h-[400px] flex flex-col">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 capitalize">{selectedLabel ?? "Seleciona um dia"}</h3>
-                <p className="text-xs text-gray-400 mt-1">
-                  {sessoesDia.length > 0 ? `${sessoesDia.length} sessão(ões)` : "Sem sessões"}
-                </p>
-              </div>
-              
-              {/* Pagination Controls */}
-              {totalPages > 1 && (
-                <div className="flex gap-1">
-                  <button 
-                    onClick={() => setSessionsPage(p => Math.max(0, p - 1))}
-                    disabled={sessionsPage === 0}
-                    className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-100 dark:border-gray-800 disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <button 
-                    onClick={() => setSessionsPage(p => Math.min(totalPages - 1, p + 1))}
-                    disabled={sessionsPage === totalPages - 1}
-                    className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-100 dark:border-gray-800 disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="flex-1">
-              {sessoesDia.length > 0 ? (
-                <div className="flex flex-col gap-3">
-                  {sessoesDiaPaginadas.map(s => (
-                    <div key={s.id} className={cn("rounded-xl border p-4 flex flex-col gap-2", s.cor)}>
-                      <div className="flex items-start justify-between gap-2 min-w-0">
-                        <p className="text-sm font-semibold leading-tight truncate flex-1 min-w-0">{s.titulo}</p>
-                        <span className="shrink-0 rounded-lg bg-white/50 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap">{s.ufcd}</span>
-                      </div>
-                      <div className="flex flex-wrap gap-y-2 gap-x-3 text-xs opacity-80 min-w-0">
-                        <span className="flex items-center gap-1 truncate"><Clock className="h-3 w-3 shrink-0" />{s.horaInicio} · {s.duracao}</span>
-                        <span className="flex items-center gap-1 truncate"><User className="h-3 w-3 shrink-0" />{s.formador}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full py-8">
-                  <Clock className="h-8 w-8 text-gray-200 mb-2" />
-                  <p className="text-xs text-gray-400">Nenhuma sessão neste dia</p>
-                </div>
-              )}
-            </div>
-
-            {/* Page indicator */}
-            {totalPages > 1 && (
-              <div className="mt-4 flex justify-center gap-1">
-                {Array.from({ length: totalPages }).map((_, i) => (
-                  <div key={i} className={cn("h-1 w-4 rounded-full transition-colors", i === sessionsPage ? "bg-teal-500" : "bg-gray-200 dark:bg-gray-800")} />
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>
