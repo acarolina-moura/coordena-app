@@ -12,7 +12,6 @@ import {
   FileText,
   Eye,
   X,
-  Clock3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -57,11 +56,13 @@ export type JustificativaPendente = {
 function BarraAssiduidade({
   presentes,
   total,
+  justificados,
 }: {
   presentes: number;
   total: number;
+  justificados: number;
 }) {
-  const pct = total === 0 ? 0 : Math.round((presentes / total) * 100);
+  const pct = total === 0 ? 0 : Math.round(((presentes + justificados) / total) * 100);
   return (
     <div className="flex items-center gap-2 min-w-[120px]">
       <div className="flex-1 h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
@@ -124,7 +125,9 @@ function JustificativasDialog({
               const docLink = j.documentoUrl
                 ? j.documentoUrl.startsWith("/")
                   ? j.documentoUrl
-                  : `/uploads/${j.documentoUrl}`
+                  : j.documentoUrl.startsWith("http")
+                    ? j.documentoUrl
+                    : `/uploads/${j.documentoUrl}`
                 : null;
 
               return (
@@ -189,7 +192,7 @@ export function CoordenadorAssiduidade({
   const router = useRouter();
 
   const filtrados = dados.filter((d) => {
-    const pct = d.total === 0 ? 100 : Math.round((d.presentes / d.total) * 100);
+    const pct = d.total === 0 ? 100 : Math.round(((d.presentes + d.justificados) / d.total) * 100);
     const matchSearch =
       d.nome.toLowerCase().includes(search.toLowerCase()) ||
       d.curso.toLowerCase().includes(search.toLowerCase());
@@ -201,7 +204,7 @@ export function CoordenadorAssiduidade({
   });
 
   const emRisco = dados.filter(
-    (d) => d.total > 0 && Math.round((d.presentes / d.total) * 100) < 75,
+    (d) => d.total > 0 && Math.round(((d.presentes + d.justificados) / d.total) * 100) < 75,
   ).length;
 
   async function handleAprovar(id: string) {
@@ -315,7 +318,9 @@ export function CoordenadorAssiduidade({
                   const documentoLink = item.documentoUrl
                     ? item.documentoUrl.startsWith("/")
                       ? item.documentoUrl
-                      : `/uploads/${item.documentoUrl}`
+                      : item.documentoUrl.startsWith("http")
+                        ? item.documentoUrl
+                        : `/uploads/${item.documentoUrl}`
                     : null;
                   return (
                     <tr
@@ -443,7 +448,7 @@ export function CoordenadorAssiduidade({
           <div className="flex flex-col divide-y divide-gray-50 dark:divide-gray-800">
             {filtrados.map((d) => {
               const pct =
-                d.total === 0 ? 100 : Math.round((d.presentes / d.total) * 100);
+                d.total === 0 ? 100 : Math.round(((d.presentes + d.justificados) / d.total) * 100);
               const initials = d.nome
                 .split(" ")
                 .map((n) => n[0])
@@ -497,7 +502,7 @@ export function CoordenadorAssiduidade({
                   </div>
 
                   {/* Barra */}
-                  <BarraAssiduidade presentes={d.presentes} total={d.total} />
+                  <BarraAssiduidade presentes={d.presentes} total={d.total} justificados={d.justificados} />
                 </div>
               );
             })}

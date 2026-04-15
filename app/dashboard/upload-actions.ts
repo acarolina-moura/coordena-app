@@ -41,6 +41,7 @@ export async function registarMaterialApoio(
   titulo: string,
   descricao: string,
   moduloId: string,
+  nomeFicheiro?: string,
 ) {
   try {
     const session = await auth();
@@ -66,7 +67,7 @@ export async function registarMaterialApoio(
         titulo,
         descricao: descricao || null,
         fileUrl,
-        tipo: fileUrl.split(".").pop()?.toUpperCase() ?? "FILE",
+        tipo: (nomeFicheiro || titulo).split(".").pop()?.toUpperCase() ?? "FILE",
         formadorId: formador.id,
         moduloId,
       },

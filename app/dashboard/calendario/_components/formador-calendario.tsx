@@ -8,9 +8,11 @@ import {
     Loader,
     Check,
     X,
+    UserCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { StatusPresenca } from "@prisma/client";
 import {
     obterAulasFormador,
@@ -598,19 +600,31 @@ export default function FormadorCalendarioPage() {
 
                     {/* Aulas Hoje - Marcar Assiduidade */}
                     {sessoesHoje.length > 0 && (
-                        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
-                            <div className="mb-4">
-                                <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                                    Aulas Hoje - Marcar Assiduidade
-                                </h2>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                    {sessoesHoje.length} aula(s) hoje
-                                </p>
-                            </div>
+                        <Accordion
+                            type="single"
+                            collapsible
+                            defaultValue="aulas-hoje"
+                            className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden"
+                        >
+                            <AccordionItem value="aulas-hoje" className="border-0">
+                                <AccordionTrigger className="px-6 py-4 [&>svg]:text-indigo-400 hover:no-underline">
+                                    <div className="flex items-center gap-3 text-left flex-1">
+                                        <div className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400">
+                                            <UserCheck className="w-4 h-4" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Marcar Assiduidade</h3>
+                                            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{sessoesHoje.length} aula(s) hoje</p>
+                                        </div>
+                                    </div>
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                    <div className="px-6 pb-5">
+                                        <div className="border-t border-gray-100 dark:border-gray-800 mb-4" />
 
-                            {aulaHojeAberta ? (
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800">
+                                        {aulaHojeAberta ? (
+                                            <div className="space-y-4">
+                                                <div className="flex items-center justify-between p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800">
                                         <div>
                                             <h3 className="font-semibold text-gray-900 dark:text-gray-100">
                                                 {
@@ -803,7 +817,10 @@ export default function FormadorCalendarioPage() {
                                     })}
                                 </div>
                             )}
-                        </div>
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        </Accordion>
                     )}
                 </>
             )}

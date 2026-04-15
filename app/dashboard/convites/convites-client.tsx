@@ -65,8 +65,14 @@ export function ConvitesClient({ convitesIniciais }: { convitesIniciais: Convite
       // Converter resposta "aceite"/"recusado" para formato Prisma (maiúscula)
       const statusPrisma = resposta === "aceite" ? "ACEITE" : "RECUSADO";
       // Chamar server action para atualizar BD
-      await responderConvite(id, statusPrisma);
-      
+      const res = await responderConvite(id, statusPrisma);
+
+      // Verificar se houve erro (validação ou execução)
+      if (!res.success) {
+        alert(res.mensagem || res.error || "Erro ao registar resposta. Tente novamente.");
+        return;
+      }
+
       // Atualizar lista local para refletir a mudança (otimistic update)
       setConvites((prev) =>
         prev.map((c) => (c.id === id ? { ...c, status: resposta } : c))

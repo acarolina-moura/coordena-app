@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { CheckCircle2, AlertTriangle, Clock, Upload, CalendarDays, Loader2, X } from "lucide-react";
+import { useState } from "react";
+import { CheckCircle2, AlertTriangle, Clock, Upload, CalendarDays, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DocumentoFormador as DocumentoResult } from "@/app/dashboard/_data/documentos";
-import { uploadDocumentoFormador, registarDocumento } from "../actions";
+import { registarDocumento } from "../actions";
 import { UploadFormando } from "@/components/upload-formando";
 import { toast } from "sonner";
 
@@ -44,31 +44,19 @@ const STATUS_CONFIG: Record<DocStatus, { label: string; icon: React.ElementType;
 
 function DocCard({
   doc,
-  onUpload,
-  isUploading,
   onUploadThing,
 }: {
   doc: MeuDocumento;
-  onUpload: (nome: string, file: File, validade: string) => void;
-  isUploading: boolean;
   onUploadThing?: (docNome: string) => void;
 }) {
   const cfg = STATUS_CONFIG[doc.status];
   const Icon = cfg.icon;
   const temValidade = DOCS_COM_VALIDADE.includes(doc.nome);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [validadeInput, setValidadeInput] = useState(doc.dataValidade?.slice(0, 10) ?? "");
 
   const dataValidadeFormatada = doc.dataValidade
     ? new Date(doc.dataValidade).toLocaleDateString("pt-PT")
     : null
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      onUpload(doc.nome, file, validadeInput);
-    }
-  };
 
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 hover:border-purple-200 dark:hover:border-purple-800 hover:shadow-sm transition-all">
@@ -106,40 +94,16 @@ function DocCard({
         )}
       </div>
 
-      {/* Upload buttons */}
-      <div className="flex flex-col gap-2">
-        {/* UploadThing */}
-        {onUploadThing && (
-          <button
-            onClick={() => onUploadThing(doc.nome)}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 py-2.5 text-sm font-medium text-white hover:bg-purple-700 transition-colors shadow-sm"
-          >
-            <Upload className="h-4 w-4" />
-            {doc.status === "em falta" ? "Enviar com UploadThing" : "Substituir via UploadThing"}
-          </button>
-        )}
-
-        {/* Legacy upload */}
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          className="hidden"
-          accept=".pdf,.jpg,.jpeg,.png"
-        />
+      {/* Upload button */}
+      {onUploadThing && (
         <button
-          disabled={isUploading}
-          onClick={() => fileInputRef.current?.click()}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:border-purple-300 dark:hover:border-purple-700 hover:text-purple-600 dark:hover:text-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          onClick={() => onUploadThing(doc.nome)}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 py-2.5 text-sm font-medium text-white hover:bg-purple-700 transition-colors shadow-sm"
         >
-          {isUploading ? (
-            <Loader2 className="h-4 w-4 animate-spin text-purple-500" />
-          ) : (
-            <Upload className="h-4 w-4" />
-          )}
-          {doc.status === "em falta" ? "Fazer upload" : "Substituir ficheiro"}
+          <Upload className="h-4 w-4" />
+          {doc.status === "em falta" ? "Enviar documento" : "Substituir documento"}
         </button>
-      </div>
+      )}
     </div>
   )
 }
@@ -155,42 +119,7 @@ export function FormadorDocumentos({ documentos: documentosIniciais }: { documen
       dataValidade: d.dataValidade,
     }))
   )
-  const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
   const [docUploadThing, setDocUploadThing] = useState<string | null>(null);
-
-  async function handleUpload(nome: string, file: File, validade: string) {
-    setUploadingDoc(nome);
-    
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("tipo", nome);
-      formData.append("dataExpiracao", validade);
-
-      const result = await uploadDocumentoFormador(formData);
-      
-      if (result.error) {
-        console.error("Erro no upload:", result.error);
-        alert(`Erro no upload: ${result.error}`);
-      } else {
-        alert(`Documento "${nome}" enviado com sucesso!`);
-        
-        // Atualizar estado local após sucesso
-        setDocs((prev) =>
-          prev.map((d) =>
-            d.nome === nome
-              ? { ...d, status: "válido", dataValidade: validade ? new Date(validade).toISOString() : null }
-              : d
-          )
-        );
-      }
-    } catch (err) {
-      console.error("Erro inesperado:", err);
-      alert("Ocorreu um erro inesperado ao enviar o ficheiro.");
-    } finally {
-      setUploadingDoc(null);
-    }
-  }
 
   // Handler para abrir modal de UploadThing
   function handleOpenUploadThing(docNome: string) {
@@ -262,8 +191,6 @@ export function FormadorDocumentos({ documentos: documentosIniciais }: { documen
           <DocCard
             key={doc.nome}
             doc={doc}
-            onUpload={handleUpload}
-            isUploading={uploadingDoc === doc.nome}
             onUploadThing={handleOpenUploadThing}
           />
         ))}

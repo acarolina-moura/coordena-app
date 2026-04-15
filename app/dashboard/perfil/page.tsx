@@ -55,32 +55,32 @@ export default async function PerfilPage() {
             />
 
             <div className="flex flex-1 flex-col gap-6 w-full">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div className="flex flex-col gap-1.5 border-b sm:border-b-0 sm:border-r border-gray-100 dark:border-gray-800 pb-4 sm:pb-0">
-                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <User className="h-3.5 w-3.5" /> Nome Completo
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm min-h-[120px]">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                    <User className="h-4 w-4" /> Nome Completo
                   </span>
-                  <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  <p className="mt-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
                     {user.nome}
-                  </span>
+                  </p>
                 </div>
 
-                <div className="flex flex-col gap-1.5 border-b sm:border-b-0 sm:border-r border-gray-100 dark:border-gray-800 pb-4 sm:pb-0">
-                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <Mail className="h-3.5 w-3.5" /> Endereço de Email
+                <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm min-h-[120px]">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                    <Mail className="h-4 w-4" /> Endereço de Email
                   </span>
-                  <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  <p className="mt-4 text-lg font-semibold text-gray-900 dark:text-gray-100 break-all">
                     {user.email}
-                  </span>
+                  </p>
                 </div>
 
-                <div className="flex flex-col gap-1.5 pb-4 sm:pb-0">
-                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <Phone className="h-3.5 w-3.5" /> Telefone
+                <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm min-h-[120px]">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                    <Phone className="h-4 w-4" /> Telefone
                   </span>
-                  <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  <p className="mt-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
                     {user.telefone || "Não definido"}
-                  </span>
+                  </p>
                 </div>
               </div>
 

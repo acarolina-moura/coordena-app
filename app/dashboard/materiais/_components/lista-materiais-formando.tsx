@@ -23,6 +23,33 @@ interface ListaMateriaisFormandoProps {
   materiais: Material[];
 }
 
+// Extrair nome do ficheiro da URL (UploadThing ou path relativo)
+function extrairNomeFicheiro(url: string): string {
+  try {
+    const pathname = url.startsWith("http") ? new URL(url).pathname : url;
+    const nome = pathname.split("/").pop();
+    if (!nome) return "Ficheiro";
+    // Remover prefixo de timestamp se existir (ex: "1234567890-nome.pdf" -> "nome.pdf")
+    const partes = nome.split("-");
+    if (partes.length > 1 && /^\d+$/.test(partes[0])) {
+      return partes.slice(1).join("-");
+    }
+    return nome;
+  } catch {
+    return "Ficheiro";
+  }
+}
+
+function extrairExtensao(url: string): string {
+  try {
+    const nome = extrairNomeFicheiro(url);
+    const ext = nome.split(".").pop()?.toUpperCase();
+    return ext || "DOC";
+  } catch {
+    return "DOC";
+  }
+}
+
 export function ListaMateriaisFormando({ materiais }: ListaMateriaisFormandoProps) {
   const [openModules, setOpenModules] = useState<string[]>([]);
 
@@ -116,7 +143,7 @@ export function ListaMateriaisFormando({ materiais }: ListaMateriaisFormandoProp
                             <FileText className="h-5 w-5" />
                           </div>
                           <span className="inline-flex items-center rounded-full bg-white dark:bg-gray-900 px-2 py-0.5 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            {material.tipo || "DOC"}
+                            {material.tipo || extrairExtensao(material.fileUrl)}
                           </span>
                         </div>
 
@@ -150,7 +177,7 @@ export function ListaMateriaisFormando({ materiais }: ListaMateriaisFormandoProp
                             className="flex items-center gap-1.5 rounded-lg bg-teal-50 dark:bg-teal-900/20 px-3 py-1.5 text-xs font-semibold text-teal-600 dark:text-teal-400 transition-colors hover:bg-teal-100 dark:hover:bg-teal-900/40 shrink-0"
                           >
                             <Download className="h-3.5 w-3.5" />
-                            Download
+                            Abrir ficheiro
                           </a>
                         </div>
                       </div>
