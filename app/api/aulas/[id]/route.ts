@@ -7,14 +7,14 @@ import { auth } from "@/auth";
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user || session.user.role !== "COORDENADOR") {
       return NextResponse.json(
         { error: "Não autorizado. Apenas coordenadores podem excluir aulas." },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -24,14 +24,18 @@ export async function DELETE(
     const aula = await prisma.aula.findUnique({
       where: { id },
       include: {
-        modulo: { select: { curso: { select: { coordenadorId: true } } } }
-      }
+        modulo: { select: { curso: { select: { coordenadorId: true } } } },
+      },
     });
 
-    if (!aula || aula.modulo.curso.coordenadorId !== session.user.coordenadorId) {
+    if (
+      !aula ||
+      !aula.modulo.curso ||
+      aula.modulo.curso.coordenadorId !== session.user.coordenadorId
+    ) {
       return NextResponse.json(
         { error: "Aula não encontrada ou não pertence ao coordenador" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -43,7 +47,7 @@ export async function DELETE(
     console.error("[DELETE /api/aulas/[id]]", error);
     return NextResponse.json(
       { error: "Erro ao eliminar aula" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,7 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Search, Puzzle, Users, AlertCircle, CheckCircle, Trash2, Loader2 } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Puzzle,
+  Users,
+  AlertCircle,
+  CheckCircle,
+  Trash2,
+  Loader2,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,11 +23,21 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { ModuloComDetalhes, CursoComDetalhes, FormadorComDetalhes } from "@/app/dashboard/_data/coordenador";
+import {
+  ModuloComDetalhes,
+  CursoComDetalhes,
+  FormadorComDetalhes,
+} from "@/app/dashboard/_data/coordenador";
 
 // ─── Novo Módulo Dialog ───────────────────────────────────────────────────────
 
-function NovoModuloDialog({ cursos, formadores }: { cursos: CursoComDetalhes[]; formadores: FormadorComDetalhes[] }) {
+function NovoModuloDialog({
+  cursos,
+  formadores,
+}: {
+  cursos: CursoComDetalhes[];
+  formadores: FormadorComDetalhes[];
+}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -32,9 +51,11 @@ function NovoModuloDialog({ cursos, formadores }: { cursos: CursoComDetalhes[]; 
     formadorId: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async () => {
@@ -43,11 +64,6 @@ function NovoModuloDialog({ cursos, formadores }: { cursos: CursoComDetalhes[]; 
 
     if (!formData.nome.trim()) {
       setError("Nome do módulo é obrigatório");
-      return;
-    }
-
-    if (!formData.cursoId) {
-      setError("Curso é obrigatório");
       return;
     }
 
@@ -62,7 +78,7 @@ function NovoModuloDialog({ cursos, formadores }: { cursos: CursoComDetalhes[]; 
           descricao: formData.descricao?.trim() || null,
           ordem: parseInt(formData.ordem) || 0,
           cargaHoraria: parseInt(formData.cargaHoraria) || 0,
-          cursoId: formData.cursoId,
+          cursoId: formData.cursoId || null,
           formadorId: formData.formadorId || null,
         }),
       });
@@ -73,8 +89,15 @@ function NovoModuloDialog({ cursos, formadores }: { cursos: CursoComDetalhes[]; 
       }
 
       setSuccess(true);
-      setFormData({ nome: "", descricao: "", ordem: "", cargaHoraria: "", cursoId: "", formadorId: "" });
-      
+      setFormData({
+        nome: "",
+        descricao: "",
+        ordem: "",
+        cargaHoraria: "",
+        cursoId: "",
+        formadorId: "",
+      });
+
       setTimeout(() => {
         setOpen(false);
         setSuccess(false);
@@ -97,7 +120,9 @@ function NovoModuloDialog({ cursos, formadores }: { cursos: CursoComDetalhes[]; 
       </DialogTrigger>
       <DialogContent className="sm:max-w-md bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 transition-colors">
         <DialogHeader>
-          <DialogTitle className="text-gray-900 dark:text-gray-100">Criar Novo Módulo</DialogTitle>
+          <DialogTitle className="text-gray-900 dark:text-gray-100">
+            Criar Novo Módulo
+          </DialogTitle>
           <DialogDescription className="text-gray-500 dark:text-gray-400">
             Preenche os dados para adicionar um novo módulo.
           </DialogDescription>
@@ -113,13 +138,15 @@ function NovoModuloDialog({ cursos, formadores }: { cursos: CursoComDetalhes[]; 
         {success && (
           <div className="flex items-center gap-2 rounded-lg border border-green-200 dark:border-green-900/50 bg-green-50 dark:bg-green-950/30 px-3 py-2 transition-colors">
             <CheckCircle className="h-4 w-4 text-green-500 dark:text-green-400 shrink-0" />
-            <p className="text-sm text-green-700 dark:text-green-300">Módulo criado com sucesso!</p>
+            <p className="text-sm text-green-700 dark:text-green-300">
+              Módulo criado com sucesso!
+            </p>
           </div>
         )}
 
         <div className="flex flex-col gap-4 py-2">
           <div className="flex flex-col gap-1.5">
-            <Label className="text-gray-700 dark:text-gray-300">Curso *</Label>
+            <Label className="text-gray-700 dark:text-gray-300">Curso</Label>
             <select
               name="cursoId"
               value={formData.cursoId}
@@ -127,8 +154,8 @@ function NovoModuloDialog({ cursos, formadores }: { cursos: CursoComDetalhes[]; 
               disabled={loading}
               className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
             >
-              <option value="">Seleciona um curso...</option>
-              {cursos.map(curso => (
+              <option value="">Sem curso</option>
+              {cursos.map((curso) => (
                 <option key={curso.id} value={curso.id}>
                   {curso.nome}
                 </option>
@@ -136,7 +163,9 @@ function NovoModuloDialog({ cursos, formadores }: { cursos: CursoComDetalhes[]; 
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label className="text-gray-700 dark:text-gray-300">Nome do módulo *</Label>
+            <Label className="text-gray-700 dark:text-gray-300">
+              Nome do módulo *
+            </Label>
             <Input
               name="nome"
               placeholder="Ex: Design Gráfico"
@@ -147,7 +176,9 @@ function NovoModuloDialog({ cursos, formadores }: { cursos: CursoComDetalhes[]; 
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label className="text-gray-700 dark:text-gray-300">Descrição (opcional)</Label>
+            <Label className="text-gray-700 dark:text-gray-300">
+              Descrição (opcional)
+            </Label>
             <Input
               name="descricao"
               placeholder="Descrição do módulo"
@@ -172,7 +203,9 @@ function NovoModuloDialog({ cursos, formadores }: { cursos: CursoComDetalhes[]; 
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label className="text-gray-700 dark:text-gray-300">Carga horária (horas)</Label>
+              <Label className="text-gray-700 dark:text-gray-300">
+                Carga horária (horas)
+              </Label>
               <Input
                 type="number"
                 name="cargaHoraria"
@@ -186,7 +219,9 @@ function NovoModuloDialog({ cursos, formadores }: { cursos: CursoComDetalhes[]; 
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label className="text-gray-700 dark:text-gray-300">Formador (opcional)</Label>
+            <Label className="text-gray-700 dark:text-gray-300">
+              Formador (opcional)
+            </Label>
             <select
               name="formadorId"
               value={formData.formadorId}
@@ -195,7 +230,7 @@ function NovoModuloDialog({ cursos, formadores }: { cursos: CursoComDetalhes[]; 
               className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
             >
               <option value="">Sem formador</option>
-              {formadores.map(formador => (
+              {formadores.map((formador) => (
                 <option key={formador.id} value={formador.id}>
                   {formador.user.nome}
                 </option>
@@ -204,7 +239,12 @@ function NovoModuloDialog({ cursos, formadores }: { cursos: CursoComDetalhes[]; 
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={loading} className="dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+          <Button
+            variant="outline"
+            onClick={() => setOpen(false)}
+            disabled={loading}
+            className="dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+          >
             Cancelar
           </Button>
           <Button
@@ -222,15 +262,27 @@ function NovoModuloDialog({ cursos, formadores }: { cursos: CursoComDetalhes[]; 
 
 // ─── Módulo Card ──────────────────────────────────────────────────────────────
 
-function ModuloCard({ modulo, onEditar, onExcluir }: { modulo: ModuloComDetalhes; onEditar: () => void; onExcluir: () => void }) {
+function ModuloCard({
+  modulo,
+  onEditar,
+  onExcluir,
+}: {
+  modulo: ModuloComDetalhes;
+  onEditar: () => void;
+  onExcluir: () => void;
+}) {
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 hover:border-indigo-200 hover:shadow-sm transition-all">
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-col gap-0.5 flex-1">
-          <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">{modulo.nome}</h3>
+          <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">
+            {modulo.nome}
+          </h3>
           {modulo.curso && (
-            <span className="text-sm text-gray-500 dark:text-gray-400">{modulo.curso.nome}</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {modulo.curso.nome}
+            </span>
           )}
         </div>
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50">
@@ -248,9 +300,13 @@ function ModuloCard({ modulo, onEditar, onExcluir }: { modulo: ModuloComDetalhes
       <div className="flex items-center gap-2">
         <Users className="h-4 w-4 text-gray-400 shrink-0" />
         {modulo.formadores && modulo.formadores.length > 0 ? (
-          <span className="text-sm text-gray-600 dark:text-gray-300">{modulo.formadores.map(f => f.user.nome).join(", ")}</span>
+          <span className="text-sm text-gray-600 dark:text-gray-300">
+            {modulo.formadores.map((f) => f.user.nome).join(", ")}
+          </span>
         ) : (
-          <span className="text-sm font-medium text-amber-500">Sem formador</span>
+          <span className="text-sm font-medium text-amber-500">
+            Sem formador
+          </span>
         )}
       </div>
 
@@ -279,7 +335,15 @@ function ModuloCard({ modulo, onEditar, onExcluir }: { modulo: ModuloComDetalhes
 
 // ─── Excluir Módulo Dialog ────────────────────────────────────────────────────
 
-function ExcluirModuloDialog({ modulo, onClose, onConfirm }: { modulo: ModuloComDetalhes; onClose: () => void; onConfirm: () => Promise<void> }) {
+function ExcluirModuloDialog({
+  modulo,
+  onClose,
+  onConfirm,
+}: {
+  modulo: ModuloComDetalhes;
+  onClose: () => void;
+  onConfirm: () => Promise<void>;
+}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -304,8 +368,12 @@ function ExcluirModuloDialog({ modulo, onClose, onConfirm }: { modulo: ModuloCom
             Excluir Módulo
           </DialogTitle>
           <DialogDescription className="text-gray-500 dark:text-gray-400">
-            Tens a certeza que pretendes excluir o módulo <span className="font-bold text-gray-900 dark:text-gray-100">&ldquo;{modulo.nome}&rdquo;</span>?
-            Esta ação não pode ser desfeita e pode falhar se existirem aulas ou avaliações associadas.
+            Tens a certeza que pretendes excluir o módulo{" "}
+            <span className="font-bold text-gray-900 dark:text-gray-100">
+              &ldquo;{modulo.nome}&rdquo;
+            </span>
+            ? Esta ação não pode ser desfeita e pode falhar se existirem aulas
+            ou avaliações associadas.
           </DialogDescription>
         </DialogHeader>
 
@@ -316,7 +384,12 @@ function ExcluirModuloDialog({ modulo, onClose, onConfirm }: { modulo: ModuloCom
         )}
 
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="outline" onClick={onClose} disabled={loading} className="rounded-xl dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={loading}
+            className="rounded-xl dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+          >
             Cancelar
           </Button>
           <Button
@@ -327,10 +400,11 @@ function ExcluirModuloDialog({ modulo, onClose, onConfirm }: { modulo: ModuloCom
           >
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                A excluir...
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />A excluir...
               </>
-            ) : "Excluir Módulo"}
+            ) : (
+              "Excluir Módulo"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -340,7 +414,17 @@ function ExcluirModuloDialog({ modulo, onClose, onConfirm }: { modulo: ModuloCom
 
 // ─── Editar Módulo Dialog ─────────────────────────────────────────────────────
 
-function EditarModuloDialog({ modulo, cursos, formadores, onClose }: { modulo: ModuloComDetalhes; cursos: CursoComDetalhes[]; formadores: FormadorComDetalhes[]; onClose: () => void }) {
+function EditarModuloDialog({
+  modulo,
+  cursos,
+  formadores,
+  onClose,
+}: {
+  modulo: ModuloComDetalhes;
+  cursos: CursoComDetalhes[];
+  formadores: FormadorComDetalhes[];
+  onClose: () => void;
+}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -349,13 +433,15 @@ function EditarModuloDialog({ modulo, cursos, formadores, onClose }: { modulo: M
     descricao: modulo.descricao || "",
     ordem: modulo.ordem.toString(),
     cargaHoraria: modulo.cargaHoraria.toString(),
-    cursoId: modulo.cursoId,
+    cursoId: modulo.cursoId ?? "",
     formadorId: modulo.formadores?.[0]?.id || "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async () => {
@@ -378,7 +464,7 @@ function EditarModuloDialog({ modulo, cursos, formadores, onClose }: { modulo: M
           descricao: formData.descricao?.trim() || null,
           ordem: parseInt(formData.ordem) || 0,
           cargaHoraria: parseInt(formData.cargaHoraria) || 0,
-          cursoId: formData.cursoId,
+          cursoId: formData.cursoId || null,
           formadorId: formData.formadorId || null,
         }),
       });
@@ -389,7 +475,7 @@ function EditarModuloDialog({ modulo, cursos, formadores, onClose }: { modulo: M
       }
 
       setSuccess(true);
-      
+
       setTimeout(() => {
         onClose();
         setSuccess(false);
@@ -406,8 +492,12 @@ function EditarModuloDialog({ modulo, cursos, formadores, onClose }: { modulo: M
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 transition-colors">
         <DialogHeader>
-          <DialogTitle className="text-gray-900 dark:text-gray-100">Editar Módulo</DialogTitle>
-          <DialogDescription className="text-gray-500 dark:text-gray-400">Atualiza os dados do módulo.</DialogDescription>
+          <DialogTitle className="text-gray-900 dark:text-gray-100">
+            Editar Módulo
+          </DialogTitle>
+          <DialogDescription className="text-gray-500 dark:text-gray-400">
+            Atualiza os dados do módulo.
+          </DialogDescription>
         </DialogHeader>
 
         {error && (
@@ -420,7 +510,9 @@ function EditarModuloDialog({ modulo, cursos, formadores, onClose }: { modulo: M
         {success && (
           <div className="flex items-center gap-2 rounded-lg border border-green-200 dark:border-green-900/50 bg-green-50 dark:bg-green-950/30 px-3 py-2 transition-colors">
             <CheckCircle className="h-4 w-4 text-green-500 dark:text-green-400 shrink-0" />
-            <p className="text-sm text-green-700 dark:text-green-300">Módulo atualizado com sucesso!</p>
+            <p className="text-sm text-green-700 dark:text-green-300">
+              Módulo atualizado com sucesso!
+            </p>
           </div>
         )}
 
@@ -434,7 +526,8 @@ function EditarModuloDialog({ modulo, cursos, formadores, onClose }: { modulo: M
               disabled={loading}
               className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
             >
-              {cursos.map(curso => (
+              <option value="">Sem curso</option>
+              {cursos.map((curso) => (
                 <option key={curso.id} value={curso.id}>
                   {curso.nome}
                 </option>
@@ -442,7 +535,9 @@ function EditarModuloDialog({ modulo, cursos, formadores, onClose }: { modulo: M
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label className="text-gray-700 dark:text-gray-300">Nome do módulo</Label>
+            <Label className="text-gray-700 dark:text-gray-300">
+              Nome do módulo
+            </Label>
             <Input
               name="nome"
               value={formData.nome}
@@ -452,7 +547,9 @@ function EditarModuloDialog({ modulo, cursos, formadores, onClose }: { modulo: M
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label className="text-gray-700 dark:text-gray-300">Descrição</Label>
+            <Label className="text-gray-700 dark:text-gray-300">
+              Descrição
+            </Label>
             <Input
               name="descricao"
               value={formData.descricao}
@@ -475,7 +572,9 @@ function EditarModuloDialog({ modulo, cursos, formadores, onClose }: { modulo: M
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label className="text-gray-700 dark:text-gray-300">Carga horária</Label>
+              <Label className="text-gray-700 dark:text-gray-300">
+                Carga horária
+              </Label>
               <Input
                 type="number"
                 name="cargaHoraria"
@@ -497,7 +596,7 @@ function EditarModuloDialog({ modulo, cursos, formadores, onClose }: { modulo: M
               className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
             >
               <option value="">Sem formador</option>
-              {formadores.map(formador => (
+              {formadores.map((formador) => (
                 <option key={formador.id} value={formador.id}>
                   {formador.user.nome}
                 </option>
@@ -506,7 +605,12 @@ function EditarModuloDialog({ modulo, cursos, formadores, onClose }: { modulo: M
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={loading} className="dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={loading}
+            className="dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+          >
             Cancelar
           </Button>
           <Button
@@ -524,15 +628,25 @@ function EditarModuloDialog({ modulo, cursos, formadores, onClose }: { modulo: M
 
 // ─── Modulos Content Component ─────────────────────────────────────────────────
 
-export function ModulosContent({ modulos, cursos, formadores }: { modulos: ModuloComDetalhes[]; cursos: CursoComDetalhes[]; formadores: FormadorComDetalhes[] }) {
+export function ModulosContent({
+  modulos,
+  cursos,
+  formadores,
+}: {
+  modulos: ModuloComDetalhes[];
+  cursos: CursoComDetalhes[];
+  formadores: FormadorComDetalhes[];
+}) {
   const [search, setSearch] = useState("");
-  const [selectedModulo, setSelectedModulo] = useState<ModuloComDetalhes | null>(null);
-  const [moduloParaExcluir, setModuloParaExcluir] = useState<ModuloComDetalhes | null>(null);
+  const [selectedModulo, setSelectedModulo] =
+    useState<ModuloComDetalhes | null>(null);
+  const [moduloParaExcluir, setModuloParaExcluir] =
+    useState<ModuloComDetalhes | null>(null);
 
   const modulosFiltrados = modulos.filter(
     (m) =>
       m.nome.toLowerCase().includes(search.toLowerCase()) ||
-      m.curso?.nome.toLowerCase().includes(search.toLowerCase())
+      m.curso?.nome.toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleConfirmExcluir = async () => {
@@ -556,7 +670,9 @@ export function ModulosContent({ modulos, cursos, formadores }: { modulos: Modul
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">Módulos</h1>
+          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">
+            Módulos
+          </h1>
           <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
             {modulos.length} módulos registados
           </p>
@@ -581,30 +697,37 @@ export function ModulosContent({ modulos, cursos, formadores }: { modulos: Modul
       <div className="grid gap-6 md:grid-cols-3 sm:grid-cols-1">
         {modulosFiltrados.length > 0 ? (
           modulosFiltrados.map((modulo) => (
-            <ModuloCard 
-              key={modulo.id} 
-              modulo={modulo} 
-              onEditar={() => setSelectedModulo(modulo)} 
+            <ModuloCard
+              key={modulo.id}
+              modulo={modulo}
+              onEditar={() => setSelectedModulo(modulo)}
               onExcluir={() => setModuloParaExcluir(modulo)}
             />
           ))
         ) : (
           <div className="col-span-full flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 py-16 text-center">
             <Puzzle className="h-10 w-10 text-gray-300 mb-3" />
-            <p className="text-sm font-medium text-gray-500">Nenhum módulo encontrado</p>
+            <p className="text-sm font-medium text-gray-500">
+              Nenhum módulo encontrado
+            </p>
           </div>
         )}
       </div>
 
       {selectedModulo && (
-        <EditarModuloDialog modulo={selectedModulo} cursos={cursos} formadores={formadores} onClose={() => setSelectedModulo(null)} />
+        <EditarModuloDialog
+          modulo={selectedModulo}
+          cursos={cursos}
+          formadores={formadores}
+          onClose={() => setSelectedModulo(null)}
+        />
       )}
 
       {moduloParaExcluir && (
-        <ExcluirModuloDialog 
-          modulo={moduloParaExcluir} 
-          onClose={() => setModuloParaExcluir(null)} 
-          onConfirm={handleConfirmExcluir} 
+        <ExcluirModuloDialog
+          modulo={moduloParaExcluir}
+          onClose={() => setModuloParaExcluir(null)}
+          onConfirm={handleConfirmExcluir}
         />
       )}
     </div>

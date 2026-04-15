@@ -5,47 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { Mail, Plus, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ConvitesClient } from "./convites-client";
-
-// ─── SERVER ACTION ──────────────────────────────────────────────────────────
-async function criarConvite(formData: FormData) {
-  "use server";
-  
-  const session = await auth();
-  if (!session?.user || session.user.role !== "COORDENADOR") {
-    return;
-  }
-
-  const descricao = formData.get("descricao") as string;
-  const formadorId = formData.get("formadorId") as string;
-  const cursoId = formData.get("cursoId") as string;
-
-  if (!descricao || !formadorId || !cursoId) return;
-
-  // Verificar se o curso pertence ao coordenador logado
-  const coordenador = await prisma.coordenador.findUnique({
-    where: { userId: session.user.id }
-  });
-
-  if (!coordenador) return;
-
-  const curso = await prisma.curso.findUnique({
-    where: { id: cursoId },
-    select: { coordenadorId: true }
-  });
-
-  if (!curso || curso.coordenadorId !== coordenador.id) return;
-
-  await prisma.convite.create({
-    data: {
-      descricao,
-      formadorId: formadorId !== "null" ? formadorId : undefined,
-      cursoId: cursoId !== "null" ? cursoId : undefined,
-      status: "PENDENTE",
-    },
-  });
-  revalidatePath("/dashboard/convites");
-}
+import { ConviteForm } from "./_components/convite-form";
+import { criarConvite } from "./actions";
 
 // ─── PÁGINA PRINCIPAL ───────────────────────────────────────────────────────
 export default async function ConvitesPage() {
@@ -70,7 +31,7 @@ export default async function ConvitesPage() {
       include: { curso: true },
     });
 
-    const mappedConvitesFormando = convitesFormando.map((c) => ({
+    const mappedConvitesFormando = convitesFormando.map((c: any) => ({
       ...c,
       cursoNome: c.curso?.nome ?? null,
       moduloNome: null,
@@ -102,7 +63,7 @@ export default async function ConvitesPage() {
       orderBy: { dataEnvio: "desc" },
     });
 
-    const mappedParaClient = convitesFormador.map((c) => ({
+    const mappedParaClient = convitesFormador.map((c: any) => ({
       id: c.id,
       modulo: c.modulo?.nome || "Módulo Geral",
       codigo: c.modulo?.id.substring(0, 8).toUpperCase() || "---",
@@ -112,7 +73,82 @@ export default async function ConvitesPage() {
       status: c.status.toLowerCase() as "pendente" | "aceite" | "recusado",
     }));
 
-    return <ConvitesClient convitesIniciais={mappedParaClient} />;
+    return (
+      <div className="flex flex-col gap-6">
+        <div>
+          <h1 className="text-[26px] font-bold text-gray-900 dark:text-gray-100">
+            Os Meus Convites
+          </h1>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+            Convites para lecionar módulos.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6">
+          {mappedParaClient.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10">
+              <Mail className="h-10 w-10 text-gray-300 mb-2" />
+              <p className="text-sm text-gray-500">
+                Nenhum convite recebido ainda.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {mappedParaClient.map((convite: any) => (
+                <div
+                  key={convite.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 p-4"
+                >
+                  <div className="flex flex-col gap-1">
+                    <span className="text-sm font-bold dark:text-gray-200">
+                      {convite.curso}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {convite.coordenador}
+                    </span>
+                    <span className="text-xs italic text-gray-400 mt-1">
+                      &ldquo;{convite.descricao}&rdquo;
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        "px-2 py-1 rounded-full text-xs font-medium",
+                        convite.status === "pendente" &&
+                          "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
+                        convite.status === "aceite" &&
+                          "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+                        convite.status === "recusado" &&
+                          "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+                      )}
+                    >
+                      {convite.status === "pendente" && (
+                        <Clock className="inline h-3 w-3 mr-1" />
+                      )}
+                      {convite.status === "aceite" && (
+                        <CheckCircle2 className="inline h-3 w-3 mr-1" />
+                      )}
+                      {convite.status === "recusado" && (
+                        <XCircle className="inline h-3 w-3 mr-1" />
+                      )}
+                      {convite.status === "pendente"
+                        ? "Pendente"
+                        : convite.status === "aceite"
+                          ? "Aceite"
+                          : "Recusado"}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {convite.dataEnvio}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
   }
 
   // =======================================================================
@@ -121,7 +157,7 @@ export default async function ConvitesPage() {
   if (user.role === "COORDENADOR") {
     // Buscar o coordenador logado
     const coordenador = await prisma.coordenador.findUnique({
-      where: { userId: user.id }
+      where: { userId: user.id },
     });
 
     // Filtrar apenas convites dos cursos do coordenador
@@ -129,8 +165,8 @@ export default async function ConvitesPage() {
       ? await prisma.convite.findMany({
           where: {
             curso: {
-              coordenadorId: coordenador.id
-            }
+              coordenadorId: coordenador.id,
+            },
           },
           include: { formador: { include: { user: true } }, curso: true },
           orderBy: { dataEnvio: "desc" },
@@ -145,20 +181,41 @@ export default async function ConvitesPage() {
               some: {
                 modulo: {
                   curso: {
-                    coordenadorId: coordenador.id
-                  }
-                }
-              }
-            }
+                    coordenadorId: coordenador.id,
+                  },
+                },
+              },
+            },
           },
           include: { user: true },
         })
       : [];
-      
+
     // Buscar apenas cursos do coordenador
     const cursos = coordenador
       ? await prisma.curso.findMany({
-          where: { coordenadorId: coordenador.id }
+          where: { coordenadorId: coordenador.id },
+        })
+      : [];
+
+    // Buscar módulos dos cursos do coordenador
+    const modulos = coordenador
+      ? await prisma.modulo.findMany({
+          where: {
+            curso: {
+              coordenadorId: coordenador.id,
+            },
+          },
+          include: {
+            curso: true,
+            formadores: {
+              include: {
+                formador: {
+                  include: { user: true },
+                },
+              },
+            },
+          },
         })
       : [];
 
@@ -178,69 +235,11 @@ export default async function ConvitesPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Formulário Novo Convite */}
           <div className="lg:col-span-1">
-            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
-              <h2 className="text-lg font-bold flex items-center gap-2 mb-4 dark:text-gray-100">
-                <Plus className="h-5 w-5 text-indigo-500" /> Novo Convite
-              </h2>
-              <form action={criarConvite} className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium dark:text-gray-300">
-                    Formador
-                  </label>
-                  <select
-                    name="formadorId"
-                    className="w-full rounded-xl border border-gray-200 dark:border-gray-700 p-2.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-200"
-                    required
-                  >
-                    <option value="">Selecione...</option>
-                    {formadores.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.user.nome}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium dark:text-gray-300">
-                    Curso
-                  </label>
-                  <select
-                    name="cursoId"
-                    className="w-full rounded-xl border border-gray-200 dark:border-gray-700 p-2.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-200"
-                    required
-                  >
-                    <option value="">Selecione...</option>
-                    {cursos.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.nome}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium dark:text-gray-300">
-                    Mensagem
-                  </label>
-                  {/* Corrigido o erro do fechamento da tag textarea */}
-                  <textarea
-                    name="descricao"
-                    rows={3}
-                    placeholder="Escreva o convite..."
-                    className="w-full rounded-xl border border-gray-200 dark:border-gray-700 p-2.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-200"
-                    required
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="mt-2 w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
-                >
-                  Enviar Convite
-                </button>
-              </form>
-            </div>
+            <ConviteForm
+              formadores={formadores}
+              modulos={modulos}
+              cursos={cursos}
+            />
           </div>
 
           {/* Lista de Convites do Coordenador */}
@@ -259,7 +258,7 @@ export default async function ConvitesPage() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
-                  {convitesAll.map((convite) => (
+                  {convitesAll.map((convite: any) => (
                     <div
                       key={convite.id}
                       className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 p-4"

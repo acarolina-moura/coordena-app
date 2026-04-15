@@ -2,7 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import { filtroModulosCoordenador, cursoPertenceAoCoordenador } from "@/lib/coordenador-utils";
+import {
+  filtroModulosCoordenador,
+  cursoPertenceAoCoordenador,
+} from "@/lib/coordenador-utils";
 
 // ─── GET /api/modulos ─────────────────────────────────────────────────────────
 
@@ -14,7 +17,7 @@ export async function GET() {
     }
 
     const modulosFilter = await filtroModulosCoordenador();
-    
+
     const modulos = await prisma.modulo.findMany({
       where: modulosFilter,
       orderBy: { ordem: "asc" },
@@ -38,7 +41,7 @@ export async function POST(req: Request) {
     if (!session?.user || session.user.role !== "COORDENADOR") {
       return NextResponse.json(
         { error: "Não autorizado. Apenas coordenadores podem criar módulos." },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -52,17 +55,17 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!cursoId) {
-      return NextResponse.json({ error: "Curso é obrigatório" }, { status: 400 });
-    }
+    let cursoIdFinal: string | null = cursoId || null;
 
-    // Verificar se o curso pertence ao coordenador logado
-    const cursoPertence = await cursoPertenceAoCoordenador(cursoId);
-    if (!cursoPertence) {
-      return NextResponse.json(
-        { error: "Curso não encontrado ou não pertence ao coordenador" },
-        { status: 403 }
-      );
+    if (cursoIdFinal) {
+      // Verificar se o curso pertence ao coordenador logado
+      const cursoPertence = await cursoPertenceAoCoordenador(cursoIdFinal);
+      if (!cursoPertence) {
+        return NextResponse.json(
+          { error: "Curso não encontrado ou não pertence ao coordenador" },
+          { status: 403 },
+        );
+      }
     }
 
     if (formadorId) {
@@ -84,7 +87,7 @@ export async function POST(req: Request) {
         descricao: descricao?.trim() || null,
         ordem: parseInt(ordem) || 0,
         cargaHoraria: parseInt(cargaHoraria) || 0,
-        cursoId,
+        cursoId: cursoIdFinal,
       },
     });
 
@@ -97,7 +100,7 @@ export async function POST(req: Request) {
           id: crypto.randomUUID(),
           formadorId,
           moduloId: modulo.id,
-          cursoId,
+          cursoId: cursoIdFinal,
           descricao: `Convite para lecionar o módulo "${nome}"`,
           status: "PENDENTE",
         },
@@ -126,6 +129,9 @@ export async function POST(req: Request) {
     return NextResponse.json(resultado, { status: 201 });
   } catch (error) {
     console.error("Erro ao criar módulo:", error);
-    return NextResponse.json({ error: "Erro ao criar módulo" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Erro ao criar módulo" },
+      { status: 500 },
+    );
   }
 }

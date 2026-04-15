@@ -108,7 +108,7 @@ export default async function FormadorPerfilPage({
       id: fm.modulo.id,
       nome: fm.modulo.nome,
       cargaHoraria: fm.modulo.cargaHoraria,
-      curso: { nome: fm.modulo.curso.nome },
+      curso: fm.modulo.curso ? { nome: fm.modulo.curso.nome } : null,
     })),
     documentos: formadorDb.documentos,
   };
@@ -220,7 +220,7 @@ export default async function FormadorPerfilPage({
                       {mod.nome}
                     </span>
                     <span className="text-xs text-gray-400">
-                      {mod.curso.nome}
+                      {mod.curso?.nome || "Módulo Independente"}
                     </span>
                   </div>
                   <span className="shrink-0 text-xs text-gray-400">

@@ -186,13 +186,13 @@ model Modulo {
   nome               String
   descricao          String?
   ordem              Int
-  cursoId            String
+  cursoId            String?
   cargaHoraria       Int                 @default(0)
   aulas              Aula[]
   avaliacoes         Avaliacao[]
   formadores         FormadorModulo[]
   templatesAvaliacao TemplateAvaliacao[]
-  curso              Curso               @relation(fields: [cursoId], references: [id])
+  curso              Curso?              @relation(fields: [cursoId], references: [id], onDelete: SetNull)
   reviews            ReviewModulo[]
   convites           Convite[]
   materiais          MaterialApoio[]

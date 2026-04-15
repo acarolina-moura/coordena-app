@@ -64,7 +64,7 @@ export async function GET() {
     console.error("[GET /api/aulas]", error);
     return NextResponse.json(
       { error: "Erro ao carregar aulas" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
     if (!session?.user || session.user.role !== "COORDENADOR") {
       return NextResponse.json(
         { error: "Não autorizado. Apenas coordenadores podem criar aulas." },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
     if (!parsed.success) {
       return NextResponse.json(
         { error: parsed.error.issues[0].message },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -96,13 +96,17 @@ export async function POST(req: Request) {
     // Verificar se o módulo pertence a um curso do coordenador logado
     const modulo = await prisma.modulo.findUnique({
       where: { id: moduloId },
-      include: { curso: { select: { coordenadorId: true } } }
+      include: { curso: { select: { coordenadorId: true } } },
     });
 
-    if (!modulo || modulo.curso.coordenadorId !== session.user.coordenadorId) {
+    if (
+      !modulo ||
+      !modulo.curso ||
+      modulo.curso.coordenadorId !== session.user.coordenadorId
+    ) {
       return NextResponse.json(
         { error: "Módulo não encontrado ou não pertence ao coordenador" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 

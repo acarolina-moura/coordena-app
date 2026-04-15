@@ -1,4 +1,4 @@
-'use server';
+"use server";
 
 /**
  * ============================================================================
@@ -17,26 +17,26 @@
  * ============================================================================
  */
 
-import { prisma } from '@/lib/prisma';
-import { auth } from '@/auth';
-import { logError } from '@/lib/logger';
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
+import { logError } from "@/lib/logger";
 
 /**
  * Salvar ou atualizar um template de avaliação para um módulo
- * 
+ *
  * @param moduloId - ID do módulo
  * @param items - Array de items do template com nome e peso
  * @returns O template criado/atualizado
  */
 export async function salvarTemplateAvaliacao(
   moduloId: string,
-  items: Array<{ nome: string; peso: number; ordem: number }>
+  items: Array<{ nome: string; peso: number; ordem: number }>,
 ) {
   try {
     // Validar autenticação
     const session = await auth();
-    if (!session?.user?.id || session.user.role !== 'FORMADOR') {
-      throw new Error('Não autorizado');
+    if (!session?.user?.id || session.user.role !== "FORMADOR") {
+      throw new Error("Não autorizado");
     }
 
     // Buscar formador
@@ -45,14 +45,14 @@ export async function salvarTemplateAvaliacao(
     });
 
     if (!formador) {
-      throw new Error('Formador não encontrado');
+      throw new Error("Formador não encontrado");
     }
 
     // Validar peso total (máx 80%)
     const pesoTotal = items.reduce((acc, item) => acc + item.peso, 0);
     if (pesoTotal !== 80) {
       throw new Error(
-        `Peso total dos componentes deve ser 80%. Atual: ${pesoTotal}%`
+        `Peso total dos componentes deve ser 80%. Atual: ${pesoTotal}%`,
       );
     }
 
@@ -104,15 +104,16 @@ export async function salvarTemplateAvaliacao(
 
     return { success: true, template };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    logError('Erro ao salvar template:', message);
+    const message =
+      error instanceof Error ? error.message : "Erro desconhecido";
+    logError("Erro ao salvar template:", message);
     return { success: false, error: message };
   }
 }
 
 /**
  * Obter o template de avaliação para um módulo e formador
- * 
+ *
  * @param moduloId - ID do módulo
  * @returns O template com seus items, ou null se não existir
  */
@@ -120,8 +121,8 @@ export async function obterTemplateAvaliacao(moduloId: string) {
   try {
     // Validar autenticação
     const session = await auth();
-    if (!session?.user?.id || session.user.role !== 'FORMADOR') {
-      throw new Error('Não autorizado');
+    if (!session?.user?.id || session.user.role !== "FORMADOR") {
+      throw new Error("Não autorizado");
     }
 
     // Buscar formador
@@ -130,7 +131,7 @@ export async function obterTemplateAvaliacao(moduloId: string) {
     });
 
     if (!formador) {
-      throw new Error('Formador não encontrado');
+      throw new Error("Formador não encontrado");
     }
 
     // Buscar template
@@ -143,22 +144,23 @@ export async function obterTemplateAvaliacao(moduloId: string) {
       },
       include: {
         items: {
-          orderBy: { ordem: 'asc' },
+          orderBy: { ordem: "asc" },
         },
       },
     });
 
     return { success: true, template };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    logError('Erro ao obter template:', message);
+    const message =
+      error instanceof Error ? error.message : "Erro desconhecido";
+    logError("Erro ao obter template:", message);
     return { success: false, error: message };
   }
 }
 
 /**
  * Salvar notas parciais (valores de avaliação) para um aluno
- * 
+ *
  * @param moduloId - ID do módulo
  * @param formandoId - ID do aluno
  * @param notas - Mapa de itemId -> valor (0-20)
@@ -167,13 +169,13 @@ export async function obterTemplateAvaliacao(moduloId: string) {
 export async function salvarNotasParciais(
   moduloId: string,
   formandoId: string,
-  notas: Record<string, number>
+  notas: Record<string, number>,
 ) {
   try {
     // Validar autenticação
     const session = await auth();
-    if (!session?.user?.id || session.user.role !== 'FORMADOR') {
-      throw new Error('Não autorizado');
+    if (!session?.user?.id || session.user.role !== "FORMADOR") {
+      throw new Error("Não autorizado");
     }
 
     // Buscar formador
@@ -182,7 +184,7 @@ export async function salvarNotasParciais(
     });
 
     if (!formador) {
-      throw new Error('Formador não encontrado');
+      throw new Error("Formador não encontrado");
     }
 
     // Buscar ou criar template
@@ -207,7 +209,8 @@ export async function salvarNotasParciais(
           moduloId: moduloId,
           items: {
             create: Object.entries(notas).map(([_, valor], index) => {
-              const peso = Math.round((100 / Object.keys(notas).length) * 100) / 100;
+              const peso =
+                Math.round((100 / Object.keys(notas).length) * 100) / 100;
               return {
                 nome: `Componente ${index + 1}`,
                 peso,
@@ -226,7 +229,7 @@ export async function salvarNotasParciais(
       const notasArray = Object.values(notas);
       for (let i = 0; i < template.items.length && i < notasArray.length; i++) {
         const valor = notasArray[i];
-        if (typeof valor === 'number' && valor >= 0 && valor <= 20) {
+        if (typeof valor === "number" && valor >= 0 && valor <= 20) {
           await prisma.notaParcial.upsert({
             where: {
               formandoId_itemId: {
@@ -279,28 +282,29 @@ export async function salvarNotasParciais(
 
     return { success: true };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    logError('Erro ao salvar notas:', message);
+    const message =
+      error instanceof Error ? error.message : "Erro desconhecido";
+    logError("Erro ao salvar notas:", message);
     return { success: false, error: message };
   }
 }
 
 /**
  * Obter todas as notas parciais de um aluno em um módulo
- * 
+ *
  * @param formandoId - ID do aluno
  * @param moduloId - ID do módulo
  * @returns Array de notas parciais com seus items
  */
 export async function obterNotasParciaisAluno(
   formandoId: string,
-  moduloId: string
+  moduloId: string,
 ) {
   try {
     // Validar autenticação
     const session = await auth();
     if (!session?.user?.id) {
-      throw new Error('Não autorizado');
+      throw new Error("Não autorizado");
     }
 
     // Buscar todas as notas parciais deste aluno neste módulo
@@ -326,18 +330,19 @@ export async function obterNotasParciaisAluno(
 
     return { success: true, notas };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    logError('Erro ao obter notas:', message);
+    const message =
+      error instanceof Error ? error.message : "Erro desconhecido";
+    logError("Erro ao obter notas:", message);
     return { success: false, error: message };
   }
 }
 
 /**
  * Calcular a nota final de um aluno em um módulo
- * 
+ *
  * Fórmula:
  * NotaFinal = (Assiduidade × 0.20) + (MédiaComponentes × 0.80)
- * 
+ *
  * @param formandoId - ID do aluno
  * @param moduloId - ID do módulo
  * @param percentualAssiduidade - Percentual de presenças (0-100)
@@ -346,13 +351,13 @@ export async function obterNotasParciaisAluno(
 export async function calcularNotaFinal(
   formandoId: string,
   moduloId: string,
-  percentualAssiduidade: number
+  percentualAssiduidade: number,
 ) {
   try {
     // Validar autenticação
     const session = await auth();
     if (!session?.user?.id) {
-      throw new Error('Não autorizado');
+      throw new Error("Não autorizado");
     }
 
     // Buscar template com seus items
@@ -389,7 +394,7 @@ export async function calcularNotaFinal(
     if (template && template.items.length > 0) {
       // Média ponderada pelos pesos do template
       for (const nota of notas) {
-        const item = template.items.find(i => i.id === nota.itemId);
+        const item = template.items.find((i) => i.id === nota.itemId);
         if (item) {
           mediaComponentes += nota.valor * (item.peso / 100);
           pesoTotal += item.peso / 100;
@@ -409,8 +414,7 @@ export async function calcularNotaFinal(
     const notaAssiduidade = (percentualAssiduidade / 100) * 20;
 
     // Aplicar fórmula: 20% assiduidade + 80% componentes
-    const notaFinal =
-      notaAssiduidade * 0.2 + mediaComponentes * 0.8;
+    const notaFinal = notaAssiduidade * 0.2 + mediaComponentes * 0.8;
 
     const notaFinalArredondada = Math.round(notaFinal * 10) / 10;
 
@@ -451,8 +455,9 @@ export async function calcularNotaFinal(
 
     return { success: true, notaFinal: notaFinalArredondada };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    logError('Erro ao calcular nota final:', message);
+    const message =
+      error instanceof Error ? error.message : "Erro desconhecido";
+    logError("Erro ao calcular nota final:", message);
     return { success: false, error: message };
   }
 }
@@ -460,15 +465,15 @@ export async function calcularNotaFinal(
 /**
  * Obter módulos com alunos para a página de notas
  * Carrega todos os módulos do formador com lista de alunos inscritos
- * 
+ *
  * @returns Array de módulos com alunos e presenças
  */
 export async function obterModulosComAlunos() {
   try {
     // Validar autenticação
     const session = await auth();
-    if (!session?.user?.id || session.user.role !== 'FORMADOR') {
-      throw new Error('Não autorizado');
+    if (!session?.user?.id || session.user.role !== "FORMADOR") {
+      throw new Error("Não autorizado");
     }
 
     const formador = await prisma.formador.findUnique({
@@ -476,7 +481,7 @@ export async function obterModulosComAlunos() {
     });
 
     if (!formador) {
-      return { success: true, modulos: [], message: 'Formador não encontrado' };
+      return { success: true, modulos: [], message: "Formador não encontrado" };
     }
 
     // Obter módulos via FormadorModulo (convites aceites)
@@ -495,7 +500,7 @@ export async function obterModulosComAlunos() {
     const aulasModulos = await prisma.aula.findMany({
       where: { formadorId: formador.id },
       select: { moduloId: true },
-      distinct: ['moduloId'],
+      distinct: ["moduloId"],
     });
 
     // Combinar IDs únicos de módulos
@@ -504,7 +509,11 @@ export async function obterModulosComAlunos() {
     aulasModulos.forEach((a) => moduloIdsSet.add(a.moduloId));
 
     if (moduloIdsSet.size === 0) {
-      return { success: true, modulos: [], message: 'Nenhum módulo encontrado para este formador' };
+      return {
+        success: true,
+        modulos: [],
+        message: "Nenhum módulo encontrado para este formador",
+      };
     }
 
     // Buscar todos os módulos com detalhes
@@ -513,23 +522,25 @@ export async function obterModulosComAlunos() {
       include: {
         curso: true,
       },
-      orderBy: { nome: 'asc' },
+      orderBy: { nome: "asc" },
     });
 
     // Para cada módulo, obter alunos inscritos no curso e suas presenças
     const modulosComDetalhes = await Promise.all(
       modulos.map(async (modulo) => {
         // Obter alunos inscritos neste curso
-        const inscricoes = await prisma.inscricao.findMany({
-          where: { cursoId: modulo.cursoId },
-          include: {
-            formando: {
+        const inscricoes = modulo.cursoId
+          ? await prisma.inscricao.findMany({
+              where: { cursoId: modulo.cursoId },
               include: {
-                user: true,
+                formando: {
+                  include: {
+                    user: true,
+                  },
+                },
               },
-            },
-          },
-        });
+            })
+          : [];
 
         // Contar total de aulas deste módulo com este formador
         const totalAulas = await prisma.aula.count({
@@ -546,7 +557,7 @@ export async function obterModulosComAlunos() {
             const presencasPresente = await prisma.presenca.count({
               where: {
                 formandoId: insc.formando.id,
-                status: 'PRESENTE',
+                status: "PRESENTE",
                 aula: {
                   moduloId: modulo.id,
                   formadorId: formador.id,
@@ -560,7 +571,7 @@ export async function obterModulosComAlunos() {
               presencas: presencasPresente,
               totalSessoes: totalAulas,
             };
-          })
+          }),
         );
 
         return {
@@ -568,28 +579,29 @@ export async function obterModulosComAlunos() {
           nome: modulo.nome,
           alunos,
         };
-      })
+      }),
     );
 
     return { success: true, modulos: modulosComDetalhes };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    logError('Erro ao obter módulos:', message);
+    const message =
+      error instanceof Error ? error.message : "Erro desconhecido";
+    logError("Erro ao obter módulos:", message);
     return { success: false, error: message, modulos: [] };
   }
 }
 
 /**
  * Obter todas as notas finais (Avaliacao) de um formador para seus módulos
- * 
+ *
  * @returns Mapa de { formandoId: notaFinal }
  */
 export async function obterNotasFinais() {
   try {
     // Validar autenticação
     const session = await auth();
-    if (!session?.user?.id || session.user.role !== 'FORMADOR') {
-      throw new Error('Não autorizado');
+    if (!session?.user?.id || session.user.role !== "FORMADOR") {
+      throw new Error("Não autorizado");
     }
 
     // Buscar formador
@@ -598,7 +610,7 @@ export async function obterNotasFinais() {
     });
 
     if (!formador) {
-      throw new Error('Formador não encontrado');
+      throw new Error("Formador não encontrado");
     }
 
     // Buscar todas as avaliações (notas finais) deste formador
@@ -617,28 +629,29 @@ export async function obterNotasFinais() {
 
     return { success: true, notasFinais: notasFinaisMap };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Erro ao obter notas finais:', message);
+    const message =
+      error instanceof Error ? error.message : "Erro desconhecido";
+    console.error("Erro ao obter notas finais:", message);
     return { success: false, error: message, notasFinais: {} };
   }
 }
 
 /**
  * Obter trabalhos entregues por um aluno num módulo
- * 
+ *
  * @param formandoId - ID do aluno
  * @param moduloId - ID do módulo
  * @returns Array de items com status de entrega
  */
 export async function obterTrabalhosPorAluno(
   formandoId: string,
-  moduloId: string
+  moduloId: string,
 ) {
   try {
     // Validar autenticação
     const session = await auth();
     if (!session?.user?.id) {
-      throw new Error('Não autorizado');
+      throw new Error("Não autorizado");
     }
 
     // Buscar template do módulo
@@ -648,7 +661,7 @@ export async function obterTrabalhosPorAluno(
       },
       include: {
         items: {
-          orderBy: { ordem: 'asc' },
+          orderBy: { ordem: "asc" },
         },
       },
     });
@@ -687,8 +700,9 @@ export async function obterTrabalhosPorAluno(
 
     return { success: true, trabalhos };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Erro ao obter trabalhos:', message);
+    const message =
+      error instanceof Error ? error.message : "Erro desconhecido";
+    console.error("Erro ao obter trabalhos:", message);
     return { success: false, error: message, trabalhos: [] };
   }
 }

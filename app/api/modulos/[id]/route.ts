@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import { cursoPertenceAoCoordenador } from "@/lib/coordenador-utils";
 
 export async function PUT(
   request: Request,
@@ -25,17 +26,16 @@ export async function PUT(
       );
     }
 
-    if (!cursoId) {
-      return Response.json({ error: "Curso é obrigatório" }, { status: 400 });
-    }
+    let cursoIdFinal: string | null = cursoId || null;
 
-    // Verifica se o curso existe
-    const cursoExists = await prisma.curso.findUnique({
-      where: { id: cursoId },
-    });
-
-    if (!cursoExists) {
-      return Response.json({ error: "Curso não encontrado" }, { status: 404 });
+    if (cursoIdFinal) {
+      const cursoPertence = await cursoPertenceAoCoordenador(cursoIdFinal);
+      if (!cursoPertence) {
+        return Response.json(
+          { error: "Curso não encontrado ou não pertence ao coordenador" },
+          { status: 403 },
+        );
+      }
     }
 
     // Verifica se o módulo existe
@@ -95,7 +95,7 @@ export async function PUT(
         descricao: descricao?.trim() || null,
         ordem: parseInt(ordem) || 0,
         cargaHoraria: parseInt(cargaHoraria) || 0,
-        cursoId,
+        cursoId: cursoIdFinal,
       },
     });
 

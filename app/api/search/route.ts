@@ -3,7 +3,6 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ResultadoPesquisa } from "./types";
 
-
 export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user) {
@@ -81,7 +80,7 @@ export async function GET(req: NextRequest) {
         id: m.id,
         tipo: "modulo",
         titulo: m.nome,
-        subtitulo: m.curso.nome,
+        subtitulo: m.curso?.nome || "Módulo Independente",
         href: "/dashboard/modulos",
       }),
     );
@@ -105,7 +104,9 @@ export async function GET(req: NextRequest) {
         prisma.curso.findMany({
           where: {
             nome: { contains: q, mode: "insensitive" },
-            modulos: { some: { formadores: { some: { formadorId: formador.id } } } },
+            modulos: {
+              some: { formadores: { some: { formadorId: formador.id } } },
+            },
           },
           select: { id: true, nome: true },
           take: 4,
@@ -117,7 +118,7 @@ export async function GET(req: NextRequest) {
           id: m.id,
           tipo: "modulo",
           titulo: m.nome,
-          subtitulo: m.curso.nome,
+          subtitulo: m.curso?.nome || "Módulo Independente",
           href: "/dashboard/modulos-atribuidos",
         }),
       );

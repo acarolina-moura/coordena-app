@@ -1,13 +1,13 @@
-'use server';
+"use server";
 
-import { prisma } from '@/lib/prisma';
-import { auth } from '@/auth';
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 
 export async function obterAulasFormador() {
   try {
     const session = await auth();
-    if (!session?.user?.id || session.user.role !== 'FORMADOR') {
-      throw new Error('Não autorizado');
+    if (!session?.user?.id || session.user.role !== "FORMADOR") {
+      throw new Error("Não autorizado");
     }
 
     const formador = await prisma.formador.findUnique({
@@ -18,13 +18,13 @@ export async function obterAulasFormador() {
           include: {
             modulo: true,
           },
-          orderBy: { dataHora: 'asc' },
+          orderBy: { dataHora: "asc" },
         },
       },
     });
 
     if (!formador) {
-      return { success: true, aulas: [], message: 'Formador não encontrado' };
+      return { success: true, aulas: [], message: "Formador não encontrado" };
     }
 
     return {
@@ -32,28 +32,32 @@ export async function obterAulasFormador() {
       aulas: formador.aulas.map((aula) => {
         const horas = Math.floor(aula.duracao / 60);
         const minutos = aula.duracao % 60;
-        let durationStr = '';
+        let durationStr = "";
         if (horas > 0) durationStr += `${horas}h`;
         if (minutos > 0) durationStr += `${minutos}m`;
-        if (!durationStr) durationStr = '0m';
-        
-        const timeStr = aula.dataHora.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+        if (!durationStr) durationStr = "0m";
+
+        const timeStr = aula.dataHora.toLocaleTimeString("pt-PT", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
         return {
           id: aula.id,
           titulo: aula.titulo,
           formador: formador.user.nome,
-          data: aula.dataHora.toISOString().split('T')[0],
+          data: aula.dataHora.toISOString().split("T")[0],
           horaInicio: timeStr,
           duracao: durationStr,
           durationMinutes: aula.duracao,
           ufcd: aula.modulo.nome,
-          cor: 'bg-indigo-100 text-indigo-700 border-indigo-200',
+          cor: "bg-indigo-100 text-indigo-700 border-indigo-200",
         };
       }),
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Erro ao obter aulas:', message);
+    const message =
+      error instanceof Error ? error.message : "Erro desconhecido";
+    console.error("Erro ao obter aulas:", message);
     return { success: false, error: message, aulas: [] };
   }
 }
@@ -64,8 +68,8 @@ export async function obterAulasFormador() {
 export async function obterAlunosComPresenca(aulaId: string) {
   try {
     const session = await auth();
-    if (!session?.user?.id || session.user.role !== 'FORMADOR') {
-      throw new Error('Não autorizado');
+    if (!session?.user?.id || session.user.role !== "FORMADOR") {
+      throw new Error("Não autorizado");
     }
 
     const aula = await prisma.aula.findUnique({
@@ -92,34 +96,37 @@ export async function obterAlunosComPresenca(aulaId: string) {
     });
 
     if (!aula) {
-      return { success: false, error: 'Aula não encontrada', alunos: [] };
+      return { success: false, error: "Aula não encontrada", alunos: [] };
     }
 
     // Para cada aluno inscrito no curso, obter status de presença nesta aula
-    const alunos = await Promise.all(
-      aula.modulo.curso.inscricoes.map(async (insc) => {
-        const presenca = await prisma.presenca.findFirst({
-          where: {
-            aulaId: aulaId,
-            formandoId: insc.formando.id,
-          },
-        });
+    const alunos = aula.modulo.curso
+      ? await Promise.all(
+          aula.modulo.curso.inscricoes.map(async (insc) => {
+            const presenca = await prisma.presenca.findFirst({
+              where: {
+                aulaId: aulaId,
+                formandoId: insc.formando.id,
+              },
+            });
 
-        return {
-          id: insc.formando.id,
-          nome: insc.formando.user.nome,
-          status: presenca?.status || 'AUSENTE',
-        };
-      })
-    );
+            return {
+              id: insc.formando.id,
+              nome: insc.formando.user.nome,
+              status: presenca?.status || "AUSENTE",
+            };
+          }),
+        )
+      : [];
 
     return {
       success: true,
       alunos: alunos.sort((a, b) => a.nome.localeCompare(b.nome)),
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Erro ao obter alunos:', message);
+    const message =
+      error instanceof Error ? error.message : "Erro desconhecido";
+    console.error("Erro ao obter alunos:", message);
     return { success: false, error: message, alunos: [] };
   }
 }
@@ -130,12 +137,12 @@ export async function obterAlunosComPresenca(aulaId: string) {
 export async function guardarPresenca(
   aulaId: string,
   formandoId: string,
-  status: 'PRESENTE' | 'AUSENTE' | 'JUSTIFICADO'
+  status: "PRESENTE" | "AUSENTE" | "JUSTIFICADO",
 ) {
   try {
     const session = await auth();
-    if (!session?.user?.id || session.user.role !== 'FORMADOR') {
-      throw new Error('Não autorizado');
+    if (!session?.user?.id || session.user.role !== "FORMADOR") {
+      throw new Error("Não autorizado");
     }
 
     const formador = await prisma.formador.findUnique({
@@ -143,7 +150,7 @@ export async function guardarPresenca(
     });
 
     if (!formador) {
-      throw new Error('Formador não encontrado');
+      throw new Error("Formador não encontrado");
     }
 
     const aula = await prisma.aula.findUnique({
@@ -151,7 +158,7 @@ export async function guardarPresenca(
     });
 
     if (!aula || aula.formadorId !== formador.id) {
-      throw new Error('Aula não pertence ao formador');
+      throw new Error("Aula não pertence ao formador");
     }
 
     // Verificar se presença já existe
@@ -180,10 +187,11 @@ export async function guardarPresenca(
       });
     }
 
-    return { success: true, message: 'Presença guardada' };
+    return { success: true, message: "Presença guardada" };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Erro ao guardar presença:', message);
+    const message =
+      error instanceof Error ? error.message : "Erro desconhecido";
+    console.error("Erro ao guardar presença:", message);
     return { success: false, error: message };
   }
 }
