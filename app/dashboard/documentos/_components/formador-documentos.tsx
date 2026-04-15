@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { CheckCircle2, AlertTriangle, Clock, Upload, CalendarDays, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { CheckCircle2, AlertTriangle, Clock, Upload, CalendarDays, X, Download, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DocumentoFormador as DocumentoResult } from "@/app/dashboard/_data/documentos";
-import { registarDocumento } from "../actions";
+import { registarDocumento, obterDocumentosFormadorAtualizados } from "../actions";
 import { UploadFormando } from "@/components/upload-formando";
 import { toast } from "sonner";
 
@@ -47,7 +47,7 @@ function DocCard({
   onUploadThing,
 }: {
   doc: MeuDocumento;
-  onUploadThing?: (docNome: string) => void;
+  onUploadThing?: (docNome: string, dataValidade: string | null) => void;
 }) {
   const cfg = STATUS_CONFIG[doc.status];
   const Icon = cfg.icon;
@@ -60,15 +60,28 @@ function DocCard({
 
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 hover:border-purple-200 dark:hover:border-purple-800 hover:shadow-sm transition-all">
-      {/* Header */}
-      <div className="flex items-start gap-3">
-        <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", cfg.bgClass)}>
-          <Icon className={cn("h-5 w-5", cfg.iconClass)} />
+      {/* Header com botão de preview */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3 flex-1">
+          <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", cfg.bgClass)}>
+            <Icon className={cn("h-5 w-5", cfg.iconClass)} />
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-base font-bold text-gray-900 dark:text-gray-100">{doc.nome}</span>
+            <span className={cn("text-sm font-semibold", cfg.textClass)}>{cfg.label}</span>
+          </div>
         </div>
-        <div className="flex flex-col gap-0.5">
-          <span className="text-base font-bold text-gray-900 dark:text-gray-100">{doc.nome}</span>
-          <span className={cn("text-sm font-semibold", cfg.textClass)}>{cfg.label}</span>
-        </div>
+        {doc.id && doc.status !== "em falta" && (
+          <a
+            href={`/api/documentos/preview/${doc.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
+            title="Ver documento"
+          >
+            <Eye className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+          </a>
+        )}
       </div>
 
       {/* Inputs */}
@@ -97,7 +110,7 @@ function DocCard({
       {/* Upload button */}
       {onUploadThing && (
         <button
-          onClick={() => onUploadThing(doc.nome)}
+          onClick={() => onUploadThing(doc.nome, validadeInput || null)}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 py-2.5 text-sm font-medium text-white hover:bg-purple-700 transition-colors shadow-sm"
         >
           <Upload className="h-4 w-4" />
@@ -120,14 +133,30 @@ export function FormadorDocumentos({ documentos: documentosIniciais }: { documen
     }))
   )
   const [docUploadThing, setDocUploadThing] = useState<string | null>(null);
+  const [docUploadDataValidade, setDocUploadDataValidade] = useState<string | null>(null);
+
+  // Sincronizar com os dados iniciais quando a página atualiza/props mudam
+  useEffect(() => {
+    setDocs(
+      documentosIniciais.map((d) => ({
+        id: d.id,
+        nome: d.nome,
+        status: STATUS_MAP[d.status] ?? "em falta",
+        dataValidade: d.dataValidade,
+      }))
+    );
+  }, [documentosIniciais]);
 
   // Handler para abrir modal de UploadThing
-  function handleOpenUploadThing(docNome: string) {
+  function handleOpenUploadThing(docNome: string, dataValidade: string | null) {
     setDocUploadThing(docNome);
+    setDocUploadDataValidade(dataValidade);
   }
 
   // Callback quando UploadThing completa o upload
   async function handleUploadThingComplete(url: string, nome: string, tamanho: number) {
+    console.log("[uploadComplete] Upload feito:", { url, nome, tamanho, tipo: docUploadThing, data: docUploadDataValidade });
+    
     if (!docUploadThing) return;
 
     try {
@@ -136,26 +165,44 @@ export function FormadorDocumentos({ documentos: documentosIniciais }: { documen
       formData.append("tipo", docUploadThing);
       formData.append("nomeFicheiro", nome);
       formData.append("tamanho", String(tamanho));
+      if (docUploadDataValidade) {
+        formData.append("dataExpiracao", docUploadDataValidade);
+      }
 
+      console.log("[uploadComplete] Chamando registarDocumento...");
       const result = await registarDocumento(formData);
+      console.log("[uploadComplete] Resultado registarDocumento:", result);
 
       if (result.success) {
         toast.success(result.mensagem ?? "Documento registado!");
-        setDocs((prev) =>
-          prev.map((d) =>
-            d.nome === docUploadThing
-              ? { ...d, status: "válido" }
-              : d
-          )
-        );
+        setDocUploadThing(null);
+        setDocUploadDataValidade(null);
+        
+        // Recarregar os documentos atualizados
+        console.log("[uploadComplete] Chamando obterDocumentosFormadorAtualizados...");
+        const docAtual = await obterDocumentosFormadorAtualizados();
+        console.log("[uploadComplete] Resultado obterDocumentosFormadorAtualizados:", docAtual);
+        
+        if (docAtual.success && docAtual.documentos) {
+          console.log("[uploadComplete] Atualizando state com:", docAtual.documentos.length, "documentos");
+          setDocs(
+            docAtual.documentos.map((d: DocumentoResult) => ({
+              id: d.id,
+              nome: d.nome,
+              status: STATUS_MAP[d.status] ?? "em falta",
+              dataValidade: d.dataValidade,
+            }))
+          );
+        } else {
+          console.error("[uploadComplete] obterDocumentosFormadorAtualizados falhou:", docAtual);
+        }
       } else {
+        console.error("[uploadComplete] registarDocumento falhou:", result.error);
         toast.error(result.error ?? "Erro ao registar documento");
       }
     } catch (err) {
-      console.error("[handleUploadThingComplete]", err);
+      console.error("[uploadComplete] Exception:", err);
       toast.error("Erro ao registar documento na base de dados");
-    } finally {
-      setDocUploadThing(null);
     }
   }
 

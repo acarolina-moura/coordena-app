@@ -12,6 +12,8 @@ import { logError } from "@/lib/logger";
  */
 export async function registarDocumento(formData: FormData) {
   try {
+    console.log("[registarDocumento] Iniciando...");
+    
     const session = await auth();
     if (!session?.user?.id) {
       throw new Error("Não autorizado — faz login primeiro");
@@ -26,6 +28,8 @@ export async function registarDocumento(formData: FormData) {
     const dataEmissao = formData.get("dataEmissao") as string | undefined;
     const dataExpiracao = formData.get("dataExpiracao") as string | undefined;
 
+    console.log("[registarDocumento] Role:", role, "Tipo:", tipo);
+
     if (!fileUrl || !tipo) {
       throw new Error("URL do ficheiro ou tipo em falta");
     }
@@ -34,8 +38,46 @@ export async function registarDocumento(formData: FormData) {
       throw new Error("URL do ficheiro inválido");
     }
 
+    // ─── FORMADOR ───────────────────────────────────────────────────────
+    if (role === "FORMADOR") {
+      const formador = await prisma.formador.findUnique({
+        where: { userId: session.user.id },
+      });
+      if (!formador) throw new Error("Formador não encontrado");
+
+      const existente = await prisma.documento.findFirst({
+        where: { formadorId: formador.id, tipo },
+      });
+
+      if (existente) {
+        console.log("[registarDocumento] Atualizando documento existente");
+        await prisma.documento.update({
+          where: { id: existente.id },
+          data: {
+            fileUrl,
+            dataEmissao: dataEmissao ? new Date(dataEmissao) : new Date(),
+            dataExpiracao: dataExpiracao ? new Date(dataExpiracao) : null,
+            status: "VALIDO",
+          },
+        });
+      } else {
+        console.log("[registarDocumento] Criando novo documento");
+        await prisma.documento.create({
+          data: {
+            tipo,
+            numero: null,
+            dataEmissao: dataEmissao ? new Date(dataEmissao) : new Date(),
+            dataExpiracao: dataExpiracao ? new Date(dataExpiracao) : null,
+            status: "VALIDO",
+            formadorId: formador.id,
+            fileUrl,
+          },
+        });
+      }
+    }
+    
     // ─── FORMANDO ───────────────────────────────────────────────────────
-    if (role === "FORMANDO") {
+    else if (role === "FORMANDO") {
       const formando = await prisma.formando.findUnique({
         where: { userId: session.user.id },
       });
@@ -46,6 +88,7 @@ export async function registarDocumento(formData: FormData) {
       });
 
       if (existente) {
+        console.log("[registarDocumento] Atualizando documento existente");
         await prisma.documento.update({
           where: { id: existente.id },
           data: {
@@ -57,6 +100,7 @@ export async function registarDocumento(formData: FormData) {
           },
         });
       } else {
+        console.log("[registarDocumento] Criando novo documento");
         await prisma.documento.create({
           data: {
             tipo,
@@ -71,53 +115,20 @@ export async function registarDocumento(formData: FormData) {
       }
     }
 
-    // ─── FORMADOR ───────────────────────────────────────────────────────
-    else if (role === "FORMADOR") {
-      const formador = await prisma.formador.findUnique({
-        where: { userId: session.user.id },
-      });
-      if (!formador) throw new Error("Formador não encontrado");
-
-      const existente = await prisma.documento.findFirst({
-        where: { formadorId: formador.id, tipo },
-      });
-
-      if (existente) {
-        await prisma.documento.update({
-          where: { id: existente.id },
-          data: {
-            fileUrl,
-            dataEmissao: dataEmissao ? new Date(dataEmissao) : new Date(),
-            dataExpiracao: dataExpiracao ? new Date(dataExpiracao) : null,
-            status: "VALIDO",
-          },
-        });
-      } else {
-        await prisma.documento.create({
-          data: {
-            tipo,
-            numero: null,
-            dataEmissao: dataEmissao ? new Date(dataEmissao) : new Date(),
-            dataExpiracao: dataExpiracao ? new Date(dataExpiracao) : null,
-            status: "VALIDO",
-            formadorId: formador.id,
-            fileUrl,
-          },
-        });
-      }
-    }
-
     // ─── ROLE NÃO AUTORIZADA ────────────────────────────────────────────
     else {
       throw new Error("Role não autorizada para upload de documentos");
     }
 
+    console.log("[registarDocumento] Sucesso, revalidando...");
     revalidatePath("/dashboard/documentos");
+    
     return {
       success: true,
       mensagem: `Documento "${tipo}" registado com sucesso`,
     };
   } catch (error) {
+    console.error("[registarDocumento] Erro:", error);
     logError("[registarDocumento]", error);
     return {
       success: false,
@@ -247,5 +258,48 @@ export async function uploadDocumentoFormador(formData: FormData) {
   } catch (error) {
     logError("[uploadDocumentoFormador]", error);
     return { error: error instanceof Error ? error.message : "Erro no upload" };
+  }
+}
+
+/**
+ * Obter documentos atualizados do formador desde a BD
+ * Usada para sincronizar o estado após um upload bem-sucedido
+ */
+export async function obterDocumentosFormadorAtualizados() {
+  try {
+    console.log("[obterDocumentosFormadorAtualizados] Iniciando...");
+    
+    const session = await auth();
+    if (!session?.user?.id) {
+      throw new Error("Não autorizado");
+    }
+
+    // Buscar o formador pelo userId
+    const formador = await prisma.formador.findUnique({
+      where: { userId: session.user.id }
+    });
+    
+    if (!formador) {
+      throw new Error("Formador não encontrado");
+    }
+
+    console.log("[obterDocumentosFormadorAtualizados] Formador encontrado:", formador.id);
+
+    const { getDocumentosFormador } = await import("@/app/dashboard/_data/documentos");
+    const documentos = await getDocumentosFormador(formador.id);
+    
+    console.log("[obterDocumentosFormadorAtualizados] Documentos obtidos:", documentos.length);
+
+    return {
+      success: true,
+      documentos,
+    };
+  } catch (error) {
+    console.error("[obterDocumentosFormadorAtualizados] Erro:", error);
+    logError("[obterDocumentosFormadorAtualizados]", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Erro ao obter documentos",
+    };
   }
 }

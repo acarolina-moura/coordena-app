@@ -479,7 +479,11 @@ export async function obterModulosComAlunos() {
       return { success: true, modulos: [], message: 'Formador não encontrado' };
     }
 
-    // Obter módulos via FormadorModulo (convites aceites)
+    // Combinação de 2 cenários:
+    // 1. Módulos onde este formador tem FormadorModulo (é o "dono")
+    // 2. Módulos que NÃO têm NENHUM FormadorModulo E este formador tem aulas neles
+
+    // Obter módulos via FormadorModulo (convites aceites) - CENÁRIO 1
     const modulosFormadorModulo = await prisma.formadorModulo.findMany({
       where: { formadorId: formador.id },
       include: {
@@ -491,21 +495,56 @@ export async function obterModulosComAlunos() {
       },
     });
 
-    // Obter módulos via Aulas (associação direta pelo coordenador)
-    const aulasModulos = await prisma.aula.findMany({
-      where: { formadorId: formador.id },
+    console.log(`[DEBUG] Módulos via FormadorModulo (cenário 1): ${modulosFormadorModulo.length}`);
+    modulosFormadorModulo.forEach((fm) => {
+      console.log(`  - ${fm.modulo.nome} (ID: ${fm.modulo.id})`);
+    });
+
+    // Obter IDs dos módulos que já têm FormadorModulo associado
+    const modulosComFormadorModulo = await prisma.modulo.findMany({
+      where: {
+        formadores: {
+          some: {}, // Se tem QUALQUER FormadorModulo
+        },
+      },
+      select: { id: true },
+    });
+    const modulosComFormadorModuloIds = new Set(modulosComFormadorModulo.map((m) => m.id));
+    console.log(`[DEBUG] Módulos que TÊM FormadorModulo: ${modulosComFormadorModuloIds.size}`);
+
+    // Obter módulos do formador atual que NÃO têm FormadorModulo (CENÁRIO 2)
+    const aulasFormadorAtualSemControle = await prisma.aula.findMany({
+      where: { 
+        formadorId: formador.id,
+        modulo: {
+          formadores: {
+            none: {}, // Módulos QUE NÃO TÊM FormadorModulo
+          },
+        },
+      },
       select: { moduloId: true },
       distinct: ['moduloId'],
+    });
+
+    console.log(`[DEBUG] Módulos via Aulas SEM controle de FormadorModulo (cenário 2): ${aulasFormadorAtualSemControle.length}`);
+    aulasFormadorAtualSemControle.forEach((a) => {
+      console.log(`  - Módulo ID: ${a.moduloId}`);
     });
 
     // Combinar IDs únicos de módulos
     const moduloIdsSet = new Set<string>();
     modulosFormadorModulo.forEach((fm) => moduloIdsSet.add(fm.modulo.id));
-    aulasModulos.forEach((a) => moduloIdsSet.add(a.moduloId));
+    aulasFormadorAtualSemControle.forEach((a) => {
+      if (a.moduloId) {
+        moduloIdsSet.add(a.moduloId);
+      }
+    });
 
     if (moduloIdsSet.size === 0) {
       return { success: true, modulos: [], message: 'Nenhum módulo encontrado para este formador' };
     }
+
+    console.log(`[DEBUG] Encontrados ${moduloIdsSet.size} módulos únicos:`, Array.from(moduloIdsSet));
 
     // Buscar todos os módulos com detalhes
     const modulos = await prisma.modulo.findMany({
@@ -514,6 +553,11 @@ export async function obterModulosComAlunos() {
         curso: true,
       },
       orderBy: { nome: 'asc' },
+    });
+
+    console.log(`[DEBUG] Módulos retornados pela query: ${modulos.length}`);
+    modulos.forEach((m) => {
+      console.log(`  - ${m.nome} (ID: ${m.id})`);
     });
 
     // Para cada módulo, obter alunos inscritos no curso e suas presenças
@@ -531,6 +575,8 @@ export async function obterModulosComAlunos() {
           },
         });
 
+        console.log(`[DEBUG] Módulo "${modulo.nome}": encontradas ${inscricoes.length} inscrições no curso`);
+
         // Contar total de aulas deste módulo com este formador
         const totalAulas = await prisma.aula.count({
           where: {
@@ -538,6 +584,8 @@ export async function obterModulosComAlunos() {
             formadorId: formador.id,
           },
         });
+
+        console.log(`[DEBUG] Módulo "${modulo.nome}": ${totalAulas} aulas com este formador`);
 
         // Para cada aluno, calcular presenças a partir das aulas
         const alunos = await Promise.all(
@@ -563,6 +611,8 @@ export async function obterModulosComAlunos() {
           })
         );
 
+        console.log(`[DEBUG] Módulo "${modulo.nome}": retornando ${alunos.length} alunos`);
+
         return {
           id: modulo.id,
           nome: modulo.nome,
@@ -570,6 +620,8 @@ export async function obterModulosComAlunos() {
         };
       })
     );
+
+    console.log(`[DEBUG] Módulos com detalhes a retornar: ${modulosComDetalhes.length}`);
 
     return { success: true, modulos: modulosComDetalhes };
   } catch (error) {
