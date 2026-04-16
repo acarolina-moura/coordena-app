@@ -9,7 +9,10 @@ export async function getFormandoStats(userId: string) {
 
     // Se não tem formando, retorna stats vazios (é formador, não formando)
     if (!formando) {
-        console.log("[getFormandoStats] Formando not found for userId:", userId);
+        console.log(
+            "[getFormandoStats] Formando not found for userId:",
+            userId,
+        );
         return {
             cursosInscritos: 0,
             modulosCompletos: 0,
@@ -49,8 +52,8 @@ export async function getFormandoStats(userId: string) {
             nota: { gte: 10 },
             // CORREÇÃO: Filtrar apenas módulos dos cursos do formando
             modulo: {
-                cursoId: { in: cursoIds }
-            }
+                cursoId: { in: cursoIds },
+            },
         },
     });
 
@@ -95,7 +98,9 @@ export async function getCursoFormando(userId: string) {
     const hoje = new Date();
 
     const modulos = curso.modulos.map((m) => {
-        const avaliacoesDoFormando = m.avaliacoes.filter((a) => a.formandoId === formandoId);
+        const avaliacoesDoFormando = m.avaliacoes.filter(
+            (a) => a.formandoId === formandoId,
+        );
         const notas = avaliacoesDoFormando.map((a) => a.nota);
         const media =
             notas.length > 0
@@ -245,7 +250,9 @@ export async function getMeusCursos(userId: string) {
         const curso = insc.curso;
 
         const modulos = curso.modulos.map((m) => {
-            const avaliacoesDoFormando = m.avaliacoes.filter((a) => a.formandoId === formandoId);
+            const avaliacoesDoFormando = m.avaliacoes.filter(
+                (a) => a.formandoId === formandoId,
+            );
             const notas = avaliacoesDoFormando.map((a) => a.nota);
             const media =
                 notas.length > 0
@@ -332,11 +339,23 @@ export async function getMeusCursos(userId: string) {
 
 // ------------------- MINHAS NOTAS -------------------
 export async function getMinhasNotas(userId: string) {
-    const formando = await prisma.formando.findUnique({ where: { userId } });
+    const formando = await prisma.formando.findUnique({
+        where: { userId },
+        include: { inscricoes: { select: { cursoId: true } } },
+    });
     if (!formando) return [];
 
+    const cursoIds = formando.inscricoes.map((i) => i.cursoId);
+
     const notasParciais = await prisma.notaParcial.findMany({
-        where: { formandoId: formando.id },
+        where: {
+            formandoId: formando.id,
+            template: {
+                modulo: {
+                    cursoId: { in: cursoIds },
+                },
+            },
+        },
         include: {
             item: true,
             template: { include: { modulo: { include: { curso: true } } } },
@@ -360,15 +379,27 @@ export async function getMinhasPresencas(userId: string) {
     const formando = await prisma.formando.findUnique({
         where: { userId },
         include: {
-            presencas: {
-                include: { aula: { include: { modulo: true } } },
-                orderBy: { aula: { dataHora: "desc" } },
-            },
+            inscricoes: { select: { cursoId: true } },
         },
     });
     if (!formando) return [];
 
-    return formando.presencas.map((p) => ({
+    const cursoIds = formando.inscricoes.map((i) => i.cursoId);
+
+    const presencas = await prisma.presenca.findMany({
+        where: {
+            formandoId: formando.id,
+            aula: {
+                modulo: {
+                    cursoId: { in: cursoIds },
+                },
+            },
+        },
+        include: { aula: { include: { modulo: true } } },
+        orderBy: { aula: { dataHora: "desc" } },
+    });
+
+    return presencas.map((p) => ({
         id: p.id,
         dataHora: p.aula.dataHora.toISOString(),
         modulo: p.aula.modulo.nome,
@@ -521,29 +552,29 @@ export async function getMeusTrabalhos(userId: string) {
 
 // ------------------- CONVITES & REVIEWS -------------------
 export async function getMeusConvites(userId: string) {
-  const formando = await prisma.formando.findUnique({
-    where: { userId },
-  });
-  if (!formando) return [];
+    const formando = await prisma.formando.findUnique({
+        where: { userId },
+    });
+    if (!formando) return [];
 
-  const convites = await prisma.convite.findMany({
-    where: { formandoId: formando.id },
-    include: {
-      curso: { select: { nome: true } },
-      modulo: { select: { nome: true } },
-    },
-    orderBy: { dataEnvio: "desc" },
-  });
+    const convites = await prisma.convite.findMany({
+        where: { formandoId: formando.id },
+        include: {
+            curso: { select: { nome: true } },
+            modulo: { select: { nome: true } },
+        },
+        orderBy: { dataEnvio: "desc" },
+    });
 
-  return convites.map((c) => ({
-    id: c.id,
-    status: c.status,
-    descricao: c.descricao,
-    dataEnvio: c.dataEnvio,
-    dataResposta: c.dataResposta,
-    cursoNome: c.curso?.nome ?? null,
-    moduloNome: c.modulo?.nome ?? null,
-  }));
+    return convites.map((c) => ({
+        id: c.id,
+        status: c.status,
+        descricao: c.descricao,
+        dataEnvio: c.dataEnvio,
+        dataResposta: c.dataResposta,
+        cursoNome: c.curso?.nome ?? null,
+        moduloNome: c.modulo?.nome ?? null,
+    }));
 }
 
 export async function getModulosParaReview(userId: string) {
@@ -572,7 +603,9 @@ export async function getModulosParaReview(userId: string) {
 
     return formando.inscricoes.flatMap((insc) =>
         insc.curso.modulos.map((m) => {
-            const reviewsDoFormando = m.reviews.filter((r) => r.formandoId === formandoId);
+            const reviewsDoFormando = m.reviews.filter(
+                (r) => r.formandoId === formandoId,
+            );
             return {
                 id: m.id,
                 nome: m.nome,
