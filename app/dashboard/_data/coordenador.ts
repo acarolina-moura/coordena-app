@@ -202,7 +202,7 @@ export type FormadorPerfil = {
     id: string;
     nome: string;
     cargaHoraria: number;
-    curso: { id: string; nome: string };
+    curso: { id: string; nome: string } | null;
   }>;
   documentos: Array<{
     id: string;
@@ -460,7 +460,7 @@ export type ModuloComDetalhes = {
   ordem: number;
   cargaHoraria: number;
   cursoId: string | null;
-  curso?: { id: string; nome: string };
+  curso?: { id: string; nome: string } | null;
   formadores?: Array<{
     id: string;
     especialidade: string | null;
@@ -617,7 +617,7 @@ export type FormandoPerfil = {
   avaliacoes: Array<{
     id: string;
     nota: number;
-    modulo: { id: string; nome: string; curso: { id: string; nome: string } };
+    modulo: { id: string; nome: string; curso: { id: string; nome: string } | null };
   }>;
   documentos: Array<{
     id: string;

@@ -526,7 +526,7 @@ export async function getMeusTrabalhos(userId: string) {
                     }
                     return {
                         moduloId: modulo.id,
-                        cursoNome: modulo.curso?.nome || "Módulo Geral",
+                        cursoNome: insc.curso.nome,
                         moduloNome: modulo.nome,
                         id: item.id,
                         nome: item.nome,
