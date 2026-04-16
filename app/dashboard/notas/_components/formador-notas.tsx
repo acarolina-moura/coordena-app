@@ -213,6 +213,15 @@ export default function FormadorNotasPage() {
     ) || modulo.nome.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Debug
+  useEffect(() => {
+    console.log(`[DEBUG COMPONENTE] Total de módulos carregados: ${modulos.length}`);
+    console.log(`[DEBUG COMPONENTE] Módulos após filtragem: ${modulosFiltrados.length}`);
+    modulos.forEach((m) => {
+      console.log(`  - ${m.nome}: ${m.alunos.length} alunos`);
+    });
+  }, [modulos, modulosFiltrados]);
+
   /**
    * Atualizar nota parcial
    */
@@ -441,7 +450,42 @@ export default function FormadorNotasPage() {
               aluno.nome.toLowerCase().includes(search.toLowerCase())
             );
 
-            if (alunosFiltrados.length === 0) return null;
+            console.log(`[DEBUG RENDER] Módulo "${modulo.nome}": ${alunosFiltrados.length} alunos filtrados, ${modulo.alunos.length} total`);
+
+            // Se o módulo não tem alunos RUM, mostrar uma card vazia
+            if (modulo.alunos.length === 0) {
+              console.log(`  ℹ️ Módulo sem alunos inscritos`);
+              return (
+                <div
+                  key={modulo.id}
+                  className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden"
+                >
+                  <div className="border-b border-gray-100 dark:border-gray-800 px-6 py-4 flex items-center justify-between bg-gray-50 dark:bg-gray-800/50">
+                    <div>
+                      <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">{modulo.nome}</h2>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => abrirModalTemplate(modulo.id)}
+                      className="gap-1"
+                    >
+                      <Plus className="h-4 w-4" />
+                      {template ? 'Editar' : 'Definir'} Template
+                    </Button>
+                  </div>
+                  <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+                    Nenhum aluno inscrito neste módulo
+                  </div>
+                </div>
+              );
+            }
+
+            // Se há alunos mas nenhum corresponde ao filtro de busca
+            if (alunosFiltrados.length === 0) {
+              console.log(`  ℹ️ Nenhum aluno corresponde ao filtro de busca`);
+              return null;
+            }
 
             return (
               <div

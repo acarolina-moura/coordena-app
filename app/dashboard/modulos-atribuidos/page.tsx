@@ -23,7 +23,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getModulosAtribuidosFormador } from "@/app/dashboard/_data/formador";
 import { prisma } from "@/lib/prisma";
-import ModuloCard from "./_components/modulo-card";
+import ModulosPorCurso from "./_components/modulos-por-curso";
 
 /**
  * ModulosAtribuidosPage
@@ -87,28 +87,8 @@ export default async function ModulosAtribuidosPage() {
         <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{modulos.length} módulos atribuídos</p>
       </div>
 
-      {/* 
-        Responsive Grid Layout
-        - Mobile (default): grid-cols-1 (1 column)
-        - Tablet (md): grid-cols-2 (2 columns)
-        - Desktop (xl): grid-cols-3 (3 columns)
-        - Gap: 4px between cards
-      */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {/* 
-          Map through modules and render a ModuloCard for each
-          
-          Key prop is important for React's rendering optimization:
-          - Must be unique for each item
-          - Using m.id (module ID) as the key
-          
-          Props passed to ModuloCard:
-          - modulo: The module data object
-        */}
-        {modulos.map((m) => (
-          <ModuloCard key={m.id} modulo={m} />
-        ))}
-      </div>
+      {/* Módulos Agrupados por Curso em Acordeão */}
+      <ModulosPorCurso modulos={modulos} />
     </div>
   );
 }

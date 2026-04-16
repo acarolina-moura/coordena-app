@@ -9,7 +9,10 @@ const DIAS_AVISO = 30 // avisa 30 dias antes de expirar
 // ─── Funções ──────────────────────────────────────────────────────────────────
 
 export function calcularStatus(dataValidade: Date | null): DocStatus {
-    if (!dataValidade) return 'VALIDO' // sem validade = sempre válido (ex: CV, IBAN)
+    if (!dataValidade) {
+        console.log("[calcularStatus] Sem data de validade → VALIDO");
+        return 'VALIDO'
+    }
 
     const hoje = new Date()
     const diasRestantes = Math.ceil(

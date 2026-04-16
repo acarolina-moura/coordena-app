@@ -58,7 +58,10 @@ export default async function ConvitesPage() {
   // =======================================================================
   if (user.role === "FORMADOR" && user.formador) {
     const convitesFormador = await prisma.convite.findMany({
-      where: { formadorId: user.formador.id },
+      where: { 
+        formadorId: user.formador.id,
+        cursoId: { not: null }
+      },
       include: { modulo: true, curso: true },
       orderBy: { dataEnvio: "desc" },
     });

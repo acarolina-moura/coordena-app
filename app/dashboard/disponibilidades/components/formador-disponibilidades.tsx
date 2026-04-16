@@ -174,6 +174,11 @@ export default function DisponibilidadesFormador({
   // Evita erros de "Text content did not match" entre server e client
   const [mounted, setMounted] = useState(false);
 
+  // Estado para drag-and-drop
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState<{ hora: number; minuto: number; dia: string } | null>(null);
+  const [dragEnd, setDragEnd] = useState<{ hora: number; minuto: number; dia: string } | null>(null);
+
   /**
    * NOVO: Inicialização - calcula todas as semanas do ano
    * Seleciona o mês atual por padrão
@@ -262,6 +267,98 @@ export default function DisponibilidadesFormador({
   }
 
   /**
+   * NOVO: Inicia o drag - marca o slot inicial
+   */
+  function handleMouseDown(hora: number, minuto: number, dia: string) {
+    setIsDragging(true);
+    setDragStart({ hora, minuto, dia });
+    setDragEnd({ hora, minuto, dia });
+  }
+
+  /**
+   * NOVO: Durante o drag, atualiza o ponto final
+   */
+  function handleMouseEnter(hora: number, minuto: number, dia: string) {
+    if (!isDragging || !dragStart) return;
+    setDragEnd({ hora, minuto, dia });
+  }
+
+  /**
+   * NOVO: Termina o drag - aplica a ação
+   * Se foi clique simples (start === end): faz toggle
+   * Se foi drag (start !== end): seleciona todo o range
+   *   - Sem tecla: TOTAL (roxo)
+   *   - SHIFT: PARCIAL (amarelo)
+   *   - CTRL/CMD: null (desseleciona)
+   */
+  function handleMouseUp(e: React.MouseEvent) {
+    if (!isDragging || !dragStart || !dragEnd) {
+      setIsDragging(false);
+      return;
+    }
+
+    const isSimpleClick =
+      dragStart.hora === dragEnd.hora &&
+      dragStart.minuto === dragEnd.minuto &&
+      dragStart.dia === dragEnd.dia;
+
+    if (isSimpleClick) {
+      // Clique simples: faz toggle
+      toggle(dragStart.hora, dragStart.minuto, dragStart.dia);
+    } else {
+      // Drag: seleciona range com base nos modificadores
+      const startDiaIndex = DIAS.indexOf(dragStart.dia);
+      const endDiaIndex = DIAS.indexOf(dragEnd.dia);
+      const startHoraIndex = HORAS.indexOf(dragStart.hora);
+      const endHoraIndex = HORAS.indexOf(dragEnd.hora);
+
+      const minDiaIndex = Math.min(startDiaIndex, endDiaIndex);
+      const maxDiaIndex = Math.max(startDiaIndex, endDiaIndex);
+      const minHoraIndex = Math.min(startHoraIndex, endHoraIndex);
+      const maxHoraIndex = Math.max(startHoraIndex, endHoraIndex);
+
+      // Determina o tipo baseado nos modificadores
+      let tipo: TipoDisponibilidade = "TOTAL";
+      if (e.shiftKey) {
+        tipo = "PARCIAL";
+      } else if (e.ctrlKey || e.metaKey) {
+        tipo = null;
+      }
+
+      const newSlots = { ...slots };
+      for (let h = minHoraIndex; h <= maxHoraIndex; h++) {
+        for (let d = minDiaIndex; d <= maxDiaIndex; d++) {
+          for (const minuto of [0, 30]) {
+            const hora = HORAS[h];
+            const dia = DIAS[d];
+            const key = slotKey(hora, minuto, dia);
+            newSlots[key] = tipo;
+          }
+        }
+      }
+      setSlots(newSlots);
+    }
+
+    setIsDragging(false);
+    setDragStart(null);
+    setDragEnd(null);
+  }
+
+  /**
+   * NOVO: Listener global para limpar estado quando mouse sai da área
+   */
+  useEffect(() => {
+    function handleMouseUpGlobal(event: MouseEvent) {
+      if (isDragging) {
+        handleMouseUp(event as unknown as React.MouseEvent);
+      }
+    }
+
+    window.addEventListener("mouseup", handleMouseUpGlobal);
+    return () => window.removeEventListener("mouseup", handleMouseUpGlobal);
+  }, [isDragging, dragStart, dragEnd, slots]);
+
+  /**
    * NOVO: Guarda as disponibilidades selecionadas para a semana ativa
    * Envia apenas os slots que estão marcados (TOTAL ou PARCIAL)
    * A API apaga os dados antigos da semana antes de guardar os novos
@@ -330,8 +427,7 @@ export default function DisponibilidadesFormador({
             Disponibilidades
           </h1>
           <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-            Clique nos blocos para marcar disponibilidade · {totalSelected}{" "}
-            blocos selecionados
+            Clique para ciclar estados · Arrastra: roxo | + SHIFT: amarelo | + CTRL: vazio · {totalSelected} blocos selecionados
           </p>
         </div>
         <Button
@@ -436,16 +532,29 @@ export default function DisponibilidadesFormador({
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-4 pb-4 border-t border-gray-100 dark:border-gray-800 pt-4">
-          <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-purple-500" /> Disponibilidade Total
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-amber-500" /> Parcial (Só Online)
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-gray-300" /> Indisponível
-          </span>
+        <div className="flex flex-col gap-3 mb-4 pb-4 border-t border-gray-100 dark:border-gray-800 pt-4">
+          {/* Cores */}
+          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 rounded-full bg-purple-500" /> Disponibilidade Total
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 rounded-full bg-amber-500" /> Parcial (Só Online)
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 rounded-full bg-gray-300" /> Indisponível
+            </span>
+          </div>
+
+          {/* Instruções discretas */}
+          <div className="text-xs text-gray-400 dark:text-gray-500 space-y-1">
+            <div>
+              <span className="font-medium">Clique:</span> cicla entre os 3 estados
+            </div>
+            <div>
+              <span className="font-medium">Arrastar:</span> roxo | <span className="font-medium">+ SHIFT:</span> amarelo | <span className="font-medium">+ CTRL:</span> vazio
+            </div>
+          </div>
         </div>
 
         <table className="w-full min-w-[600px] border-separate border-spacing-y-1">
@@ -489,14 +598,17 @@ export default function DisponibilidadesFormador({
                     return (
                       <td key={dia} className="px-1.5 py-1">
                         <button
-                          onClick={() => toggle(hora, minuto, dia)}
+                          onMouseDown={() => handleMouseDown(hora, minuto, dia)}
+                          onMouseEnter={() => handleMouseEnter(hora, minuto, dia)}
+                          onMouseUp={(e) => handleMouseUp(e)}
                           disabled={saving}
                           className={cn(
-                            "w-full h-10 rounded-xl border-2 flex items-center justify-center transition-all duration-150",
+                            "w-full h-10 rounded-xl border-2 flex items-center justify-center transition-all duration-150 select-none",
                             saving && "opacity-50 cursor-not-allowed",
+                            isDragging && "cursor-grabbing",
                             bgColor,
                           )}
-                          title={tipo === "TOTAL" ? "Disponibilidade Total" : tipo === "PARCIAL" ? "Disponibilidade Parcial" : "Indisponível"}
+                          title={tipo === "TOTAL" ? "Disponibilidade Total\n(ou Arrastar)" : tipo === "PARCIAL" ? "Disponibilidade Parcial\n(ou Arrastar + SHIFT)" : "Indisponível\n(ou Arrastar + CTRL)"}
                         >
                           <span
                             className={cn(

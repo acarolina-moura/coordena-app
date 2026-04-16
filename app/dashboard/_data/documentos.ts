@@ -96,11 +96,15 @@ export async function getFormadoresComDocumentos() {
 export async function getDocumentosFormador(
   formadorId: string,
 ): Promise<DocumentoResult[]> {
+  console.log("[getDocumentosFormador] Buscando documentos para:", formadorId);
+  
   const docs = await prisma.documento.findMany({
     where: { formadorId }
   });
 
-  return DOCS_OBRIGATORIOS_FORMADOR.map((nomeDoc): DocumentoResult => {
+  console.log("[getDocumentosFormador] Encontrados na BD:", docs.length, "documentos");
+
+  const resultado = DOCS_OBRIGATORIOS_FORMADOR.map((nomeDoc): DocumentoResult => {
     const doc = docs.find((d) => d.tipo === nomeDoc);
 
     return {
@@ -112,6 +116,10 @@ export async function getDocumentosFormador(
       numero: doc?.numero ?? null,
     };
   });
+
+  console.log("[getDocumentosFormador] Mapeados:", resultado.length, "documentos com status");
+
+  return resultado;
 }
 
 export async function getDocumentosFormando(
