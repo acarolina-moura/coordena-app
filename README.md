@@ -22,7 +22,7 @@ The platform centralizes course management, scheduling, documentation, assessmen
 * **Validation:** Zod
 * **Infrastructure:** Cloudflare
 * 
----
+  
 
 ## Features
 
@@ -57,8 +57,3 @@ The platform centralizes course management, scheduling, documentation, assessmen
 ### 🥸 Administrator
 
 * Manage coordinator accounts
----
-
-## Project Status
-
-🚧 Work in Progress
