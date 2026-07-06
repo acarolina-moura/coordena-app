@@ -3,6 +3,7 @@
 A web platform for managing training courses, designed to simplify administrative and operational processes for coordinators, trainers, and trainees.
 
 The platform centralizes course management, scheduling, documentation, assessments, and communication in a single application.
+---
 
 ## Team
 
@@ -11,7 +12,6 @@ The platform centralizes course management, scheduling, documentation, assessmen
 * Daniel Castanho
 * Margarida Louzeiro
 
----
 
 ## Tech Stack
 
@@ -21,7 +21,6 @@ The platform centralizes course management, scheduling, documentation, assessmen
 * **ORM:** Prisma
 * **Validation:** Zod
 * **Infrastructure:** Cloudflare
-* 
   
 
 ## Features
