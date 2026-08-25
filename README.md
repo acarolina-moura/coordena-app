@@ -1,8 +1,11 @@
 # 🎓 Coordena App
 
-A web platform for managing training courses, designed to simplify administrative and operational processes for coordinators, trainers, and trainees.
+### A web platform for managing training courses, designed to simplify administrative and operational processes for coordinators, trainers, and trainees.
 
 The platform centralizes course management, scheduling, documentation, assessments, and communication in a single application.
+---
+🌐 **Aplicação publicada:** coordena-app-eta.vercel.app
+
 ---
 
 ## Team
