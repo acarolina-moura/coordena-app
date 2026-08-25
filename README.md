@@ -15,14 +15,19 @@ The platform centralizes course management, scheduling, documentation, assessmen
 
 ## Tech Stack
 
-* **Framework:** Next.js
-* **UI:** HeroUI v3
-* **Database:** PostgreSQL (Neon)
-* **ORM:** Prisma
-* **Validation:** Zod
-* **Infrastructure:** Cloudflare
-  
+| Tecnologia           | Utilização                       |
+| -------------------- | -------------------------------- |
+| **Next.js   **       | Framework principal              |
+| **HeroUI**           | Componentes de UI                |
+| **PostgreSQL**       | Base de dados                    |
+| **Neon**             | PostgreSQL serverless            |
+| **SQL**              | Queries e acesso aos dados       |
+| **Vercel**           | Deploy e hosting                 |
+| **Git / GitHub**     | Controlo de versão               |
+| -------------------- | -------------------------------- |
 
+  ---
+  
 ## Features
 
 ### 👑 Coordinator
