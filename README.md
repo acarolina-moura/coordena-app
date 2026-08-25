@@ -8,7 +8,7 @@ The platform centralizes course management, scheduling, documentation, assessmen
 ## Team
 
 * Everton Claudino
-* Ana Moura
+* Ana Moura (FullStack developer)
 * Daniel Castanho
 * Margarida Louzeiro
 
