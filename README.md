@@ -7,24 +7,23 @@ The platform centralizes course management, scheduling, documentation, assessmen
 
 ## Team
 
-* Everton Claudino
-* Ana Moura (FullStack developer)
-* Daniel Castanho
-* Margarida Louzeiro
+* Everton Claudino (FullStack Developer)
+* Ana Moura (FullStack Developer)
+* Daniel Castanho (FullStack Developer)
+* Margarida Louzeiro (FullStack Developer)
 
 
 ## Tech Stack
 
 | Tecnologia           | Utilização                       |
 | -------------------- | -------------------------------- |
-| **Next.js   **       | Framework principal              |
+| **Next.js**          | Framework principal              |
 | **HeroUI**           | Componentes de UI                |
 | **PostgreSQL**       | Base de dados                    |
 | **Neon**             | PostgreSQL serverless            |
 | **SQL**              | Queries e acesso aos dados       |
 | **Vercel**           | Deploy e hosting                 |
 | **Git / GitHub**     | Controlo de versão               |
-| -------------------- | -------------------------------- |
 
   ---
   
